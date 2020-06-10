@@ -6,6 +6,7 @@ project(scale_truck_control)
 #set(OpenCV_INCLUDE_DIRS /usr/share/OpenCV/)
 #message("OpenCV_DIR=${OpenCV_INCLUDE_DIRS}")
 #message("catkin_DIR=${catkin_INCLUDE_DIRS}")
+
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge roscpp rospy std_msgs message_generation sensor_msgs image_transport geometry_msgs obstacle_detector
   OpenCV REQUIRED
@@ -26,21 +27,39 @@ catkin_package(
   CATKIN_DEPENDS roscpp rospy std_msgs geometry_msgs obstacle_detector
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
-	
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+set(PROJECT_LIB_FILES
+  src/lane_detect.cpp					src/ScaleTruckController.cpp
+)
 
 #
 # Build libs
 #
 
-add_library(lane_detect src/lane_detect.cpp)
-target_link_libraries(lane_detect ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
-add_dependencies(lane_detect ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_library(${PROJECT_NAME}_lib
+  ${PROJECT_LIB_FILES}	
+)
 
-add_executable(LV_node src/nodes/LV_node.cpp)
-target_link_libraries(LV_node lane_detect)
+add_executable(${PROJECT_NAME}
+  nodes/control_node.cpp
+)
 
-add_executable(FV_node src/nodes/FV_node.cpp)
-target_link_libraries(FV_node lane_detect)
+target_link_libraries(${PROJECT_NAME}_lib
+  ${OpenCV_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
 
+target_link_libraries(${PROJECT_NAME}
+  ${PROJECT_NAME}_lib
+)
 
+add_dependencies(${PROJECT_NAME}
+  ${catkin_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)

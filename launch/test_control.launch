@@ -1,0 +1,5 @@
+<launch>
+  <rosparam command="load" file="$(find scale_truck_control)/config/control.yaml" />
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" />
+  <node name="scale_truck_control" pkg="scale_truck_control" type="scale_truck_control" output="screen" />
+</launch>

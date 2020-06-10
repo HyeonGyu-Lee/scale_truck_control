@@ -3,9 +3,10 @@
 using namespace std;
 using namespace cv;
 
-LaneDetector::LaneDetector(void) {
-	cout << "LaneDetector initialization setup..." << endl;
+namespace lane_detect {
 
+LaneDetector::LaneDetector(ros::NodeHandle nh)
+  : nodeHandle_(nh) {
 	/********** PID control ***********/
 	center_position_ = 640;
 	prev_err_ = 0;
@@ -16,7 +17,30 @@ LaneDetector::LaneDetector(void) {
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 
-	cout << "[INITIALIZATION DONE]" << endl;
+        width_ = 1280;
+	height_ = 720;
+	corners_.resize(4);
+	warpCorners_.resize(4);
+	corners_[0] = Point2f(350, 450);
+	corners_[1] = Point2f(930, 450);
+	corners_[2] = Point2f(50, 680);
+	corners_[3] = Point2f(1230, 680);
+	wide_extra_upside_ = -50;
+	wide_extra_downside_ = 50;
+	warpCorners_[0] = Point2f(wide_extra_upside_, 0.0);
+	warpCorners_[1] = Point2f(width_, wide_extra_upside_);
+	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
+	warpCorners_[3] = Point2f(width_ - wide_extra_downside_, height_);
+
+	nodeHandle_.param("LaneDetector/sob_max_th",sobel_max_th_, 255);
+	nodeHandle_.param("LaneDetector/sob_min_th",sobel_min_th_, 255);
+	nodeHandle_.param("LaneDetector/hls_max_th",hls_max_th_, 175);
+	nodeHandle_.param("LaneDetector/hls_min_th",hls_min_th_, 175);
+	nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
+	nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
+	nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
+	nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
+
 }
 
 LaneDetector::~LaneDetector(void) {
@@ -498,17 +522,9 @@ void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame) {
 	}
 }
 
-int LaneDetector::display_img(Mat _frame, int _delay) {
+int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 	Mat new_frame, warped_frame, binary_frame, sliding_frame, resized_frame;
-	int result;
-
-	namedWindow("Window1");
-	moveWindow("Window1",0,0);
-	namedWindow("Window2");
-	moveWindow("Window2",640,0);
-	namedWindow("Window3");
-	moveWindow("Window3",1280,0);	
-	
+        
 	resize(_frame, new_frame, Size(width_, height_));
 
 	warped_frame = warped_img(new_frame);
@@ -517,48 +533,35 @@ int LaneDetector::display_img(Mat _frame, int _delay) {
 	resized_frame = draw_lane(sliding_frame, new_frame);
 	calc_curv_rad_and_center_dist(resized_frame);
 	clear_release();
-
-	result = result_value(center_position_);
-
-	string TEXT = "ROI";
-	Point2f T_pos(corners_[0]);
-	putText(new_frame, TEXT, T_pos, FONT_HERSHEY_DUPLEX, 2, Scalar(0,0,255),5,8);
+        
+	if(_view) {
+	  namedWindow("Window1");
+	  moveWindow("Window1",0,0);
+	  namedWindow("Window2");
+	  moveWindow("Window2",640,0);
+	  namedWindow("Window3");
+	  moveWindow("Window3",1280,0);	
+	  
+	  string TEXT = "ROI";
+	  Point2f T_pos(corners_[0]);
+	  putText(new_frame, TEXT, T_pos, FONT_HERSHEY_DUPLEX, 2, Scalar(0,0,255),5,8);
 	
-	line(new_frame, corners_[0], corners_[2], Scalar(0,0,255),5);
-	line(new_frame, corners_[2], corners_[3], Scalar(0,0,255),5);
-	line(new_frame, corners_[3], corners_[1], Scalar(0,0,255),5);
-	line(new_frame, corners_[1], corners_[0], Scalar(0,0,255),5);
+	  line(new_frame, corners_[0], corners_[2], Scalar(0,0,255),5);
+	  line(new_frame, corners_[2], corners_[3], Scalar(0,0,255),5);
+	  line(new_frame, corners_[3], corners_[1], Scalar(0,0,255),5);
+	  line(new_frame, corners_[1], corners_[0], Scalar(0,0,255),5);
 
-	resize(new_frame, new_frame, Size(640, 360));
-	resize(sliding_frame, sliding_frame, Size(640, 360));
-	resize(resized_frame, resized_frame, Size(640, 360));
+	  resize(new_frame, new_frame, Size(640, 360));
+	  resize(sliding_frame, sliding_frame, Size(640, 360));
+	  resize(resized_frame, resized_frame, Size(640, 360));
 
-	imshow("Window1", new_frame);
-	imshow("Window2", sliding_frame);
-	imshow("Window3", resized_frame);
-	
+	  imshow("Window1", new_frame);
+	  imshow("Window2", sliding_frame);
+	  imshow("Window3", resized_frame);
+	}
 	waitKey(_delay);
 	
-	return result;
-}
+	return center_position_;
+};
 
-int LaneDetector::result(Mat _frame){
-	resize(_frame, _frame, Size(width_, height_));
-	calc_curv_rad_and_center_dist(detect_lines_sliding_window(pipeline_img(warped_img(_frame))));
-	clear_release();
-
-	return result_value(center_position_);
-}
-
-int LaneDetector::result_value(float pos) {
-	int result;
-
-	result = (int)(((pos - 640.0) / 640.0 * 500.0) + clicker_);
-
-	if(result > 1800)
-		result = 1800;
-	else if(result < 1200)
-		result = 1200;
-
-	return result;
-}
+} /* namespace lane_detect */ 

@@ -1,0 +1,10 @@
+#include <scale_truck_control/ScaleTruckController.hpp>
+
+int main(int argc, char** argv) {
+  ros::init(argc, argv, "pwm_control_node");
+  ros::NodeHandle nodeHandle("~");
+  scale_truck_control::ScaleTruckController STC(nodeHandle);
+  
+  STC.spin();
+  return 0;
+}

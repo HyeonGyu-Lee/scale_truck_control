@@ -2,7 +2,7 @@
  * ScaleTruckController.h
  *
  *  Created on: June 2, 2020
- *      Auther: Hyeongyu Lee
+ *      Author: Hyeongyu Lee
  *   Institute: KMU, Avees Lab
  */
 
@@ -13,6 +13,7 @@
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
 
 //OpenCV
 #include <cv_bridge/cv_bridge.h>

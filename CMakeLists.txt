@@ -12,9 +12,9 @@ find_package(catkin REQUIRED COMPONENTS
   OpenCV REQUIRED
 )
 
-add_message_files(
-  FILES
-)
+#add_message_files(
+#  FILES
+#)
 
 generate_messages(
   DEPENDENCIES

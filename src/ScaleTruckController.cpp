@@ -52,22 +52,21 @@ void ScaleTruckController::spin() {
   ros::Rate loop_rate(60);
   int i = 0;
   while(ros::ok) {
+    AngleDegree_ = (centerLine_ - centerErr_)/centerErr_ * 90.0f; // -1 ~ 1 
     if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
       resultSpeed_ = 0.0f;
-    
-    AngleDegree_ = (centerLine_ - centerErr_)/centerErr_ * 90.0f; // -1 ~ 1 
-
-    //TargetSpeed_ = resultSpeed_;
+    else
+      resultSpeed_ = TargetSpeed_;
 
     msg.angular.z = AngleDegree_;
-    msg.linear.x = TargetSpeed_;
+    msg.linear.x = resultSpeed_;
     ControlDataPublisher_.publish(msg);
     
     if(enableConsoleOutput_ && (i++%10==0)) {
       printf("\033[2J");
       printf("\033[1;1H");
       printf("\nAngle  : %f degree", AngleDegree_);
-      printf("\nSpeed  : %f m/s", TargetSpeed_);
+      printf("\nSpeed  : %f m/s", resultSpeed_);
       printf("\nCenter : %d\n", centerLine_);
     }
  

@@ -23,7 +23,9 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
   nodeHandle_.param("params/target_speed", TargetSpeed_, 1.0f); // m/s
   nodeHandle_.param("params/angle_degree", AngleDegree_, 0.0f); // degree
-
+  nodeHandle_.param("params/angle_limits/max",AngleMax_, 60.0f);
+  nodeHandle_.param("params/angle_limits/min",AngleMin_, -60.0f);
+  nodeHandle_.param("params/center_err",centerErr_, 640.0f);
   return true;
 }
 
@@ -47,20 +49,28 @@ void ScaleTruckController::init() {
 
 void ScaleTruckController::spin() {
   geometry_msgs::Twist msg;
-  ros::Rate loop_rate(30);
+  ros::Rate loop_rate(60);
   int i = 0;
   while(ros::ok) {
-    if(enableConsoleOutput_) {
+    if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
+      resultSpeed_ = 0.0f;
+    
+    AngleDegree_ = (centerLine_ - centerErr_)/centerErr_ * 90.0f; // -1 ~ 1 
+
+    //TargetSpeed_ = resultSpeed_;
+
+    msg.angular.z = AngleDegree_;
+    msg.linear.x = TargetSpeed_;
+    ControlDataPublisher_.publish(msg);
+    
+    if(enableConsoleOutput_ && (i++%10==0)) {
       printf("\033[2J");
       printf("\033[1;1H");
       printf("\nAngle  : %f degree", AngleDegree_);
       printf("\nSpeed  : %f m/s", TargetSpeed_);
       printf("\nCenter : %d\n", centerLine_);
     }
-    msg.angular.z = AngleDegree_;
-    msg.linear.x = TargetSpeed_;
-    ControlDataPublisher_.publish(msg);
-
+ 
     ros::spinOnce();
     loop_rate.sleep();
   }

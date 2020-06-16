@@ -11,9 +11,9 @@ publishers:
     queue_size: 1
 
 params:
-  
-  target_speed: 1.0
-  angle_degree: 30.0
+  center_err: 510
+  target_speed: 0.0
+  angle_degree: 0.0
   speed_limits:
     max: 5.0
     min: 0.0
@@ -37,6 +37,6 @@ LaneDetector:
 
 image_view:
 
-  enable_opencv: true
+  enable_opencv: false
   wait_key_delay: 1
-  enable_console_output: false
+  enable_console_output: true

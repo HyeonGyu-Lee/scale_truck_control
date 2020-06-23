@@ -14,6 +14,11 @@ ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
 }
 
 ScaleTruckController::~ScaleTruckController() {
+  {
+    boost::unique_lock<boost::shared_mutex> lockNodeStatus(mutexNodeStatus_);
+    isNodeRunning_ = false;
+  }
+  controlThread_.join();
   ROS_INFO("[ScaleTruckController] Stop.");
 }
 
@@ -32,6 +37,8 @@ bool ScaleTruckController::readParameters() {
 void ScaleTruckController::init() {
   ROS_INFO("[ScaleTruckController] init()");
   
+  controlThread_ = std::thread(&ScaleTruckController::spin, this);
+
   std::string imageTopicName;
   int imageQueueSize;
   std::string ControlDataTopicName;
@@ -47,11 +54,19 @@ void ScaleTruckController::init() {
 
 }
 
-void ScaleTruckController::spin() {
-  geometry_msgs::Twist msg;
-  ros::Rate loop_rate(60);
-  int i = 0;
-  while(ros::ok) {
+bool ScaleTruckController::getImageStatus(void){
+  boost::shared_lock<boost::shared_mutex> lock(mutexImageStatus_);
+  return imageStatus_;
+}
+
+bool ScaleTruckController::isNodeRunning(void){
+  boost::shared_lock<boost::shared_mutex> lock(mutexNodeStatus_);
+  return isNodeRunning_;
+}
+
+void* ScaleTruckController::lanedetectInThread() {
+    geometry_msgs::Twist msg;
+    centerLine_ = laneDetector_.display_img(camImageCopy_, waitKeyDelay_, viewImage_);
     AngleDegree_ = (centerLine_ - centerErr_)/centerErr_ * 90.0f; // -1 ~ 1 
     if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
       resultSpeed_ = 0.0f;
@@ -59,29 +74,63 @@ void ScaleTruckController::spin() {
       resultSpeed_ = TargetSpeed_;
 
     msg.angular.z = AngleDegree_;
-    msg.linear.x = resultSpeed_;
-    ControlDataPublisher_.publish(msg);
-    
-    if(enableConsoleOutput_ && (i++%10==0)) {
+    msg.linear.x = resultSpeed_;   
+    if(enableConsoleOutput_) {
       printf("\033[2J");
       printf("\033[1;1H");
       printf("\nAngle  : %f degree", AngleDegree_);
       printf("\nSpeed  : %f m/s", resultSpeed_);
       printf("\nCenter : %d\n", centerLine_);
     }
+
+    ControlDataPublisher_.publish(msg);
+}
+
+void ScaleTruckController::spin() {
+  const auto wait_duration = std::chrono::milliseconds(2000);
+  while(!getImageStatus()) {
+    printf("Waiting for image.\n");
+    if(!isNodeRunning()) {
+      return;
+    }
+    std::this_thread::sleep_for(wait_duration);
+  }
+  geometry_msgs::Twist msg;
+  std::thread lanedetect_thread;
+  //std::thread objectdetect_thread;
+
+  int i = 0;
  
-    ros::spinOnce();
-    loop_rate.sleep();
+  while(!controlDone_) {
+    lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
+    //objectdetect_thread = std::thread(&ScaleTruckControl::objectdetectInThread, this);
+    
+    lanedetect_thread.join();
+    //objectdetect_thread.join();
+    if(!isNodeRunning()) {
+      controlDone_ = true;
+    } 
   }
 }
 
 void ScaleTruckController::imageCallback(const sensor_msgs::ImageConstPtr &msg) {
-  Mat frame;
+  cv_bridge::CvImagePtr cam_image;
   try{
-    frame = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8) -> image;
-    centerLine_ = laneDetector_.display_img(frame, waitKeyDelay_, viewImage_);
+    cam_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   } catch (cv_bridge::Exception& e) {
     ROS_ERROR("cv_bridge exception : %s", e.what());
+  }
+
+  if(cam_image) {
+    {
+      boost::unique_lock<boost::shared_mutex> lockImageCallback(mutexImageCallback_);
+      imageHeader_ = msg->header;
+      camImageCopy_ = cam_image->image.clone();
+    }
+    {
+      boost::unique_lock<boost::shared_mutex> lockImageStatus(mutexImageStatus_);
+      imageStatus_ = true;
+    }
   }
 }
 

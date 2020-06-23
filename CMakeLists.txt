@@ -3,13 +3,29 @@ project(scale_truck_control)
 
 #add_compile_options(-std=c++11)
 
-#set(OpenCV_INCLUDE_DIRS /usr/share/OpenCV/)
+set(OpenCV_DIR /usr/share/OpenCV/)
+#set(BOOST_ROOT /usr/include/boost/)
+#include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 #message("OpenCV_DIR=${OpenCV_INCLUDE_DIRS}")
 #message("catkin_DIR=${catkin_INCLUDE_DIRS}")
 
-find_package(catkin REQUIRED COMPONENTS
-  cv_bridge roscpp rospy std_msgs message_generation sensor_msgs image_transport geometry_msgs obstacle_detector
-  OpenCV REQUIRED
+find_package(Boost REQUIRED
+  COMPONENTS
+    thread
+)
+
+find_package(catkin REQUIRED
+  COMPONENTS
+    cv_bridge
+    roscpp 
+    rospy 
+    std_msgs
+    message_generation
+    sensor_msgs
+    image_transport
+    geometry_msgs
+    obstacle_detector
+    OpenCV REQUIRED
 )
 
 #add_message_files(
@@ -22,15 +38,25 @@ generate_messages(
 )
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy std_msgs geometry_msgs obstacle_detector
+  INCLUDE_DIRS
+    include
+  LIBRARIES
+    ${PROJECT_NAME}
+  CATKIN_DEPENDS
+    roscpp
+    rospy
+    std_msgs
+    geometry_msgs
+    obstacle_detector
+  DEPENDS
+    Boost
 )
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 set(PROJECT_LIB_FILES
@@ -50,9 +76,12 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}_lib
+  pthread
+  stdc++
   ${OpenCV_LIBRARIES}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
+  ${Boost_LIBRARIES}
 )
 
 target_link_libraries(${PROJECT_NAME}

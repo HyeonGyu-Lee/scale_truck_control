@@ -5,6 +5,6 @@ int main(int argc, char** argv) {
   ros::NodeHandle nodeHandle("~");
   scale_truck_control::ScaleTruckController STC(nodeHandle);
   
-  STC.spin();
+  ros::spin();
   return 0;
 }

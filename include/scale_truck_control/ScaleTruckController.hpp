@@ -8,7 +8,15 @@
 
 #pragma once
 
-//
+//C++
+#include <iostream>
+#include <pthread.h>
+#include <thread>
+#include <chrono>
+#include <cmath>
+#include <boost/thread/thread.hpp>
+#include <vector>
+
 //ROS
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
@@ -17,7 +25,6 @@
 
 //OpenCV
 #include <cv_bridge/cv_bridge.h>
-
 #include "lane_detect/lane_detect.h"
 
 namespace scale_truck_control {
@@ -54,7 +61,29 @@ class ScaleTruckController {
     float AngleMin_; // -degree
     float resultSpeed_;
     float centerErr_;
-    
+
+    //Thread
+
+    std::thread controlThread_;
+
+    std_msgs::Header imageHeader_;
+    cv::Mat camImageCopy_;
+    boost::shared_mutex mutexImageCallback_;
+
+    bool imageStatus_ = false;
+    boost::shared_mutex mutexImageStatus_;
+
+    bool isNodeRunning_ = true;
+    boost::shared_mutex mutexNodeStatus_;
+
+    bool controlDone_ = false;
+     
+    bool isNodeRunning(void);
+
+    bool getImageStatus(void);    
+
+    void* lanedetectInThread();
+    //void* objectdetectInThread();
 };
 
 } /* namespace scale_truck_control */

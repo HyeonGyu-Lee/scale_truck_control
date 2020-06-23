@@ -516,6 +516,8 @@ void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame) {
 
 			result_ = (Kp_ * err_) + (Ki_ * I_err_) + (Kd_ * D_err_); // PID
 			line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
+			line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
+			line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
 
 			center_position_ += (result_);
 		}

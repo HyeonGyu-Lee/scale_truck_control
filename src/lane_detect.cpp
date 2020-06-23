@@ -21,12 +21,21 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	height_ = 720;
 	corners_.resize(4);
 	warpCorners_.resize(4);
-	corners_[0] = Point2f(350, 450);
-	corners_[1] = Point2f(930, 450);
-	corners_[2] = Point2f(50, 680);
-	corners_[3] = Point2f(1230, 680);
-	wide_extra_upside_ = -50;
-	wide_extra_downside_ = 50;
+
+	int top_gap, bot_gap, top_height, bot_height, extra, extra_up, extra_down;
+	nodeHandle_.param("ROI/top_gap",top_gap, 480);
+	nodeHandle_.param("ROI/bot_gap",bot_gap, 180);
+	nodeHandle_.param("ROI/top_height",top_height, 680);
+	nodeHandle_.param("ROI/bot_height",bot_height, 380);
+	nodeHandle_.param("ROI/extra",extra, 0);
+	nodeHandle_.param("ROI/extra_up",extra_up, 0);
+	nodeHandle_.param("ROI/extra_down",extra_down, 0);
+	corners_[0] = Point2f(top_gap + extra, bot_height);
+	corners_[1] = Point2f(width_ - top_gap + extra, bot_height);
+	corners_[2] = Point2f(bot_gap + extra, top_height);
+	corners_[3] = Point2f(width_ - bot_gap + extra, top_height);
+	wide_extra_upside_ = extra_up;
+	wide_extra_downside_ = extra_down;
 	warpCorners_[0] = Point2f(wide_extra_upside_, 0.0);
 	warpCorners_[1] = Point2f(width_, wide_extra_upside_);
 	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
@@ -246,7 +255,7 @@ Mat LaneDetector::detect_lines_sliding_window(Mat _frame) {
 
 	if (last_Llane_base_ != 0 || last_Rlane_base_ != 0) {
 
-		int distrib_width = 100;
+		int distrib_width = 120;
 		double sigma = distrib_width / 12.8;
 
 		int leftx_start = last_Llane_base_ - distrib_width / 2;
@@ -516,10 +525,11 @@ void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame) {
 
 			result_ = (Kp_ * err_) + (Ki_ * I_err_) + (Kd_ * D_err_); // PID
 			line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
-			line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
-			line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
+			//line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
+			//line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
 
 			center_position_ += (result_);
+			line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
 		}
 	}
 }

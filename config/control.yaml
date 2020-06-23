@@ -11,16 +11,25 @@ publishers:
     queue_size: 1
 
 params:
-  center_err: 510
-  target_speed: 1.0
+  center_err: 640
+  target_speed: 0.7
   angle_degree: 0.0
   speed_limits:
     max: 5.0
     min: 0.0
 
   angle_limits:
-    max: 30.0
-    min: -30.0
+    max: 60.0
+    min: -60.0
+
+ROI:
+  top_gap: 430
+  bot_gap: 100
+  top_height: 650
+  bot_height: 380
+  extra: -25
+  extra_up: 0
+  extra_down: 0
 
 LaneDetector:
   
@@ -30,8 +39,8 @@ LaneDetector:
   hls_max_th: 255
   
   pid_params:
-    Kp: 1.0
-    Ki: 0.00001
+    Kp: 0.7
+    Ki: 0.0001
     Kd: 0.0025
     dt: 0.1
 

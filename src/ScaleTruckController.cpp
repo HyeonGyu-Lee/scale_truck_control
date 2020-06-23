@@ -67,7 +67,9 @@ bool ScaleTruckController::isNodeRunning(void){
 void* ScaleTruckController::lanedetectInThread() {
     geometry_msgs::Twist msg;
     centerLine_ = laneDetector_.display_img(camImageCopy_, waitKeyDelay_, viewImage_);
-    AngleDegree_ = (centerLine_ - centerErr_)/centerErr_ * 90.0f; // -1 ~ 1 
+    float weight = (centerLine_ - centerErr_)/centerErr_;
+    weight = weight * fabs(weight) * fabs(weight);
+    AngleDegree_ = weight * AngleMax_ + 10.f; // -1 ~ 1 
     if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
       resultSpeed_ = 0.0f;
     else
@@ -78,6 +80,7 @@ void* ScaleTruckController::lanedetectInThread() {
     if(enableConsoleOutput_) {
       printf("\033[2J");
       printf("\033[1;1H");
+      printf("\nweight : %f ( - 1 ~ + 1 )", weight);
       printf("\nAngle  : %f degree", AngleDegree_);
       printf("\nSpeed  : %f m/s", resultSpeed_);
       printf("\nCenter : %d\n", centerLine_);

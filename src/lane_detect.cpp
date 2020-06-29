@@ -225,7 +225,7 @@ Mat LaneDetector::polyfit(vector<int> x_val, vector<int> y_val) {
 	return coef;
 }
 
-Mat LaneDetector::detect_lines_sliding_window(Mat _frame) {
+Mat LaneDetector::detect_lines_sliding_window(Mat _frame, bool _view) {
 	Mat frame, result;
 	int width = _frame.cols;
 	int height = _frame.rows;
@@ -331,18 +331,22 @@ Mat LaneDetector::detect_lines_sliding_window(Mat _frame) {
 				(nZ_y < (height - window_height * window)) && \
 				(nZ_x >= Lx_pos) && \
 				(nZ_x < (Lx_pos + margin * 2))) {
-				result.at<Vec3b>(nonZero.at<Point>(index))[0] = 255;
-				result.at<Vec3b>(nonZero.at<Point>(index))[1] = 0;
-				result.at<Vec3b>(nonZero.at<Point>(index))[2] = 0;
+	                        if(_view) {
+				  result.at<Vec3b>(nonZero.at<Point>(index))[0] = 255;
+				  result.at<Vec3b>(nonZero.at<Point>(index))[1] = 0;
+				  result.at<Vec3b>(nonZero.at<Point>(index))[2] = 0;
+				}
 				good_left_inds.push_back(index);
 			}
 			if ((nZ_y >= (Ry_pos)) && \
 				(nZ_y < (height - window_height * window)) && \
 				(nZ_x >= Rx_pos) && \
 				(nZ_x < (Rx_pos + margin * 2))) {
-				result.at<Vec3b>(nonZero.at<Point>(index))[0] = 0;
-				result.at<Vec3b>(nonZero.at<Point>(index))[1] = 0;
-				result.at<Vec3b>(nonZero.at<Point>(index))[2] = 255;
+	                        if(_view) {
+				  result.at<Vec3b>(nonZero.at<Point>(index))[0] = 0;
+				  result.at<Vec3b>(nonZero.at<Point>(index))[1] = 0;
+				  result.at<Vec3b>(nonZero.at<Point>(index))[2] = 255;
+				}
 				good_right_inds.push_back(index);
 			}
 		}
@@ -399,7 +403,7 @@ Mat LaneDetector::detect_lines_sliding_window(Mat _frame) {
 	return result;
 }
 
-Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
+Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame, bool _view) {
 	Mat new_frame, left_coef(left_coef_), right_coef(right_coef_), trans;
 	trans = getPerspectiveTransform(warpCorners_, corners_);
 	_frame.copyTo(new_frame);
@@ -435,9 +439,10 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 		const Point* right_points_point_ = (const cv::Point*) Mat(right_point).data;
 		int right_points_number_ = Mat(right_point).rows;
 
-		polylines(_sliding_frame, &left_points_point_, &left_points_number_, 1, false, Scalar(255, 200, 200), 15);
-		polylines(_sliding_frame, &right_points_point_, &right_points_number_, 1, false, Scalar(200, 200, 255), 15);
-
+	        if(_view) {
+		  polylines(_sliding_frame, &left_points_point_, &left_points_number_, 1, false, Scalar(255, 200, 200), 15);
+		  polylines(_sliding_frame, &right_points_point_, &right_points_number_, 1, false, Scalar(200, 200, 255), 15);
+                }
 		perspectiveTransform(left_point_f, warped_left_point, trans);
 		perspectiveTransform(right_point_f, warped_right_point, trans);
 
@@ -459,9 +464,10 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 		const Point* right_points_point = (const cv::Point*) Mat(right_points).data;
 		int right_points_number = Mat(right_points).rows;
 
-		polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 10);
-		polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 10);
-
+	        if(_view) {
+		  polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 10);
+		  polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 10);
+                }
 		left_point.clear();
 		right_point.clear();
 
@@ -479,7 +485,7 @@ void LaneDetector::clear_release() {
 	right_y_.clear();
 }
 
-void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame) {
+void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
 	Mat l_fit(left_coef_), r_fit(right_coef_);
 	vector<int> lx(left_x_), ly(left_y_), rx(right_x_), ry(right_y_);
 	int car_position = width_ / 2;
@@ -524,12 +530,13 @@ void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame) {
 			prev_err_ = err_;
 
 			result_ = (Kp_ * err_) + (Ki_ * I_err_) + (Kd_ * D_err_); // PID
-			line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
-			//line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
-			//line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
-
 			center_position_ += (result_);
-			line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
+			if(_view){
+			  line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
+			  //line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
+			  //line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
+			  line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
+			}
 		}
 	}
 }
@@ -541,9 +548,9 @@ int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 
 	warped_frame = warped_img(new_frame);
 	binary_frame = pipeline_img(warped_frame);
-	sliding_frame = detect_lines_sliding_window(binary_frame);
-	resized_frame = draw_lane(sliding_frame, new_frame);
-	calc_curv_rad_and_center_dist(resized_frame);
+	sliding_frame = detect_lines_sliding_window(binary_frame, _view);
+	resized_frame = draw_lane(sliding_frame, new_frame, _view);
+	calc_curv_rad_and_center_dist(resized_frame, _view);
 	clear_release();
         
 	if(_view) {

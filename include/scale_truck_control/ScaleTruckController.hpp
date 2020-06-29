@@ -22,6 +22,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
+#include <obstacle_detector/Obstacles.h>
 
 //OpenCV
 #include <cv_bridge/cv_bridge.h>
@@ -42,13 +43,15 @@ class ScaleTruckController {
     void init();
 
     void imageCallback(const sensor_msgs::ImageConstPtr &msg);
-
+    void objectCallback(const obstacle_detector::Obstacles &msg);
     bool publishControlMsg(const geometry_msgs::Twist msg);
 
     ros::NodeHandle nodeHandle_;
     ros::Publisher ControlDataPublisher_;
     ros::Subscriber imageSubscriber_;
-    
+    ros::Subscriber objectSubscriber_;
+
+    //image
     lane_detect::LaneDetector laneDetector_;
     bool viewImage_;
     int waitKeyDelay_;
@@ -62,9 +65,17 @@ class ScaleTruckController {
     float resultSpeed_;
     float centerErr_;
 
-    //Thread
+    //object
+    int ObjSegments_;
+    int ObjCircles_;
+    float distance_;
+    float TargetDist_;
 
+    //Thread
     std::thread controlThread_;
+
+    obstacle_detector::Obstacles Obstacle_;
+    boost::shared_mutex mutexObjectCallback_;
 
     std_msgs::Header imageHeader_;
     cv::Mat camImageCopy_;
@@ -83,7 +94,8 @@ class ScaleTruckController {
     bool getImageStatus(void);    
 
     void* lanedetectInThread();
-    //void* objectdetectInThread();
+    void* objectdetectInThread();
+    void displayConsole();
 };
 
 } /* namespace scale_truck_control */

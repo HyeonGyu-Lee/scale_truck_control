@@ -26,10 +26,10 @@ private:
 	Mat warped_back_img(Mat _frame);
 	Mat warped_img(Mat _frame);
 	Mat pipeline_img(Mat _frame);
-	Mat detect_lines_sliding_window(Mat _frame);
-	Mat draw_lane(Mat _sliding_frame, Mat _frame);
+	Mat detect_lines_sliding_window(Mat _frame, bool _view);
+	Mat draw_lane(Mat _sliding_frame, Mat _frame, bool _view);
 	void clear_release();
-	void calc_curv_rad_and_center_dist(Mat _frame);
+	void calc_curv_rad_and_center_dist(Mat _frame, bool _view);
 
         ros::NodeHandle nodeHandle_;
 	/********** Lane_detect data ***********/

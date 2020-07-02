@@ -72,15 +72,15 @@ bool ScaleTruckController::isNodeRunning(void){
 void* ScaleTruckController::lanedetectInThread() {
   centerLine_ = laneDetector_.display_img(camImageCopy_, waitKeyDelay_, viewImage_);
   float weight = (centerLine_ - centerErr_)/centerErr_;
-  weight = weight * fabs(weight) * fabs(weight);
+  weight = weight * fabs(weight);
   AngleDegree_ = weight * AngleMax_ + 10.f; // -1 ~ 1 
 }
 
 void* ScaleTruckController::objectdetectInThread() {
-  float dist;
+  float dist; 
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
-  distance_ = 25.f;
+  distance_ = 10.f;
   for(int i = 0; i < ObjCircles_; i++){
     dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
     if(distance_ >= dist)
@@ -88,9 +88,9 @@ void* ScaleTruckController::objectdetectInThread() {
   }
   if(distance_ > TargetDist_) { // TargetSpeed = 0.7, TargetDist_ = 1.0
     if(distance_ > (TargetDist_*2))
-      resultSpeed_ = TargetSpeed_ * 1.5f;
+      resultSpeed_ = TargetSpeed_ * 1.25f;
     else
-      resultSpeed_ = -sqrt((TargetSpeed_*TargetSpeed_*0.25f)*(distance_-2.f*TargetDist_)/(-TargetDist_)) + 1.5f*TargetSpeed_;
+      resultSpeed_ = -sqrt((TargetSpeed_*TargetSpeed_*0.25f)*(distance_-2.f*TargetDist_)/(-TargetDist_)) + 1.25f*TargetSpeed_;
   } else if(distance_ <= TargetDist_){ // distance_ < TargetDist_
     if(distance_ <= (TargetDist_*0.5f))
       resultSpeed_ = 0;
@@ -132,7 +132,7 @@ void ScaleTruckController::spin() {
   std::thread objectdetect_thread;
 
   int i = 0;
-  TargetDist_ = TargetSpeed_ + 0.3; // x + 0.3 = y
+  TargetDist_ = TargetSpeed_ + 0.5; // x + 0.5 = y
 
   while(!controlDone_) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
@@ -143,8 +143,8 @@ void ScaleTruckController::spin() {
     if(enableConsoleOutput_)
       displayConsole();
  
-    if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
-      resultSpeed_ = 0.0f;
+    //if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
+    //  resultSpeed_ = 0.0f;
  
     msg.angular.z = AngleDegree_;
     msg.linear.x = resultSpeed_;   

@@ -103,8 +103,8 @@ void* ScaleTruckController::objectdetectInThread() {
 void ScaleTruckController::displayConsole() {
   float weight = (centerLine_ - centerErr_)/centerErr_;
   weight = weight * fabs(weight) * fabs(weight);
-  printf("\033[2J");
-  printf("\033[1;1H");
+  //printf("\033[2J");
+  //printf("\033[1;1H");
   printf("\nweight : %f ( - 1 ~ + 1 )", weight);
   printf("\nAngle  : %f degree", AngleDegree_);
   printf("\nSpeed  : %f m/s", resultSpeed_);
@@ -137,7 +137,8 @@ void ScaleTruckController::spin() {
   while(!controlDone_) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
-    
+    printf("\033[2J");
+    printf("\033[1;1H");   
     lanedetect_thread.join();
     objectdetect_thread.join();
     

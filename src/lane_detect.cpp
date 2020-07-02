@@ -229,15 +229,16 @@ Mat LaneDetector::polyfit(vector<int> x_val, vector<int> y_val) {
 Mat LaneDetector::detect_lines_sliding_window(Mat _frame, bool _view) {
 	Mat frame, result;
 	int width = _frame.cols;
-	int height = _frame.rows;
-	_frame.copyTo(frame);
+	int height = _frame.rows;\
 
+	_frame.copyTo(frame);
 	Mat nonZero;
 	findNonZero(frame, nonZero);
 
 	vector<int> good_left_inds;
 	vector<int> good_right_inds;
 	int* hist = new int[width];
+
 	double* weight_distrib = new double[width];
 	for (int i = 0; i < width; i++) {
 		hist[i] = 0;
@@ -276,6 +277,7 @@ Mat LaneDetector::detect_lines_sliding_window(Mat _frame, bool _view) {
 			}
 		}
 	}
+
 	cvtColor(frame, result, COLOR_GRAY2BGR);
 
 	int mid_point = width / 2; // 320
@@ -544,49 +546,14 @@ void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
 
 int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 	Mat new_frame, warped_frame, binary_frame, sliding_frame, resized_frame;
-        volatile time_t start, end;
-        double resize_t, warped_t, binary_t, sliding_t, drawlan_t, center_t;
-
-	start = clock();
 
 	resize(_frame, new_frame, Size(width_, height_));
-        
-	end = clock();
-	resize_t = (double)(end - start);
-        start = clock();
-
 	warped_frame = warped_img(new_frame);
-
-	end = clock();
-	warped_t = (double)(end - start);
-        start = clock();
-
 	binary_frame = pipeline_img(warped_frame);
-
-	end = clock();
-	binary_t = (double)(end - start);
-        start = clock();
-
 	sliding_frame = detect_lines_sliding_window(binary_frame, _view);
-
-	end = clock();
-	sliding_t = (double)(end - start);
-        start = clock();
-
 	resized_frame = draw_lane(sliding_frame, new_frame, _view);
-
-	end = clock();
-	drawlan_t = (double)(end - start);
-        start = clock();
-
 	calc_curv_rad_and_center_dist(resized_frame, _view);
-	
-	end = clock();
-	center_t = (double)(end - start);
-        start = clock();
 	clear_release();
-        
-	printf("\nresize : %6.0f\nwarped : %6.0f\nbinary : %6.0f\nsliding: %6.0f\ndrawlan: %6.0f\ncenter : %6.0f\n", resize_t, warped_t, binary_t, sliding_t, drawlan_t, center_t);
 
 	if(_view) {
 	  namedWindow("Window1");

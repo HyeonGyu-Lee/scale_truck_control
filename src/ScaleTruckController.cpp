@@ -88,9 +88,9 @@ void* ScaleTruckController::objectdetectInThread() {
   }
   if(distance_ > TargetDist_) { // TargetSpeed = 0.7, TargetDist_ = 1.0
     if(distance_ > (TargetDist_*2))
-      resultSpeed_ = TargetSpeed_ * 1.25f;
+      resultSpeed_ = TargetSpeed_ * 1.5f;
     else
-      resultSpeed_ = -sqrt((TargetSpeed_*TargetSpeed_*0.25f)*(distance_-2.f*TargetDist_)/(-TargetDist_)) + 1.25f*TargetSpeed_;
+      resultSpeed_ = -sqrt((TargetSpeed_*TargetSpeed_*0.25f)*(distance_-2.f*TargetDist_)/(-TargetDist_)) + 1.5f*TargetSpeed_;
   } else if(distance_ <= TargetDist_){ // distance_ < TargetDist_
     if(distance_ <= (TargetDist_*0.5f))
       resultSpeed_ = 0;

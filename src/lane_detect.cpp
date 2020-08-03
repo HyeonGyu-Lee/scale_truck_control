@@ -9,7 +9,6 @@ namespace lane_detect {
 LaneDetector::LaneDetector(ros::NodeHandle nh)
   : nodeHandle_(nh) {
 	/********** PID control ***********/
-	center_position_ = 640;
 	prev_err_ = 0;
 
 	last_Llane_base_ = 0;
@@ -18,8 +17,9 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 
-        width_ = 1280;
-	height_ = 720;
+        width_ = 320;//640;//1280;
+	height_ = 180;//360;//720;
+	center_position_ = width_/2;
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
@@ -283,14 +283,14 @@ Mat LaneDetector::detect_lines_sliding_window(Mat _frame, bool _view) {
 	int mid_point = width / 2; // 320
 	int quarter_point = mid_point / 2; // 160
 	int n_windows = 9;
-	int margin = 100;
-	int min_pix = 200;
+	int margin = 100/4;
+	int min_pix = 200/4;
 
 	int window_width = margin;
 	int window_height = height / n_windows;
 
 	int offset = 0;
-	int range = 120;
+	int range = 120/4;
 	int Lstart = quarter_point - offset; // 160 - 0
 	int Rstart = mid_point + quarter_point + offset; // 480 - 0
 	// mid_point = 320, Lstart +- range = 40 ~ 280
@@ -316,10 +316,10 @@ Mat LaneDetector::detect_lines_sliding_window(Mat _frame, bool _view) {
                 if(_view) {
 		  rectangle(result, \
 			Rect(Lx_pos, Ly_pos, window_width * 2, window_height), \
-			Scalar(255, 50, 100), 2);
+			Scalar(255, 50, 100), 1);
 		  rectangle(result, \
 			Rect(Rx_pos, Ry_pos, window_width * 2, window_height), \
-			Scalar(100, 50, 255), 2);
+			Scalar(100, 50, 255), 1);
                 }
 		uchar* data_output = result.data;
 		int nZ_y, nZ_x;
@@ -443,8 +443,8 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame, bool _view) {
 		int right_points_number_ = Mat(right_point).rows;
 
 	        if(_view) {
-		  polylines(_sliding_frame, &left_points_point_, &left_points_number_, 1, false, Scalar(255, 200, 200), 15);
-		  polylines(_sliding_frame, &right_points_point_, &right_points_number_, 1, false, Scalar(200, 200, 255), 15);
+		  polylines(_sliding_frame, &left_points_point_, &left_points_number_, 1, false, Scalar(255, 200, 200), 5);
+		  polylines(_sliding_frame, &right_points_point_, &right_points_number_, 1, false, Scalar(200, 200, 255), 5);
                 }
 		perspectiveTransform(left_point_f, warped_left_point, trans);
 		perspectiveTransform(right_point_f, warped_right_point, trans);
@@ -468,8 +468,8 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame, bool _view) {
 		int right_points_number = Mat(right_points).rows;
 
 	        if(_view) {
-		  polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 10);
-		  polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 10);
+		  polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 5);
+		  polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 5);
                 }
 		left_point.clear();
 		right_point.clear();

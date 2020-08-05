@@ -1,7 +1,7 @@
 subscribers:
   camera_reading:
     topic: /usb_cam/image_raw
-    queue_size: 1
+    queue_size: 10
   obstacle_reading:
     topic: /raw_obstacles
     queue_size: 100
@@ -12,7 +12,6 @@ publishers:
     queue_size: 1
 
 params:
-  center_err: 160
   target_speed: 0.5
   angle_degree: 0.0
   speed_limits:
@@ -23,11 +22,13 @@ params:
     min: -60.0
 
 ROI:
-  top_gap: 107
-  bot_gap: 25
-  top_height: 162
-  bot_height: 95
-  extra: -6
+  width: 320
+  height: 180
+  top_gap: 0.336
+  bot_gap: 0.078
+  top_height: 0.903
+  bot_height: 0.528
+  extra: -0.02
   extra_up: 0
   extra_down: 0
 

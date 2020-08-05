@@ -17,20 +17,30 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 
-        width_ = 320;//640;//1280;
-	height_ = 180;//360;//720;
+	nodeHandle_.param("ROI/width", width_, 1280);
+	nodeHandle_.param("ROI/height", height_, 720);
+        //width_ = 320;//640;//1280;
+	//height_ = 180;//360;//720;
 	center_position_ = width_/2;
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
+	float t_gap, b_gap, t_height, b_height, f_extra;
 	int top_gap, bot_gap, top_height, bot_height, extra, extra_up, extra_down;
-	nodeHandle_.param("ROI/top_gap",top_gap, 480);
-	nodeHandle_.param("ROI/bot_gap",bot_gap, 180);
-	nodeHandle_.param("ROI/top_height",top_height, 680);
-	nodeHandle_.param("ROI/bot_height",bot_height, 380);
-	nodeHandle_.param("ROI/extra",extra, 0);
+	nodeHandle_.param("ROI/top_gap",t_gap, 0.336f);
+	nodeHandle_.param("ROI/bot_gap",b_gap, 0.078f);
+	nodeHandle_.param("ROI/top_height",t_height, 0.903f);
+	nodeHandle_.param("ROI/bot_height",b_height, 0.528f);
+	nodeHandle_.param("ROI/extra",f_extra, 0.0f);
 	nodeHandle_.param("ROI/extra_up",extra_up, 0);
 	nodeHandle_.param("ROI/extra_down",extra_down, 0);
+
+        top_gap = width_ * t_gap; 
+        bot_gap = width_ * b_gap;
+        top_height = height_ * t_height;
+        bot_height = height_ * b_height;
+	extra = width_ * f_extra;
+
 	corners_[0] = Point2f(top_gap + extra, bot_height);
 	corners_[1] = Point2f(width_ - top_gap + extra, bot_height);
 	corners_[2] = Point2f(bot_gap + extra, top_height);

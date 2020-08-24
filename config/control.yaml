@@ -12,20 +12,21 @@ publishers:
     queue_size: 1
 
 params:
-  target_speed: 0.5
+  center_err: 320
+  target_speed: 0.35
   angle_degree: 0.0
   speed_limits:
     max: 5.0
     min: 0.0
   angle_limits:
-    max: 60.0
-    min: -60.0
+    max: 55.0
+    min: -55.0
 
 ROI:
-  width: 320
-  height: 180
+  width: 640
+  height: 360
   top_gap: 0.336
-  bot_gap: 0.078
+  bot_gap: 0.068
   top_height: 0.903
   bot_height: 0.528
   extra: -0.02

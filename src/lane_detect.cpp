@@ -1,4 +1,4 @@
-#include "lane_detect/lane_detect.h"
+#include "lane_detect/lane_detect.hpp"
 #include <time.h>
 
 using namespace std;
@@ -376,7 +376,7 @@ LaneDetector::~LaneDetector(void) {
 				circle(result, Point(Llane_current, Ly_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height/2));
-				cout << "L : " << Llane_current << " / " << Ly_pos + (window_height / 2) << endl;
+				//cout << "L : " << Llane_current << " / " << Ly_pos + (window_height / 2) << endl;
 			}
 			if (good_right_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_right_inds.size());
@@ -387,7 +387,7 @@ LaneDetector::~LaneDetector(void) {
 				circle(result, Point(Rlane_current, Ry_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height/2));
-				cout << "R : " << Rlane_current << " / " << Ry_pos + (window_height / 2) << endl;
+				//cout << "R : " << Rlane_current << " / " << Ry_pos + (window_height / 2) << endl;
 			}
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);

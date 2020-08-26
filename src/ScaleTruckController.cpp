@@ -70,10 +70,11 @@ bool ScaleTruckController::isNodeRunning(void){
 }
 
 void* ScaleTruckController::lanedetectInThread() {
-  centerLine_ = laneDetector_.display_img(camImageCopy_, waitKeyDelay_, viewImage_);
+  Mat camImageTmp = camImageCopy_.clone();
+  centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   float weight = (centerLine_ - centerErr_)/centerErr_;
-  weight = weight * fabs(weight);
-  AngleDegree_ = weight * AngleMax_ + 10.f; // -1 ~ 1 
+  //weight = weight * fabs(weight);
+  AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
 }
 
 void* ScaleTruckController::objectdetectInThread() {
@@ -134,7 +135,7 @@ void ScaleTruckController::spin() {
   int i = 0;
   TargetDist_ = TargetSpeed_ + 0.5; // x + 0.5 = y
 
-  const auto wait_image = std::chrono::milliseconds(33);
+  const auto wait_image = std::chrono::milliseconds(20);
 
   while(!controlDone_) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
@@ -147,9 +148,8 @@ void ScaleTruckController::spin() {
  
     //if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
     //  resultSpeed_ = 0.0f;
- 
-    msg.angular.z = AngleDegree_;
-    msg.linear.x = resultSpeed_;   
+    msg.angular.z = AngleDegree;
+    msg.linear.x = resultSpeed;   
     ControlDataPublisher_.publish(msg);
     if(!isNodeRunning()) {
       controlDone_ = true;

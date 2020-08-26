@@ -292,8 +292,8 @@ LaneDetector::~LaneDetector(void) {
 
 		int mid_point = width / 2; // 320
 		int quarter_point = mid_point / 2; // 160
-		int n_windows = 12;
-		int margin = 100 * width / 1280;
+		int n_windows = 9;
+		int margin = 120 * width / 1280;
 		int min_pix = 50 * width / 1280;
 
 		int window_width = margin;
@@ -337,7 +337,7 @@ LaneDetector::~LaneDetector(void) {
 			good_left_inds.clear();
 			good_right_inds.clear();
 
-			for (unsigned int index = (nonZero.total() - 1); index > 1; index--) {
+			for (unsigned int index = (nonZero.total() - 2); index > 1; index--) {
 				nZ_y = nonZero.at<Point>(index).y;
 				nZ_x = nonZero.at<Point>(index).x;
 					
@@ -513,8 +513,8 @@ LaneDetector::~LaneDetector(void) {
 			if (_view) {
 				polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 5);
 				polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 5);
-				polylines(new_frame, &center_points_point, &center_points_number, 1, false, Scalar(100, 255, 100), 5);
-			}
+		 		polylines(new_frame, &center_points_point, &center_points_number, 1, false, Scalar(100, 255, 100), 5);
+		 	}
 			left_point.clear();
 			right_point.clear();
 			center_point.clear();
@@ -573,7 +573,7 @@ LaneDetector::~LaneDetector(void) {
 		if (!l_fit.empty() && !r_fit.empty()) {
 			//lane_center_position = (l_fit.at<float>(0, 0) + r_fit.at<float>(0, 0)) / 2;
 			//lane_center_position = c_fit.at<float>(0, 0);
-			int i = height_/2;
+			int i = height_ * 3/4;
 			lane_center_position = (int)((c_fit.at<float>(2, 0) * pow(i, 2)) + (c_fit.at<float>(1, 0) * i) + c_fit.at<float>(0, 0));
 			
 			if ((lane_center_position > 0) && (lane_center_position < (float)width_)) {
@@ -589,7 +589,7 @@ LaneDetector::~LaneDetector(void) {
 					line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
 					//line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
 					//line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
-					line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
+					//line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
 				}
 			}
 		}

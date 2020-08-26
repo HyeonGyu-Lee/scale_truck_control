@@ -148,8 +148,8 @@ void ScaleTruckController::spin() {
  
     //if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
     //  resultSpeed_ = 0.0f;
-    msg.angular.z = AngleDegree;
-    msg.linear.x = resultSpeed;   
+    msg.angular.z = AngleDegree_;
+    msg.linear.x = resultSpeed_;   
     ControlDataPublisher_.publish(msg);
     if(!isNodeRunning()) {
       controlDone_ = true;

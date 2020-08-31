@@ -164,31 +164,31 @@ LaneDetector::~LaneDetector(void) {
 		int i, j, k, n, N;
 		N = (int)x_val.size();
 		n = 2;
-		float* x, * y;
-		x = new float[N];
-		y = new float[N];
+		double* x, * y;
+		x = new double[N];
+		y = new double[N];
 		for (int q = 0; q < N; q++) {
-			x[q] = (float)(x_val[q]);
-			y[q] = (float)(y_val[q]);
+			x[q] = (double)(x_val[q]);
+			y[q] = (double)(y_val[q]);
 		}
-		float* X;
-		X = new float[2 * n + 1];                        //Array that will store the values of sigma(xi),sigma(xi^2),sigma(xi^3)....sigma(xi^2n)
+		double* X;
+		X = new double[2 * n + 1];                        //Array that will store the values of sigma(xi),sigma(xi^2),sigma(xi^3)....sigma(xi^2n)
 		for (i = 0; i < (2 * n + 1); i++)
 		{
 			X[i] = 0;
 			for (j = 0; j < N; j++)
 				X[i] = X[i] + pow(x[j], i);        //consecutive positions of the array will store N,sigma(xi),sigma(xi^2),sigma(xi^3)....sigma(xi^2n)
 		}
-		float** B, * a;
-		B = new float* [n + 1];
+		double** B, * a;
+		B = new double* [n + 1];
 		for (int i = 0; i < (n + 1); i++)
-			B[i] = new float[n + 2];
-		a = new float[n + 1];            //B is the Normal matrix(augmented) that will store the equations, 'a' is for value of the final coefficients
+			B[i] = new double[n + 2];
+		a = new double[n + 1];            //B is the Normal matrix(augmented) that will store the equations, 'a' is for value of the final coefficients
 		for (i = 0; i <= n; i++)
 			for (j = 0; j <= n; j++)
 				B[i][j] = X[i + j];            //Build the Normal matrix by storing the corresponding coefficients at the right positions except the last column of the matrix
-		float* Y;
-		Y = new float[n + 1];                    //Array to store the values of sigma(yi),sigma(xi*yi),sigma(xi^2*yi)...sigma(xi^n*yi)
+		double* Y;
+		Y = new double[n + 1];                    //Array to store the values of sigma(yi),sigma(xi*yi),sigma(xi^2*yi)...sigma(xi^n*yi)
 		for (i = 0; i < (n + 1); i++)
 		{
 			Y[i] = 0;
@@ -204,7 +204,7 @@ LaneDetector::~LaneDetector(void) {
 				if (B[i][i] < B[k][i])
 					for (j = 0; j <= n; j++)
 					{
-						float temp = B[i][j];
+						double temp = B[i][j];
 						B[i][j] = B[k][j];
 						B[k][j] = temp;
 					}
@@ -212,7 +212,7 @@ LaneDetector::~LaneDetector(void) {
 		for (i = 0; i < (n - 1); i++)            //loop to perform the gauss elimination
 			for (k = i + 1; k < n; k++)
 			{
-				float t = B[k][i] / B[i][i];
+				double t = B[k][i] / B[i][i];
 				for (j = 0; j <= n; j++)
 					B[k][j] = B[k][j] - t * B[i][j];    //make the elements below the pivot elements equal to zero or elimnate the variables
 			}

@@ -63,10 +63,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 
 }
 
-LaneDetector::~LaneDetector(void) {
-	clear_release();
-}
-	
+	LaneDetector::~LaneDetector(void) {
+		clear_release();
+	}
+
 	Mat LaneDetector::warped_img(Mat _frame) {
 		Mat result, trans;
 		trans = getPerspectiveTransform(corners_, warpCorners_);
@@ -239,9 +239,9 @@ LaneDetector::~LaneDetector(void) {
 	Mat LaneDetector::detect_lines_sliding_window(Mat _frame, bool _view) {
 		Mat frame, result;
 		int width = _frame.cols;
-		int height = _frame.rows; \
+		int height = _frame.rows;
 
-			_frame.copyTo(frame);
+		_frame.copyTo(frame);
 		Mat nonZero;
 		findNonZero(frame, nonZero);
 
@@ -254,8 +254,8 @@ LaneDetector::~LaneDetector(void) {
 			hist[i] = 0;
 		}
 
-		int hist_Max = 0;
-		for (int j = 0; j < height; j++) {
+		//int hist_Max = 0; 
+		for (int j = (height / 2); j < height; j++) { // hist 범위 절반부터 읽기
 			for (int i = 0; i < width; i++) {
 				if (frame.at <uchar>(j, i) == 255) {
 					hist[i] += 1;
@@ -263,8 +263,8 @@ LaneDetector::~LaneDetector(void) {
 			}
 		}
 
-		hist_Max = arrMaxIdx(hist, 0, width, width);
-
+		//hist_Max = arrMaxIdx(hist, 0, width, width);
+		/*
 		if (last_Llane_base_ != 0 || last_Rlane_base_ != 0) {
 
 			int distrib_width = 120;
@@ -286,7 +286,7 @@ LaneDetector::~LaneDetector(void) {
 					hist[i] *= (int)weight_distrib[i];
 				}
 			}
-		}
+		}*/
 
 		cvtColor(frame, result, COLOR_GRAY2BGR);
 
@@ -315,11 +315,16 @@ LaneDetector::~LaneDetector(void) {
 		last_Llane_base_ = Llane_base;
 		last_Rlane_base_ = Rlane_base;
 
+		int L_prev = Llane_current;
+	    int R_prev = Rlane_current;
+		int L_gap = 0;
+		int R_gap = 0;
+
 		unsigned int index;
 
 		for (int window = 0; window < n_windows; window++) {
-			int Ly_pos = height - (window + 1) * window_height-1; // win_y_low , win_y_high = win_y_low - window_height
-			int Ry_pos = height - (window + 1) * window_height-1;
+			int Ly_pos = height - (window + 1) * window_height - 1; // win_y_low , win_y_high = win_y_low - window_height
+			int Ry_pos = height - (window + 1) * window_height - 1;
 
 			int Lx_pos = Llane_current - margin; // win_xleft_low, win_xleft_high = win_xleft_low + margin*2
 			int Rx_pos = Rlane_current - margin; // win_xrignt_low, win_xright_high = win_xright_low + margin*2
@@ -340,7 +345,7 @@ LaneDetector::~LaneDetector(void) {
 			for (unsigned int index = (nonZero.total() - 2); index > 1; index--) {
 				nZ_y = nonZero.at<Point>(index).y;
 				nZ_x = nonZero.at<Point>(index).x;
-					
+
 				if ((nZ_y >= Ly_pos) && \
 					(nZ_y < (height - window_height * window)) && \
 					(nZ_x >= Lx_pos) && \
@@ -367,32 +372,50 @@ LaneDetector::~LaneDetector(void) {
 			int Lsum, Rsum;
 			Lsum = Rsum = 0;
 			unsigned int _size;
+
 			if (good_left_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_left_inds.size());
 				for (index = 0; index < _size; index++) {
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
 				}
 				Llane_current = Lsum / _size;
-				circle(result, Point(Llane_current, Ly_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
+				//circle(result, Point(Llane_current, Ly_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
 				left_x_.insert(left_x_.end(), Llane_current);
-				left_y_.insert(left_y_.end(), Ly_pos + (window_height/2));
+				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 				//cout << "L : " << Llane_current << " / " << Ly_pos + (window_height / 2) << endl;
-			}
+			} else
+				Llane_current += (L_gap);
+
 			if (good_right_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_right_inds.size());
 				for (index = 0; index < _size; index++) {
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
 				}
 				Rlane_current = Rsum / _size;
-				circle(result, Point(Rlane_current, Ry_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
+				//circle(result, Point(Rlane_current, Ry_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
 				right_x_.insert(right_x_.end(), Rlane_current);
-				right_y_.insert(right_y_.end(), Ry_pos + (window_height/2));
+				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 				//cout << "R : " << Rlane_current << " / " << Ry_pos + (window_height / 2) << endl;
+			} else
+				Rlane_current += (R_gap);
+			if (window != 0) {
+				if (Rlane_current != R_prev) {
+					R_gap = (Rlane_current - R_prev);
+				}
+
+				if (Llane_current != L_prev) {
+					L_gap = (Llane_current - L_prev);
+				}
 			}
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
+				//circle(result, Point((Llane_current + Rlane_current) / 2, Ly_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
 			}
+
+			L_prev = Llane_current;
+			R_prev = Rlane_current;
+
 
 			//left_lane_inds_.insert(left_lane_inds_.end(), good_left_inds.begin(), good_left_inds.end());
 			//right_lane_inds_.insert(right_lane_inds_.end(), good_right_inds.begin(), good_right_inds.end());
@@ -513,8 +536,8 @@ LaneDetector::~LaneDetector(void) {
 			if (_view) {
 				polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 5);
 				polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 5);
-		 		polylines(new_frame, &center_points_point, &center_points_number, 1, false, Scalar(100, 255, 100), 5);
-		 	}
+				polylines(new_frame, &center_points_point, &center_points_number, 1, false, Scalar(100, 255, 100), 5);
+			}
 			left_point.clear();
 			right_point.clear();
 			center_point.clear();
@@ -546,10 +569,8 @@ LaneDetector::~LaneDetector(void) {
 
 		float ym_per_pix = 3.048f / 100.f;
 		/*float xm_per_pix = 3.7f / 378.0f;
-
 		Mat left_coef_cr(3, 1, CV_32F);
 		Mat right_coef_cr(3, 1, CV_32F);
-
 		if (lx.size() != 0 && rx.size() != 0) {
 			for (int i = 0; i < lx.size(); i++) {
 				lx[i] = lx[i] * xm_per_pix;
@@ -559,13 +580,10 @@ LaneDetector::~LaneDetector(void) {
 				rx[i] = rx[i] * xm_per_pix;
 				ry[i] = ry[i] * ym_per_pix;
 			}
-
 			left_coef_cr = polyfit(lx, ly);
 			right_coef_cr = polyfit(rx, ry);
-
 			left_cr = powf((1 + powf(2 * left_coef_cr.at<float>(2, 0) * 0 * xm_per_pix + left_coef_cr.at<float>(1, 0), 2)), 1.5f) / fabs(2 * left_coef_cr.at<float>(2, 0) + 0.000001f);
 			right_cr = powf((1 + powf(2 * right_coef_cr.at<float>(2, 0) * 0 * xm_per_pix + right_coef_cr.at<float>(1, 0), 2)), 1.5f) / fabs(2 * right_coef_cr.at<float>(2, 0) + 0.000001f);
-
 			left_curve_radius_ = left_cr;
 			right_curve_radius_ = right_cr;
 		}*/
@@ -573,9 +591,9 @@ LaneDetector::~LaneDetector(void) {
 		if (!l_fit.empty() && !r_fit.empty()) {
 			//lane_center_position = (l_fit.at<float>(0, 0) + r_fit.at<float>(0, 0)) / 2;
 			//lane_center_position = c_fit.at<float>(0, 0);
-			int i = height_ * 3/4;
+			int i = height_ * 3 / 4;
 			lane_center_position = (int)((c_fit.at<float>(2, 0) * pow(i, 2)) + (c_fit.at<float>(1, 0) * i) + c_fit.at<float>(0, 0));
-			
+
 			if ((lane_center_position > 0) && (lane_center_position < (float)width_)) {
 				center_position = (car_position - lane_center_position) * ym_per_pix;
 				err_ = (float)lane_center_position - center_position_;
@@ -586,7 +604,7 @@ LaneDetector::~LaneDetector(void) {
 				result_ = (Kp_ * err_) + (Ki_ * I_err_) + (Kd_ * D_err_); // PID
 				center_position_ += (result_);
 				if (_view) {
-					line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
+					//line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
 					//line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
 					//line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
 					//line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);

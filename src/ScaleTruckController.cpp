@@ -26,7 +26,8 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("image_view/enable_opencv", viewImage_, true);
   nodeHandle_.param("image_view/wait_key_delay", waitKeyDelay_, 3);
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
-  nodeHandle_.param("params/target_speed", TargetSpeed_, 1.0f); // m/s
+  nodeHandle_.param("params/target_speed", TargetSpeed_, 0.5f); // m/s
+  nodeHandle_.param("params/target_dist", TargetDist_, 0.3f); // m
   nodeHandle_.param("params/angle_degree", AngleDegree_, 0.0f); // degree
   nodeHandle_.param("params/angle_limits/max",AngleMax_, 60.0f);
   nodeHandle_.param("params/angle_limits/min",AngleMin_, -60.0f);
@@ -87,34 +88,30 @@ void* ScaleTruckController::objectdetectInThread() {
     if(distance_ >= dist)
       distance_ = dist;
   }
-  if(distance_ > TargetDist_) { // TargetSpeed = 0.7, TargetDist_ = 1.0
+
+  if(distance_ > TargetDist_) { // TargetSpeed = 0.6, TargetDist_ = 0.3
     if(distance_ > (TargetDist_*2))
-      resultSpeed_ = TargetSpeed_ * 1.0f;
+      resultSpeed_ = TargetSpeed_;
     else
-      resultSpeed_ = -sqrt((TargetSpeed_*TargetSpeed_*0.25f)*(distance_-2.f*TargetDist_)/(-TargetDist_)) + 1.5f*TargetSpeed_;
-  } else if(distance_ <= TargetDist_){ // distance_ < TargetDist_
-    if(distance_ <= (TargetDist_*0.5f))
+      resultSpeed_ = TargetSpeed_*0.75;
+  } else { // distance_ < TargetDist_
       resultSpeed_ = 0;
-    else
-      resultSpeed_ = sqrt((TargetSpeed_*TargetSpeed_*2.f)*(distance_-TargetDist_*0.5f)/TargetDist_);
   }
 
 }
 
 void ScaleTruckController::displayConsole() {
-  float weight = (centerLine_ - centerErr_)/centerErr_;
-  weight = weight * fabs(weight) * fabs(weight);
   printf("\033[2J");
   printf("\033[1;1H");
-  printf("\nweight : %f ( - 1 ~ + 1 )", weight);
   printf("\nAngle  : %f degree", AngleDegree_);
   printf("\nSpeed  : %f m/s", resultSpeed_);
   printf("\nCenter : %d", centerLine_);
+  printf("\nDist   : %f", distance_);
+  printf("\nMinDist: %f", TargetDist_);
   if(ObjSegments_ > 0)
     printf("\nSegs   : %d", ObjSegments_);
   if(ObjCircles_ > 0)
     printf("\nCirs   : %d", ObjCircles_);
-  printf("\nDist    : %f", distance_);
   printf("\n");
 }
 
@@ -133,7 +130,6 @@ void ScaleTruckController::spin() {
   std::thread objectdetect_thread;
 
   int i = 0;
-  TargetDist_ = TargetSpeed_ + 0.5; // x + 0.5 = y
 
   const auto wait_image = std::chrono::milliseconds(20);
 

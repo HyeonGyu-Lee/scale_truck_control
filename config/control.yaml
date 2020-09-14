@@ -13,7 +13,8 @@ publishers:
 
 params:
   center_err: 640
-  target_speed: 0.4
+  target_speed: 0.6
+  target_Dist: 0.3
   angle_degree: 0.0
   speed_limits:
     max: 5.0

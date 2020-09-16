@@ -591,7 +591,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		if (!l_fit.empty() && !r_fit.empty()) {
 			//lane_center_position = (l_fit.at<float>(0, 0) + r_fit.at<float>(0, 0)) / 2;
 			//lane_center_position = c_fit.at<float>(0, 0);
-			int i = height_ * 3 / 4;
+			int i = height_ * 1 / 4;
 			lane_center_position = (int)((c_fit.at<float>(2, 0) * pow(i, 2)) + (c_fit.at<float>(1, 0) * i) + c_fit.at<float>(0, 0));
 
 			if ((lane_center_position > 0) && (lane_center_position < (float)width_)) {

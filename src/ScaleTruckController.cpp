@@ -27,7 +27,10 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("image_view/wait_key_delay", waitKeyDelay_, 3);
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
   nodeHandle_.param("params/target_speed", TargetSpeed_, 0.5f); // m/s
+  nodeHandle_.param("params/safety_speed", SafetySpeed_, 0.3f); // m/s
+  nodeHandle_.param("params/speed_mode", speed_mode_, 4); // m/s
   nodeHandle_.param("params/target_dist", TargetDist_, 0.3f); // m
+  nodeHandle_.param("params/safety_dist", SafetyDist_, 1.0f); // m
   nodeHandle_.param("params/angle_degree", AngleDegree_, 0.0f); // degree
   nodeHandle_.param("params/angle_limits/max",AngleMax_, 60.0f);
   nodeHandle_.param("params/angle_limits/min",AngleMin_, -60.0f);
@@ -74,7 +77,6 @@ void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
   centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   float weight = (centerLine_ - centerErr_)/centerErr_;
-  //weight = weight * fabs(weight);
   AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
 }
 
@@ -89,14 +91,17 @@ void* ScaleTruckController::objectdetectInThread() {
       distance_ = dist;
   }
 
-  if(distance_ > TargetDist_) { // TargetSpeed = 0.6, TargetDist_ = 0.3
-    if(distance_ > (TargetDist_*2))
-      resultSpeed_ = TargetSpeed_;
-    else
-      resultSpeed_ = TargetSpeed_*0.75;
-  } else { // distance_ < TargetDist_
-      resultSpeed_ = 0;
-  }
+  if(distance_ <= TargetDist_) {
+    resultSpeed_ = 0;
+  } else if(distance_ <= SafetyDist_) {
+    for(int i = 1; i <= speed_mode_; i++) {
+      if(distance_ < (TargetDist_ + (dist_level_*i))) {
+          resultSpeed_ = (TargetSpeed_ - SafetySpeed_)*(i/(float)speed_mode_) + SafetySpeed_;
+        break;
+      }
+    }
+  } else
+    resultSpeed_ = TargetSpeed_;
 
 }
 
@@ -128,6 +133,8 @@ void ScaleTruckController::spin() {
   geometry_msgs::Twist msg;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
+  
+  dist_level_ = (SafetyDist_ - TargetDist_)/speed_mode_;
 
   int i = 0;
 

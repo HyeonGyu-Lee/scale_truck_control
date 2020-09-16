@@ -70,6 +70,10 @@ class ScaleTruckController {
     int ObjCircles_;
     float distance_;
     float TargetDist_;
+    float SafetyDist_;
+    float SafetySpeed_;
+    float dist_level_;
+    int speed_mode_;
 
     //Thread
     std::thread controlThread_;

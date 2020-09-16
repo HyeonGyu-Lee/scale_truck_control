@@ -90,13 +90,13 @@ void* ScaleTruckController::objectdetectInThread() {
     if(distance_ >= dist)
       distance_ = dist;
   }
-
+  float tmp = 1.0f / speed_mode_;
   if(distance_ <= TargetDist_) {
     resultSpeed_ = 0;
   } else if(distance_ <= SafetyDist_) {
     for(int i = 1; i <= speed_mode_; i++) {
       if(distance_ < (TargetDist_ + (dist_level_*i))) {
-          resultSpeed_ = (TargetSpeed_ - SafetySpeed_)*(i/(float)speed_mode_) + SafetySpeed_;
+          resultSpeed_ = (TargetSpeed_ - SafetySpeed_)*tmp + SafetySpeed_;
         break;
       }
     }

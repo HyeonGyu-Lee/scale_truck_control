@@ -19,8 +19,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
-        //width_ = 320;//640;//1280;
-	//height_ = 180;//360;//720;
 	center_position_ = width_/2;
 	corners_.resize(4);
 	warpCorners_.resize(4);
@@ -591,7 +589,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		if (!l_fit.empty() && !r_fit.empty()) {
 			//lane_center_position = (l_fit.at<float>(0, 0) + r_fit.at<float>(0, 0)) / 2;
 			//lane_center_position = c_fit.at<float>(0, 0);
-			int i = height_ * 1 / 4;
+			int i = height_;
 			lane_center_position = (int)((c_fit.at<float>(2, 0) * pow(i, 2)) + (c_fit.at<float>(1, 0) * i) + c_fit.at<float>(0, 0));
 
 			if ((lane_center_position > 0) && (lane_center_position < (float)width_)) {

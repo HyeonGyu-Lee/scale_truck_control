@@ -12,7 +12,7 @@ publishers:
     queue_size: 1
 
 params:
-  center_err: 320
+  center_err: 640
   speed_mode: 4
   target_speed: 0.6
   safety_speed: 0.3
@@ -27,8 +27,8 @@ params:
     min: -60.0
 
 ROI:
-  width: 640
-  height: 360
+  width: 1280
+  height: 720
   top_gap: 0.326
   bot_gap: 0.098
   top_height: 0.903

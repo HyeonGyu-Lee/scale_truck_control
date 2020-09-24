@@ -13,10 +13,10 @@ publishers:
 
 params:
   center_err: 640
-  speed_mode: 5
+  speed_mode: 4
   target_speed: 0.6
-  safety_speed: 0.2
-  target_dist: 0.5
+  safety_speed: 0.1
+  target_dist: 0.3
   safety_dist: 1.0
   angle_degree: 0.0
   speed_limits:

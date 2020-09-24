@@ -76,7 +76,7 @@ bool ScaleTruckController::isNodeRunning(void){
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
   centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
-  float weight = (centerLine_ - centerErr_)/centerErr_;
+  float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);
   AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
 }
 

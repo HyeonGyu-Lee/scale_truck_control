@@ -35,6 +35,9 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/angle_limits/max",AngleMax_, 60.0f);
   nodeHandle_.param("params/angle_limits/min",AngleMin_, -60.0f);
   nodeHandle_.param("params/center_err",centerErr_, 640.0f);
+  nodeHandle_.param("params/pid/Kp",Kp_, 15.0f);
+  nodeHandle_.param("params/pid/Ki",Ki_, 0.01f);
+  nodeHandle_.param("params/pid/Kd",Kd_, 0.25f);
   return true;
 }
 
@@ -152,7 +155,11 @@ void ScaleTruckController::spin() {
     //if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
     //  resultSpeed_ = 0.0f;
     msg.angular.z = AngleDegree_;
-    msg.linear.x = resultSpeed_;   
+    msg.linear.x = resultSpeed_;
+
+    msg.linear.y = Kp_;   
+    msg.linear.z = Ki_;   
+    msg.angular.x = Kd_;
     ControlDataPublisher_.publish(msg);
     if(!isNodeRunning()) {
       controlDone_ = true;

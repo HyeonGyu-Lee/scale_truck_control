@@ -25,6 +25,10 @@ params:
   angle_limits:
     max: 60.0
     min: -60.0
+  pid:
+    Kp: 8.0
+    Ki: 0.0
+    Kd: 0.5
 
 ROI:
   width: 1280

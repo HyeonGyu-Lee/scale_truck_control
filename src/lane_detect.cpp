@@ -612,16 +612,18 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	}
 
 	int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
-		Mat new_frame, warped_frame, binary_frame, sliding_frame, resized_frame;
+		Mat new_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
 
 		resize(_frame, new_frame, Size(width_, height_));
 		warped_frame = warped_img(new_frame);
-		binary_frame = pipeline_img(warped_frame);
+		cvtColor(warped_frame, gray_frame, COLOR_BGR2GRAY);
+		medianBlur(gray_frame, blur_frame, 5);
+		threshold(blur_frame, binary_frame, 175, 255, THRESH_BINARY);
+		//binary_frame = pipeline_img(blur_frame);
 		sliding_frame = detect_lines_sliding_window(binary_frame, _view);
 		resized_frame = draw_lane(sliding_frame, new_frame, _view);
 		calc_curv_rad_and_center_dist(resized_frame, _view);
 		clear_release();
-
 		if (_view) {
 			namedWindow("Window1");
 			moveWindow("Window1", 0, 0);

@@ -58,6 +58,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
 	nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
 	nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
+	nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
 
 }
 
@@ -613,7 +614,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 
 	int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		Mat new_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
-		Mat filter(5, 5, CV_8U, Scalar(1));
+		Mat filter(filter_, filter_, CV_8U, Scalar(1));
 
 		resize(_frame, new_frame, Size(width_, height_));
 		warped_frame = warped_img(new_frame);

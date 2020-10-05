@@ -65,7 +65,7 @@ private:
 	int hls_min_th_, hls_max_th_;
 	int width_, height_;
 	/********** PID control ***********/
-	int clicker_, throttle_;
+	int clicker_, throttle_, filter_;
 	double Kp_, Ki_, Kd_, dt_;
 };
 

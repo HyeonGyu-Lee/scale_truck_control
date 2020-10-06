@@ -64,6 +64,7 @@ class ScaleTruckController {
     float AngleMin_; // -degree
     float resultSpeed_;
     float centerErr_;
+    float width2dist_, dist_;
 
     //object
     int ObjSegments_;

@@ -35,6 +35,8 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/angle_limits/max",AngleMax_, 60.0f);
   nodeHandle_.param("params/angle_limits/min",AngleMin_, -60.0f);
   nodeHandle_.param("params/center_err",centerErr_, 640.0f);
+  nodeHandle_.param("params/width2dist",width2dist_, 30.0f);
+  nodeHandle_.param("params/dist",dist_, 30.0f);
   nodeHandle_.param("params/pid/Kp",Kp_, 15.0f);
   nodeHandle_.param("params/pid/Ki",Ki_, 0.01f);
   nodeHandle_.param("params/pid/Kd",Kd_, 0.25f);
@@ -80,7 +82,10 @@ void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
   centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);
-  AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
+
+  AngleDegree_ = atan(width2dist_*weight/dist_)*180.0f/M_PI;
+
+  //AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
 }
 
 void* ScaleTruckController::objectdetectInThread() {

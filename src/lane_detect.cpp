@@ -603,10 +603,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				result_ = (Kp_ * err_) + (Ki_ * I_err_) + (Kd_ * D_err_); // PID
 				center_position_ += (result_);
 				if (_view) {
-					//line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
+					line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
 					//line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
 					//line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
-					//line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
+					line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
 				}
 			}
 		}
@@ -619,10 +619,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		resize(_frame, new_frame, Size(width_, height_));
 		warped_frame = warped_img(new_frame);
 		cvtColor(warped_frame, gray_frame, COLOR_BGR2GRAY);
-		morphologyEx(gray_frame, blur_frame, MORPH_OPEN, filter);
-		threshold(blur_frame, binary_frame, 175, 255, THRESH_BINARY);
+		threshold(gray_frame, binary_frame, 0, 255, THRESH_BINARY|THRESH_OTSU);
+		morphologyEx(binary_frame, blur_frame, MORPH_OPEN, filter);
 		//binary_frame = pipeline_img(blur_frame);
-		sliding_frame = detect_lines_sliding_window(binary_frame, _view);
+		sliding_frame = detect_lines_sliding_window(blur_frame, _view);
 		resized_frame = draw_lane(sliding_frame, new_frame, _view);
 		calc_curv_rad_and_center_dist(resized_frame, _view);
 		clear_release();

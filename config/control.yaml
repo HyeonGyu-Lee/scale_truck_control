@@ -26,21 +26,21 @@ params:
     max: 60.0
     min: -60.0
   pid:
-    Kp: 10.0
-    Ki: 0.0001
-    Kd: 0.5
-  width2dist: 30
-  dist: 40
+    Kp: 5.0
+    Ki: 0.0
+    Kd: 1.0
+  width2dist: 40
+  dist: 50
  
 ROI:
   width: 1280
   height: 720
-  top_gap: 0.276
+  top_gap: 0.286
   bot_gap: 0.058
   top_height: 0.903
   bot_height: 0.508
   extra: 0.00
-  extra_up: 100
+  extra_up: 0
   extra_down: 50
 
 LaneDetector:  
@@ -54,7 +54,7 @@ LaneDetector:
     Kd: 0.025
     dt: 0.1
   filter_param: 10
-  center_height: 0.8
+  center_height: 0.55
 
 image_view:
   enable_opencv: true

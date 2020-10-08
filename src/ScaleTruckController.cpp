@@ -83,6 +83,8 @@ void* ScaleTruckController::lanedetectInThread() {
   centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);
 
+  //weight = weight * fabs(weight);
+
   AngleDegree_ = atanf(width2dist_*weight/dist_)*(180.0f/M_PI);
 
   //AngleDegree_ = weight * AngleMax_; // -1 ~ 1 

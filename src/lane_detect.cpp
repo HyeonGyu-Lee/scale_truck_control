@@ -37,16 +37,15 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
         bot_gap = width_ * b_gap;
         top_height = height_ * t_height;
         bot_height = height_ * b_height;
-	extra = width_ * f_extra;
 
-	corners_[0] = Point2f(top_gap + extra, bot_height);
-	corners_[1] = Point2f(width_ - top_gap + extra, bot_height);
-	corners_[2] = Point2f(bot_gap + extra, top_height);
-	corners_[3] = Point2f(width_ - bot_gap + extra, top_height);
+	corners_[0] = Point2f(top_gap, bot_height);
+	corners_[1] = Point2f(width_ - top_gap, bot_height);
+	corners_[2] = Point2f(bot_gap, top_height);
+	corners_[3] = Point2f(width_ - bot_gap, top_height);
 	wide_extra_upside_ = extra_up;
 	wide_extra_downside_ = extra_down;
 	warpCorners_[0] = Point2f(wide_extra_upside_, 0.0);
-	warpCorners_[1] = Point2f(width_, wide_extra_upside_);
+	warpCorners_[1] = Point2f(width_ - wide_extra_upside_, 0.0);
 	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
 	warpCorners_[3] = Point2f(width_ - wide_extra_downside_, height_);
 
@@ -59,6 +58,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
 	nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
 	nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
+	nodeHandle_.param("LaneDetector/center_height",center_height_, 1.0);
 
 }
 
@@ -590,7 +590,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		if (!l_fit.empty() && !r_fit.empty()) {
 			//lane_center_position = (l_fit.at<float>(0, 0) + r_fit.at<float>(0, 0)) / 2;
 			//lane_center_position = c_fit.at<float>(0, 0);
-			int i = height_;
+			int i = height_*center_height_;
 			lane_center_position = (int)((c_fit.at<float>(2, 0) * pow(i, 2)) + (c_fit.at<float>(1, 0) * i) + c_fit.at<float>(0, 0));
 
 			if ((lane_center_position > 0) && (lane_center_position < (float)width_)) {

@@ -66,7 +66,7 @@ private:
 	int width_, height_;
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;
-	double Kp_, Ki_, Kd_, dt_;
+	double Kp_, Ki_, Kd_, dt_, center_height_;
 };
 
 }

@@ -35,13 +35,13 @@ params:
 ROI:
   width: 1280
   height: 720
-  top_gap: 0.326
-  bot_gap: 0.098
+  top_gap: 0.276
+  bot_gap: 0.058
   top_height: 0.903
-  bot_height: 0.528
+  bot_height: 0.508
   extra: 0.00
-  extra_up: -75
-  extra_down: 100
+  extra_up: 100
+  extra_down: 50
 
 LaneDetector:  
   sob_min_th: 175

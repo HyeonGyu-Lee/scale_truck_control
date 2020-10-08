@@ -42,8 +42,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	corners_[1] = Point2f(width_ - top_gap, bot_height);
 	corners_[2] = Point2f(bot_gap, top_height);
 	corners_[3] = Point2f(width_ - bot_gap, top_height);
+	
 	wide_extra_upside_ = extra_up;
 	wide_extra_downside_ = extra_down;
+	
 	warpCorners_[0] = Point2f(wide_extra_upside_, 0.0);
 	warpCorners_[1] = Point2f(width_ - wide_extra_upside_, 0.0);
 	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
@@ -305,8 +307,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		// mid_point = 320, Lstart +- range = 40 ~ 280
 		//int Llane_base = arrMaxIdx(hist, Lstart - range, Lstart + range, _width);
 		//int Rlane_base = arrMaxIdx(hist, Rstart - range, Rstart + range, _width);
-		int Llane_base = arrMaxIdx(hist, 10, mid_point, width);
-		int Rlane_base = arrMaxIdx(hist, mid_point, width - 10, width);
+		int Llane_base = arrMaxIdx(hist, 100, mid_point, width);
+		int Rlane_base = arrMaxIdx(hist, mid_point, width - 100, width);
 
 		int Llane_current = Llane_base;
 		int Rlane_current = Rlane_base;
@@ -561,7 +563,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
 		//vector<int> lx(left_x_), ly(left_y_), rx(right_x_), ry(right_y_);
 		int car_position = width_ / 2;
-		int lane_center_position;
+		int lane_center_position, lane_top, lane_bot;
 		float center_position;
 		//float left_cr;
 		//float right_cr;
@@ -591,6 +593,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			//lane_center_position = (l_fit.at<float>(0, 0) + r_fit.at<float>(0, 0)) / 2;
 			//lane_center_position = c_fit.at<float>(0, 0);
 			int i = height_*center_height_;
+			lane_top = (int)((c_fit.at<float>(2, 0) * pow(0, 2)) + (c_fit.at<float>(1, 0) * 0) + c_fit.at<float>(0, 0));
+			//lane_bot = (int)((c_fit.at<float>(2, 0) * pow(height_, 2)) + (c_fit.at<float>(1, 0) * height_) + c_fit.at<float>(0, 0));
 			lane_center_position = (int)((c_fit.at<float>(2, 0) * pow(i, 2)) + (c_fit.at<float>(1, 0) * i) + c_fit.at<float>(0, 0));
 
 			if ((lane_center_position > 0) && (lane_center_position < (float)width_)) {
@@ -607,6 +611,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					//line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
 					//line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
 					line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
+					line(_frame, Point(lane_top, 0), Point(lane_top, height_), Scalar(200, 100, 100), 5);
 				}
 			}
 		}

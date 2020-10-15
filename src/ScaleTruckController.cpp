@@ -163,6 +163,10 @@ void ScaleTruckController::spin() {
     //  resultSpeed_ = 0.0f;
     msg.angular.z = AngleDegree_;
     msg.linear.x = resultSpeed_;
+    
+    if (!readParameters()) {
+    ros::requestShutdown();
+    }
 
     msg.linear.y = Kp_;   
     msg.linear.z = Ki_;   

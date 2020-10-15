@@ -50,22 +50,19 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	warpCorners_[1] = Point2f(width_ - wide_extra_upside_, 0.0);
 	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
 	warpCorners_[3] = Point2f(width_ - wide_extra_downside_, height_);
-
-	nodeHandle_.param("LaneDetector/sob_max_th",sobel_max_th_, 255);
-	nodeHandle_.param("LaneDetector/sob_min_th",sobel_min_th_, 255);
-	nodeHandle_.param("LaneDetector/hls_max_th",hls_max_th_, 175);
-	nodeHandle_.param("LaneDetector/hls_min_th",hls_min_th_, 175);
-	nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
-	nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
-	nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
-	nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
-	nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
-	nodeHandle_.param("LaneDetector/center_height",center_height_, 1.0);
-
 }
 
 	LaneDetector::~LaneDetector(void) {
 		clear_release();
+	}
+
+        void LaneDetector::LoadParams(void){
+		nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
+		nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
+		nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
+		nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
+		nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
+		nodeHandle_.param("LaneDetector/center_height",center_height_, 1.0);
 	}
 
 	Mat LaneDetector::warped_img(Mat _frame) {
@@ -84,60 +81,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		return result;
 	}
 
-	Mat LaneDetector::abs_sobel_thresh(Mat _frame) {
-		Mat gray_frame, sobel_frame, abs_sobel_frame;
-		double min, max, val;
-		cvtColor(_frame, gray_frame, COLOR_BGR2GRAY);
-		Sobel(gray_frame, sobel_frame, CV_64F, 1, 0);
-		//abs_sobel_frame = abs(sobel_frame);
-		sobel_frame.convertTo(abs_sobel_frame, CV_8U);
-
-		minMaxLoc(abs_sobel_frame, &min, &max);
-
-		Mat scaled_sobel_binary_frame = Mat::zeros(sobel_frame.rows, sobel_frame.cols, CV_8UC1);
-
-		for (int j = 0; j < sobel_frame.rows; j++) {
-			for (int i = 0; i < sobel_frame.cols; i++) {
-				val = (abs_sobel_frame.at<uchar>(j, i)) * 255 / max;
-				if ((val >= sobel_min_th_) && (val <= sobel_max_th_))
-					scaled_sobel_binary_frame.at<uchar>(j, i) = 255;
-			}
-		}
-		return scaled_sobel_binary_frame;
-	}
-
-	Mat LaneDetector::hls_lthresh(Mat _frame) {
-		Mat hls_frame;
-		vector<Mat> hls_images(3);
-		double min, max;
-
-		cvtColor(_frame, hls_frame, COLOR_BGR2HLS);
-		split(hls_frame, hls_images);
-
-		minMaxLoc(hls_images[1], &min, &max);
-
-		for (int j = 0; j < hls_images[1].rows; j++) {
-			for (int i = 0; i < hls_images[1].cols; i++) {
-				if (((hls_images[1].at<uchar>(j, i) * 255 / max) > hls_min_th_) && ((hls_images[1].at<uchar>(j, i) * 255 / max) <= hls_max_th_))
-					hls_images[1].at<uchar>(j, i) = 255;
-			}
-		}
-
-		return hls_images[1];
-	}
-
-	Mat LaneDetector::pipeline_img(Mat _frame) {
-		Mat abs_sobel_frame = abs_sobel_thresh(_frame);
-		Mat l_frame = hls_lthresh(_frame);
-		Mat combined_frame = Mat::zeros(_frame.rows, _frame.cols, CV_8UC1);
-		for (int j = 0; j < combined_frame.rows; j++) {
-			for (int i = 0; i < combined_frame.cols; i++) {
-				if ((abs_sobel_frame.at<uchar>(j, i) == 255) || (l_frame.at<uchar>(j, i) == 255)) combined_frame.at<uchar>(j, i) = 255;
-			}
-		}
-		return combined_frame;
-	}
-
 	int LaneDetector::arrMaxIdx(int hist[], int start, int end, int Max) {
 		int max_index = -1;
 		int max_val = 0;
@@ -154,10 +97,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		if (max_index == -1)
 			cout << "ERROR : hist range" << endl;
 		return max_index;
-	}
-
-	double LaneDetector::gaussian(double x, double mu, double sig) {
-		return exp((-1) * pow(x - mu, 2.0) / (2 * pow(sig, 2.0)));
 	}
 
 	Mat LaneDetector::polyfit(vector<int> x_val, vector<int> y_val) {
@@ -255,7 +194,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			hist[i] = 0;
 		}
 
-		//int hist_Max = 0; 
 		for (int j = (height / 2); j < height; j++) { // hist 범위 절반부터 읽기
 			for (int i = 0; i < width; i++) {
 				if (frame.at <uchar>(j, i) == 255) {
@@ -263,31 +201,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				}
 			}
 		}
-
-		//hist_Max = arrMaxIdx(hist, 0, width, width);
-		/*
-		if (last_Llane_base_ != 0 || last_Rlane_base_ != 0) {
-
-			int distrib_width = 120;
-			double sigma = distrib_width / 12.8;
-
-			int leftx_start = last_Llane_base_ - distrib_width / 2;
-			int leftx_end = last_Llane_base_ + distrib_width / 2;
-
-			int rightx_start = last_Rlane_base_ - distrib_width / 2;
-			int rightx_end = last_Rlane_base_ + distrib_width / 2;
-
-			for (int i = 0; i < _frame.cols; i++) {
-				if ((i >= leftx_start) && (i <= leftx_end)) {
-					weight_distrib[i] = gaussian(i, last_Llane_base_, sigma);
-					hist[i] *= (int)weight_distrib[i];
-				}
-				else if ((i >= rightx_start) && (i <= rightx_end)) {
-					weight_distrib[i] = gaussian(i, last_Rlane_base_, sigma);
-					hist[i] *= (int)weight_distrib[i];
-				}
-			}
-		}*/
 
 		cvtColor(frame, result, COLOR_GRAY2BGR);
 
@@ -380,10 +293,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
 				}
 				Llane_current = Lsum / _size;
-				//circle(result, Point(Llane_current, Ly_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
-				//cout << "L : " << Llane_current << " / " << Ly_pos + (window_height / 2) << endl;
 			} else
 				Llane_current += (L_gap);
 
@@ -393,10 +304,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
 				}
 				Rlane_current = Rsum / _size;
-				//circle(result, Point(Rlane_current, Ry_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
-				//cout << "R : " << Rlane_current << " / " << Ry_pos + (window_height / 2) << endl;
 			} else
 				Rlane_current += (R_gap);
 			if (window != 0) {
@@ -411,30 +320,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
-				//circle(result, Point((Llane_current + Rlane_current) / 2, Ly_pos + (window_height / 2)), 5, Scalar(255, 255, 255), -1);
 			}
-
 			L_prev = Llane_current;
 			R_prev = Rlane_current;
-
-
-			//left_lane_inds_.insert(left_lane_inds_.end(), good_left_inds.begin(), good_left_inds.end());
-			//right_lane_inds_.insert(right_lane_inds_.end(), good_right_inds.begin(), good_right_inds.end());
 		}
-
-		/*vector<int>::iterator iter;
-		for (index = 0, iter = left_lane_inds_.begin(); iter != left_lane_inds_.end(); iter++, index++) {
-			if ((int)(nonZero.total()) >= *iter) {
-				left_x_.insert(left_x_.end(), nonZero.at<Point>(*iter).x);
-				left_y_.insert(left_y_.end(), nonZero.at<Point>(*iter).y);
-			}
-		}
-		for (index = 0, iter = right_lane_inds_.begin(); iter != right_lane_inds_.end(); iter++, index++) {
-			if ((int)(nonZero.total()) >= *iter) {
-				right_x_.insert(right_x_.end(), nonZero.at<Point>(*iter).x);
-				right_y_.insert(right_y_.end(), nonZero.at<Point>(*iter).y);
-			}
-		}*/
 
 		if (left_x_.size() != 0) {
 			left_coef_ = polyfit(left_y_, left_x_);
@@ -561,44 +450,17 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 
 	void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
 		Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
-		//vector<int> lx(left_x_), ly(left_y_), rx(right_x_), ry(right_y_);
 		int car_position = width_ / 2;
 		int lane_center_position, lane_top, lane_bot;
 		float center_position;
-		//float left_cr;
-		//float right_cr;
-
-		float ym_per_pix = 3.048f / 100.f;
-		/*float xm_per_pix = 3.7f / 378.0f;
-		Mat left_coef_cr(3, 1, CV_32F);
-		Mat right_coef_cr(3, 1, CV_32F);
-		if (lx.size() != 0 && rx.size() != 0) {
-			for (int i = 0; i < lx.size(); i++) {
-				lx[i] = lx[i] * xm_per_pix;
-				ly[i] = ly[i] * ym_per_pix;
-			}
-			for (int i = 0; i < rx.size(); i++) {
-				rx[i] = rx[i] * xm_per_pix;
-				ry[i] = ry[i] * ym_per_pix;
-			}
-			left_coef_cr = polyfit(lx, ly);
-			right_coef_cr = polyfit(rx, ry);
-			left_cr = powf((1 + powf(2 * left_coef_cr.at<float>(2, 0) * 0 * xm_per_pix + left_coef_cr.at<float>(1, 0), 2)), 1.5f) / fabs(2 * left_coef_cr.at<float>(2, 0) + 0.000001f);
-			right_cr = powf((1 + powf(2 * right_coef_cr.at<float>(2, 0) * 0 * xm_per_pix + right_coef_cr.at<float>(1, 0), 2)), 1.5f) / fabs(2 * right_coef_cr.at<float>(2, 0) + 0.000001f);
-			left_curve_radius_ = left_cr;
-			right_curve_radius_ = right_cr;
-		}*/
 
 		if (!l_fit.empty() && !r_fit.empty()) {
-			//lane_center_position = (l_fit.at<float>(0, 0) + r_fit.at<float>(0, 0)) / 2;
-			//lane_center_position = c_fit.at<float>(0, 0);
 			int i = height_*center_height_;
 			lane_top = (int)((c_fit.at<float>(2, 0) * pow(0, 2)) + (c_fit.at<float>(1, 0) * 0) + c_fit.at<float>(0, 0));
 			//lane_bot = (int)((c_fit.at<float>(2, 0) * pow(height_, 2)) + (c_fit.at<float>(1, 0) * height_) + c_fit.at<float>(0, 0));
 			lane_center_position = (int)((c_fit.at<float>(2, 0) * pow(i, 2)) + (c_fit.at<float>(1, 0) * i) + c_fit.at<float>(0, 0));
 
 			if ((lane_center_position > 0) && (lane_center_position < (float)width_)) {
-				center_position = (car_position - lane_center_position) * ym_per_pix;
 				err_ = (float)lane_center_position - center_position_;
 				I_err_ += err_ * dt_;
 				D_err_ = (err_ - prev_err_) / dt_;
@@ -608,16 +470,14 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				center_position_ += (result_);
 				if (_view) {
 					line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
-					//line(_frame, Point(left_curve_radius_, 0), Point(left_curve_radius_, height_), Scalar(255, 150, 0), 3);
-					//line(_frame, Point(right_curve_radius_, 0), Point(right_curve_radius_, height_), Scalar(0, 150, 255), 3);
 					line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
-					line(_frame, Point(lane_top, 0), Point(lane_top, height_), Scalar(200, 100, 100), 5);
 				}
 			}
 		}
 	}
 
 	int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
+		LoadParams();
 		Mat new_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
 		Mat filter(filter_, filter_, CV_8U, Scalar(1));
 

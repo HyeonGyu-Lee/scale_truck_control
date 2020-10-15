@@ -17,15 +17,12 @@ public:
 
 	int display_img(Mat _frame, int _delay, bool _view);
 
-private:	
-	Mat abs_sobel_thresh(Mat _frame);
-	Mat hls_lthresh(Mat _frame);
+private:
+	void LoadParams(void);
 	int arrMaxIdx(int hist[], int start, int end, int Max);
-	double gaussian(double x, double mu, double sig);
 	Mat polyfit(vector<int> x_val, vector<int> y_val);
 	Mat warped_back_img(Mat _frame);
 	Mat warped_img(Mat _frame);
-	Mat pipeline_img(Mat _frame);
 	Mat detect_lines_sliding_window(Mat _frame, bool _view);
 	Mat draw_lane(Mat _sliding_frame, Mat _frame, bool _view);
 	void clear_release();

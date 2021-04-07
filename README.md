@@ -1,3 +1,14 @@
+# install ROS
+http://wiki.ros.org/melodic/Installation/Ubuntu
+
+# Setup Env.
+http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment
+build option : catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3
+
+# install python3 Env.
+sudo apt-get install python3-pip python3-yaml
+sudo pip3 install rospkg catkin_pkg
+
 # ROS_ws/src
 ## scale_truck_control
 git clone https://github.com/HyeonGyu-Lee/scale_truck_control.git 

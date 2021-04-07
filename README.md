@@ -1,3 +1,5 @@
+# Scale Truck Control
+
 # Hardware
 >Nvidia Jetson Xavier (18.04 LTS - JetPack 4.5.1)   
 >USB Camera (Camera)   
@@ -51,30 +53,25 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >```
 # 2. Setup ROS Packages
 >## 2.1 scale_truck_control
-```
-git clone https://github.com/HyeonGyu-Lee/scale_truck_control.git 
-```
-
+>```
+>git clone https://github.com/HyeonGyu-Lee/scale_truck_control.git 
+>```
 >## 2.2 geometry_msgs
 >```
 >git clone https://github.com/ros/common_msgs.git
 >```
-
 >## 2.3 usb_cam
 >```
 >git clone https://github.com/ros-drivers/usb_cam.git
 >```
-
 >## 2.4 ros_rplidar
 >```
 >git clone https://github.com/robopeak/rplidar_ros.git
 >```
-
 >## 2.5 obstacle_detector
 >```
 >git clone https://github.com/tysik/obstacle_detector.git
 >```
-
 >## 2.6 laser_filters
 >```
 >git clone https://github.com/ros-perception/laser_filters.git 
@@ -85,7 +82,6 @@ git clone https://github.com/HyeonGyu-Lee/scale_truck_control.git
 >sudo apt-get install ros-melodic-cv-bridge   
 >sudo apt-get install ros-melodic-vision-opencv   
 > - melodic is ros-version-name
-
 >## 3.2 rosserial_Arduino
 >sudo apt-get install ros-melodic-rosserial-arduino   
 >sudo apt-get install ros-melodic-rosserial   

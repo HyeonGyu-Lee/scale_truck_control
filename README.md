@@ -1,4 +1,7 @@
-# install ROS
+# Hardware
+Nvidia Jetson Xavier 18.04 LTS
+
+# install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu
 
 # Setup Env.

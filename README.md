@@ -6,7 +6,7 @@
 >RPLidar A3 (Lidar)   
 >OpenCR 1.0 (ARM)
 
-# 1. install ROS (melodic)
+# 1. Install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu
 
 >## 1.1 Setup your sources.list

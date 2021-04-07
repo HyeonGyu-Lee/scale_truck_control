@@ -1,8 +1,8 @@
 # Hardware
-Nvidia Jetson Xavier (18.04 LTS - JetPack 4.5.1)   
-USB Camera (Camera)   
-RPLidar A3 (Lidar)   
-OpenCR 1.0 (ARM)
+>Nvidia Jetson Xavier (18.04 LTS - JetPack 4.5.1)   
+>USB Camera (Camera)   
+>RPLidar A3 (Lidar)   
+>OpenCR 1.0 (ARM)
 
 # 1. install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu

@@ -82,10 +82,18 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >sudo apt-get install ros-melodic-cv-bridge   
 >sudo apt-get install ros-melodic-vision-opencv   
 > - melodic is ros-version-name
+> /opt/ros/melodic/share/cv_bridge/cmake sudo gedit cv_bridgeConfig.cmake
+> set(_include_dirs "include;/usr/include;/usr/include/opencv  --> opencv4
+> scale_truck_control CMakeLists.txt ->  set OpenCV_DIR /usr/share/opencv4
 >## 3.2 rosserial_Arduino
 >sudo apt-get install ros-melodic-rosserial-arduino   
 >sudo apt-get install ros-melodic-rosserial   
 > - melodic is ros-version-name
+> ## 3.3 armadillo , qtbase5 
+> sudo apt-get install libarmadillo-dev
+> sudo apt-get qtbase5-dev 
+
+
 
 # 4. Run
 

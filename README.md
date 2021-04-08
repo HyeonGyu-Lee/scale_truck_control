@@ -127,7 +127,7 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >```
 >## 4.2 Rosbag run
 >```
->$ rosbag play -a 2020-10-06-17-23-14.bag
+>$ rosbag play 2020-10-06-17-23-14.bag
 >```
 >## 4.3 Ros Launch
 >```

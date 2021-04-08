@@ -97,13 +97,13 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 > set OpenCV_DIR /usr/share/opencv4
 > ```
 >## 3.3 rosserial_Arduino Module
->communicate with OpenCR 1.0
+>- communicate with OpenCR 1.0
 >```
 >$ sudo apt-get install ros-melodic-rosserial-arduino   
 >$ sudo apt-get install ros-melodic-rosserial   
 >```
->## 3.4 armadillo , qtbase5 
-> UI System
+>## 3.4 armadillo , qtbase5 Module
+>- Python UI Module
 >```
 > sudo apt-get install libarmadillo-dev
 > sudo apt-get qtbase5-dev 

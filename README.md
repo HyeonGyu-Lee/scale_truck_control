@@ -121,6 +121,6 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 # 4. Run
 >## 4.1 rosbag test
 >```
->$ wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049' -O FILENAME
 >$ curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" > /dev/null
+>$ curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" -o "2020-10-06-17-23-14.bag"
 >```

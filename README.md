@@ -77,14 +77,14 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >$ git clone https://github.com/ros-perception/laser_filters.git 
 >```
 
-# 3. Install module
+# 3. Install module & Environment setup
 - melodic is ros-version (18.04 LTS)
->## 3.1 cv_bridge
+>## 3.1 cv_bridge Setup
 >```
 >$ sudo apt-get install ros-melodic-cv-bridge   
 >$ sudo apt-get install ros-melodic-vision-opencv   
 >```
->## 3.2 OpenCV4 Env. Setup
+>## 3.2 OpenCV4 Setup
 > ```
 > $ cd /opt/ros/melodic/share/cv_bridge/cmake
 > $ sudo vim cv_bridgeConfig.cmake
@@ -96,17 +96,19 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 > $ vim CMakeLists.txt
 > set OpenCV_DIR /usr/share/opencv4
 > ```
->## 3.3 rosserial_Arduino
+>## 3.3 rosserial_Arduino Module
+>communicate with OpenCR 1.0
 >```
 >$ sudo apt-get install ros-melodic-rosserial-arduino   
 >$ sudo apt-get install ros-melodic-rosserial   
 >```
 >## 3.4 armadillo , qtbase5 
+> UI System
 >```
 > sudo apt-get install libarmadillo-dev
 > sudo apt-get qtbase5-dev 
 > ```
->## 3.5 alias command
+>## 3.5 alias command Setup
 >```
 >$sudo vim ~/bashrc
 >++alias cw='cd ~/catkin_ws'
@@ -115,7 +117,6 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >++alias cb='source ~/catkin_ws/devel/setup.bashrc'
 >++alias sb='source ~/.bashrc'
 >```
-
 
 # 4. Run
 

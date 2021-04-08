@@ -125,7 +125,11 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >$ curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" > /dev/null
 >$ curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" -o "2020-10-06-17-23-14.bag"
 >```
->## 4.2 Launch
+>## 4.2 Rosbag run
+>```
+>$ rosbag play -a 2020-10-06-17-23-14.bag
+>```
+>## 4.3 Ros Launch
 >```
 >$ sudo chmod 666 /dev/ACM0
 >$ roslaunch scale_truck_control control_test.launch

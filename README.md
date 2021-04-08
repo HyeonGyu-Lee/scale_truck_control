@@ -94,7 +94,9 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 > ```
 > $ cd ~/catkin_ws/src/scale_truck_control
 > $ vim CMakeLists.txt
-> set OpenCV_DIR /usr/share/opencv4
+> ++set OpenCV_DIR /usr/share/opencv4
+> --find_package(catkin REQUIRED COMPONENTS OpenCV REQUIRED }
+> ++find_package(OpenCV REQUIRED)
 > ```
 >## 3.3 rosserial_Arduino Module
 >- communicate with OpenCR 1.0

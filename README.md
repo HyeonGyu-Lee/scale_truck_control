@@ -1,5 +1,5 @@
 # Scale Truck Control
-
+<iframe width="956" height="538" src="https://www.youtube.com/watch?v=zE_58jbH-2I" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 # Hardware
 >Nvidia Jetson Xavier (18.04 LTS - JetPack 4.5.1)   
 >USB Camera (Camera)   

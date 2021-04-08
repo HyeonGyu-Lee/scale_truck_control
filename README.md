@@ -89,7 +89,9 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 > --set(_include_dirs "include;/usr/include;/usr/include/opencv
 > ++set(_include_dirs "include;/usr/include;/usr/include/opencv4
 > ```
-> ```~/catkin_ws/src/scale_truck_control/CMakeLists.txt
+> ```
+> cd ~/catkin_ws/src/scale_truck_control
+> vim CMakeLists.txt
 > set OpenCV_DIR /usr/share/opencv4
 > ```
 >## 3.3 rosserial_Arduino

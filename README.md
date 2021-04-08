@@ -51,7 +51,7 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >```
 >$ catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3
 >```
-# 2. Setup ROS Packages
+# 2. Install ROS Packages
 >## 2.1 scale_truck_control
 >```
 >$ git clone https://github.com/HyeonGyu-Lee/scale_truck_control.git 

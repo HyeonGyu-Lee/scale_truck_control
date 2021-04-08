@@ -78,12 +78,12 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >```
 
 # 3. Install module
+- melodic is ros-version (18.04 LTS)
 >## 3.1 cv_bridge
 >```
 >$ sudo apt-get install ros-melodic-cv-bridge   
 >$ sudo apt-get install ros-melodic-vision-opencv   
 >```
-> - melodic is ros-version-name
 >## 3.2 OpenCV4 Env. Setup
 > ```
 > $ cd /opt/ros/melodic/share/cv_bridge/cmake
@@ -101,7 +101,6 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >$ sudo apt-get install ros-melodic-rosserial-arduino   
 >$ sudo apt-get install ros-melodic-rosserial   
 >```
-> - melodic is ros-version-name
 >## 3.4 armadillo , qtbase5 
 >```
 > sudo apt-get install libarmadillo-dev

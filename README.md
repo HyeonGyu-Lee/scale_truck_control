@@ -119,4 +119,7 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >```
 
 # 4. Run
-
+>## 4.1 rosbag test
+>```
+>wget https://drive.google.com/file/d/1J7T7r9jhOk1YPxwyEDwj0IbOieedz049/view?usp=sharing
+>```

@@ -22,11 +22,11 @@
 #define MAX_SPEED     (4)  // m/s
 
 
-#define TRUCK_0
+#define TRUCK_4
 
 #ifdef TRUCK_0
 #define MAX_PWM       (1100)
-#define MIN_PWM       (1450)
+#define MIN_PWM       (1475)
 #define ZERO_PWM      (1480)
 #define MAX_STEER     (1800)
 #define MIN_STEER     (1200)
@@ -51,7 +51,7 @@
 
 #ifdef TRUCK_4
 #define MAX_PWM       (1100)
-#define MIN_PWM       (1450)
+#define MIN_PWM       (1474)
 #define ZERO_PWM      (1480)
 #define MAX_STEER     (1800)
 #define MIN_STEER     (1200)
@@ -89,10 +89,10 @@ float cur_RPM_, cur_ROUND_;
 float prev_err_;
 float result_;
 
-float Kp_ = 5.0;
+float Kp_ = 8.0;
 float Ki_ = 0.0001;
-float Kd_ = 0.025;
-float dt_ = 0.25;
+float Kd_ = 2.0;
+float dt_ = 0.2;
 float circ_ = WHEEL_DIM * M_PI;
 
 std_msgs::Float32 vel_msg_;
@@ -117,7 +117,7 @@ void setSPEED() { // m/s
     result_ = output = 0;
     I_err = 0;
   } else {
-    output = (Kp_ * err) + (Kd_ * D_err) + (Ki_ * I_err);
+    output = (Kp_ * err) + (Kd_ * D_err);// + (Ki_ * I_err);
   }
   if (output == 0)
   {
@@ -130,6 +130,8 @@ void setSPEED() { // m/s
       output = result_ + MIN_PWM;
       if (output >= MAX_PWM)
         output = MAX_PWM;
+      else if(output <= MIN_PWM)
+        output = MIN_PWM;
     } else {
       result_ -= output;
       if (result_ < -1800)
@@ -137,16 +139,20 @@ void setSPEED() { // m/s
       output = result_ + MIN_PWM;
       if (output <= MAX_PWM)
         output = MAX_PWM;
+      else if(output >= MIN_PWM)
+        output = MIN_PWM;
     }
   }
   throttle_.writeMicroseconds(output);
 
+  
   Serial.print("target / current / PWM : ");
   Serial.print(tar_vel_CT*1000);
   Serial.print(" / ");
   Serial.print(cur_vel_CT*1000);
   Serial.print(" / ");
   Serial.println(output);
+  
 }
 
 /*
@@ -221,7 +227,7 @@ void getENB() {
 void CheckEN() {
   cur_RPM_ = (float)EN_pos_ / TICK2CYCLE * (60 * SEC_TIME / CYCLE_TIME);
   cur_ROUND_ = (float)EN_pos_ / TICK2CYCLE * (SEC_TIME / CYCLE_TIME);
-  //Serial.println(EN_pos_);
+  Serial.println(EN_pos_);
   EN_pos_ = 0;
 }
 

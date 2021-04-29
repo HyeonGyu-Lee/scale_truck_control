@@ -3,7 +3,7 @@ project(scale_truck_control)
 
 #add_compile_options(-std=c++11)
 
-set(OpenCV_DIR /usr/share/OpenCV/)
+set(OpenCV_DIR /usr/share/opencv4/)
 #set(BOOST_ROOT /usr/include/boost/)
 #include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 #message("OpenCV_DIR=${OpenCV_INCLUDE_DIRS}")
@@ -25,8 +25,10 @@ find_package(catkin REQUIRED
     image_transport
     geometry_msgs
     obstacle_detector
-    OpenCV REQUIRED
+    
 )
+
+find_package(OpenCV REQUIRED)
 
 #add_message_files(
 #  FILES

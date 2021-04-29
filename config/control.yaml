@@ -14,10 +14,10 @@ publishers:
 params:
   center_err: 640
   speed_mode: 5
-  target_speed: 0.6
-  safety_speed: 0.0
-  target_dist: 0.3
-  safety_dist: 1.0
+  target_speed: 0.65
+  safety_speed: 0.45
+  target_dist: 0.5
+  safety_dist: 1.5
   angle_degree: 0.0
   speed_limits:
     max: 5.0
@@ -57,7 +57,7 @@ LaneDetector:
   center_height: 0.4
 
 image_view:
-  enable_opencv: true
+  enable_opencv: false
   wait_key_delay: 1
   enable_console_output: true
 

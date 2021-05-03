@@ -164,14 +164,19 @@ void ScaleTruckController::spin() {
     //  resultSpeed_ = 0.0f;
     msg.angular.z = AngleDegree_;
     msg.linear.x = resultSpeed_;
+    msg.linear.y = distance_;
+    msg.linear.z = TargetDist_;
     
     if (!readParameters()) {
     ros::requestShutdown();
     }
-
+    
+    /*
     msg.linear.y = Kp_;   
     msg.linear.z = Ki_;   
     msg.angular.x = Kd_;
+    */
+    
     ControlDataPublisher_.publish(msg);
     if(!isNodeRunning()) {
       controlDone_ = true;

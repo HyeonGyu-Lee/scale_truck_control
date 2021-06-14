@@ -85,7 +85,8 @@ void* ScaleTruckController::lanedetectInThread() {
 
   //weight = weight * fabs(weight);
 
-  AngleDegree_ = atanf(width2dist_*weight/dist_)*(180.0f/M_PI);
+  //AngleDegree_ = atanf(width2dist_*weight/dist_)*(180.0f/M_PI);
+	AngleDegree_ = atanf(center_position_) * 180/M_PI;
 
   //AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
 }

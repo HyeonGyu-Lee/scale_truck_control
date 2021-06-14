@@ -451,15 +451,24 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
 		Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
 		int car_position = width_ / 2;
-		int lane_center_position, lane_top, lane_bot;
-		float center_position;
+		int lane_center_position,lane_top, lane_bot;
+		int tangent, x_;		//tangent line
+		float a_, b_, c_, d_lane_center_position;
 
 		if (!l_fit.empty() && !r_fit.empty()) {
-			int i = height_*center_height_;
-			lane_top = (int)((c_fit.at<float>(2, 0) * pow(0, 2)) + (c_fit.at<float>(1, 0) * 0) + c_fit.at<float>(0, 0));
-			//lane_bot = (int)((c_fit.at<float>(2, 0) * pow(height_, 2)) + (c_fit.at<float>(1, 0) * height_) + c_fit.at<float>(0, 0));
-			lane_center_position = (int)((c_fit.at<float>(2, 0) * pow(i, 2)) + (c_fit.at<float>(1, 0) * i) + c_fit.at<float>(0, 0));
+			int i = height_*center_height_;	
+			a_ = c_fit.at<float>(2, 0);
+			b_ = c_fit.at<float>(1, 0);
+			c_ = c_fit.at<float>(0, 0);
 
+			lane_top = (int)((a_ * pow(0, 2)) + (b_ * 0) + c_);
+			//lane_bot = (int)((a_ * pow(height_, 2)) + (b_ * height_) + c_);
+			lane_center_position = (int)((a_ * pow(i, 2)) + (b_ * i) + c_);
+			d_lane_center_position = (2 * a_ * i) + b_;
+			center_position_ = d_lane_center_position;
+			
+			/*tangent = atanf(d_lane_center_position) * 180/M_PI;
+			
 			if ((lane_center_position > 0) && (lane_center_position < (float)width_)) {
 				err_ = (float)lane_center_position - center_position_;
 				I_err_ += err_ * dt_;
@@ -472,7 +481,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					line(_frame, Point(lane_center_position, 0), Point(lane_center_position, height_), Scalar(0, 255, 0), 5);
 					line(_frame, Point(center_position_, 0), Point(center_position_, height_), Scalar(200, 150, 200), 5);
 				}
-			}
+			}*/
 		}
 	}
 

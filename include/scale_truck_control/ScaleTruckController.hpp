@@ -60,7 +60,8 @@ class ScaleTruckController {
     float TargetSpeed_; // -1 ~ 1  - Twist msg linear.x
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
     int centerLine_;
-    float AngleMax_; // +degree
+	float* i_points;
+	float AngleMax_; // +degree
     float AngleMin_; // -degree
     float resultSpeed_;
     float centerErr_;

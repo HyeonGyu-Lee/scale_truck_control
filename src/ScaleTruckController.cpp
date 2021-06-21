@@ -9,7 +9,7 @@ ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
   }
 
   centerLine_ = 0;
-
+  i_points_ = NULL;
   init();
 }
 
@@ -80,15 +80,17 @@ bool ScaleTruckController::isNodeRunning(void){
 
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
-  centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
-  float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);
-
+  float k1 = 0.2f, k2 = 0.3f;
+  //centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
+  i_points_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
+  //float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);
   //weight = weight * fabs(weight);
 
-  //AngleDegree_ = atanf(width2dist_*weight/dist_)*(180.0f/M_PI);
-	AngleDegree_ = atanf(center_position_) * 180/M_PI;
-
+  //AngleDegree_ = atanf(width2dist_*weight/dist_)*(180.0f/M_PI);  
+  //AngleDegree_ = atanf(centerLine_) * 180.0f/M_PI;
   //AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
+
+  AngleDegree_ = ((-1 * k1) * i_points_[1]) - (k2 * i_points_[0]);
 }
 
 void* ScaleTruckController::objectdetectInThread() {

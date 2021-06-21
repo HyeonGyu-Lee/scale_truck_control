@@ -48,7 +48,7 @@ private:
 		float left_curve_radius_;
 		float right_curve_radius_;
 		float center_position_;
-
+		float interest_points_[2];
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;
 	double Kp_term_, Ki_term_, Kd_term_, err_, prev_err_, I_err_, D_err_, result_;

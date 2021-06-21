@@ -20,6 +20,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
+	interest_points_[2] = { 0, };  
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
@@ -62,7 +63,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
 		nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
 		nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
-		nodeHandle_.param("LaneDetector/center_height",center_height_, 1.0);
+		nodeHandle_.param("LaneDetector/center_height",center_height_, 1.0);	
+		nodeHandle_.param("LaneDetector/lat_pose_height",lat_pose_height_, 1.0);	
 	}
 
 	Mat LaneDetector::warped_img(Mat _frame) {
@@ -452,11 +454,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
 		int car_position = width_ / 2;
 		int lane_center_position,lane_top, lane_bot;
-		int tangent, x_;		//tangent line
-		float a_, b_, c_, d_lane_center_position;
+		float a_, b_, c_;
 
 		if (!l_fit.empty() && !r_fit.empty()) {
 			int i = height_*center_height_;	
+			int j = height_*lat_pose_height_;
 			a_ = c_fit.at<float>(2, 0);
 			b_ = c_fit.at<float>(1, 0);
 			c_ = c_fit.at<float>(0, 0);
@@ -464,8 +466,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			lane_top = (int)((a_ * pow(0, 2)) + (b_ * 0) + c_);
 			//lane_bot = (int)((a_ * pow(height_, 2)) + (b_ * height_) + c_);
 			lane_center_position = (int)((a_ * pow(i, 2)) + (b_ * i) + c_);
-			d_lane_center_position = (2 * a_ * i) + b_;
-			center_position_ = d_lane_center_position;
+			interest_points_[0] = (2 * a_ * i) + b_;	// Preview Distance Error
+			interest_points_[1] = (2 * a_ * j) + b_;	// Lateral Position Error
+			
+			//center_position_ = d_lane_center_position;
 			
 			/*tangent = atanf(d_lane_center_position) * 180/M_PI;
 			
@@ -485,7 +489,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		}
 	}
 
-	int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
+	//int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
+	float* LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		LoadParams();
 		Mat new_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
 		Mat filter(filter_, filter_, CV_8U, Scalar(1));
@@ -528,7 +533,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			waitKey(_delay);
 		}
 
-		return center_position_;
+		//return center_position_;
+		return interest_points_;
 	};
 
 } /* namespace lane_detect */

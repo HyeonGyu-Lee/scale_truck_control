@@ -1,5 +1,4 @@
 #include "lane_detect/lane_detect.hpp"
-#include <time.h>
 
 using namespace std;
 using namespace cv;
@@ -20,7 +19,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
-	interest_points_[2] = { 0, };  
+	interest_points_[4] = { 0, };	// set index 2, 3 for error detection
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
@@ -467,9 +466,17 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			//lane_bot = (int)((a * pow(height_, 2)) + (b * height_) + c);
 			//lane_center_position = (int)((a * pow(i, 2)) + (b * i) + c);
 
-			interest_points_[0] = car_position - ((2 * a * i) + b);	// Preview Distance Error, if truck turns left, positive
-			interest_points_[1] = car_position - ((2 * a * j) + b);	// Lateral Position Error, if truck turns left, negative
-			
+			interest_points_[2] = car_position - ((a * pow(i, 2)) + (b * i) + c);	// Preview Distance Error, if truck turns left, positive
+			interest_points_[3] = car_position - ((a * pow(j, 2)) + (b * j) + c);	// Lateral Position Error, if truck turns left, negative
+			if ((fabs(interest_points_[2]) > 640.0f) || (fabs(interest_points_[3] > 640.0f))){
+				interest_points_[0] = interest_points_[0];
+				interest_points_[1] = interest_points_[1];
+			}
+			else{
+				interest_points_[0] = interest_points_[2];
+				interest_points_[1] = interest_points_[3];
+			}
+
 			//center_position_ = d_lane_center_position;
 			
 			/*tangent = atanf(d_lane_center_position) * 180/M_PI;

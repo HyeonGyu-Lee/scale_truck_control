@@ -58,7 +58,7 @@ LaneDetector:
   lat_pose_height: 1.0
 
 image_view:
-  enable_opencv: false
+  enable_opencv: true
   wait_key_delay: 1
   enable_console_output: true
 

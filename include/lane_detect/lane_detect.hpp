@@ -4,6 +4,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <ros/ros.h>
+#include <math.h>
+#include <time.h>
 
 using namespace cv;
 using namespace std;
@@ -48,7 +50,7 @@ private:
 		float left_curve_radius_;
 		float right_curve_radius_;
 		float center_position_;
-		float interest_points_[2];
+		float interest_points_[4];
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;
 	double Kp_term_, Ki_term_, Kd_term_, err_, prev_err_, I_err_, D_err_, result_;

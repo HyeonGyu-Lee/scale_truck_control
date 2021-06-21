@@ -15,7 +15,7 @@ public:
 	LaneDetector(ros::NodeHandle nh);
 	~LaneDetector(void);
 
-	int display_img(Mat _frame, int _delay, bool _view);
+	float* display_img(Mat _frame, int _delay, bool _view);
 
 private:
 	void LoadParams(void);
@@ -63,7 +63,9 @@ private:
 	int width_, height_;
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;
-	double Kp_, Ki_, Kd_, dt_, center_height_;
+	double Kp_, Ki_, Kd_, dt_;
+	float center_height_, lat_pose_height_;
+
 };
 
 }

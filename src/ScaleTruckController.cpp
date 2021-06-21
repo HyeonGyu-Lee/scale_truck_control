@@ -10,6 +10,7 @@ ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
 
   centerLine_ = 0;
   i_points_ = NULL;
+
   init();
 }
 
@@ -90,7 +91,7 @@ void* ScaleTruckController::lanedetectInThread() {
   //AngleDegree_ = atanf(centerLine_) * 180.0f/M_PI;
   //AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
 
-  AngleDegree_ = ((-1 * k1) * i_points_[1]) - (k2 * i_points_[0]);
+  AngleDegree_ = (((-1 * k1) * i_points_[1]) - (k2 * i_points_[0])) * (180.0f/M_PI);
 }
 
 void* ScaleTruckController::objectdetectInThread() {

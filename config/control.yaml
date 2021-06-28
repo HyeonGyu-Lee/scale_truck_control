@@ -54,7 +54,7 @@ LaneDetector:
     Kd: 0.01
     dt: 0.1
   filter_param: 10
-  center_height: 0.4
+  center_height: 0.2
   lat_pose_height: 1.0
 
 image_view:

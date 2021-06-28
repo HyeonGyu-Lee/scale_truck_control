@@ -81,7 +81,7 @@ bool ScaleTruckController::isNodeRunning(void){
 
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
-  float k1 = 0.05f, k2 = 0.01f;
+  float k1 = -0.1f, k2 = 0.11f;
   //centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   i_points_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   //float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);

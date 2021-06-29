@@ -77,7 +77,7 @@ class ScaleTruckController {
     float dist_level_;
     int speed_mode_;
 
-    float Kp_, Ki_, Kd_;
+    float Kp_, Ki_, Kd_, K1_, K2_;
 
     //Thread
     std::thread controlThread_;

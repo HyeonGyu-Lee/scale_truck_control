@@ -466,8 +466,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			//lane_bot = (int)((a * pow(height_, 2)) + (b * height_) + c);
 			//lane_center_position = (int)((a * pow(i, 2)) + (b * i) + c);
 
-			interest_points_[2] = car_position - ((a * pow(i, 2)) + (b * i) + c);	// Preview Distance Error, if truck turns left, positive
-			interest_points_[3] = car_position - ((a * pow(j, 2)) + (b * j) + c);	// Lateral Position Error, if truck turns left, negative
+			interest_points_[2] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	// Preview Distance Error, if truck turns left, positive
+			interest_points_[3] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	// Lateral Position Error, if truck turns left, negative
 			if ((fabs(interest_points_[2]) > 640.0f) || (fabs(interest_points_[3] > 640.0f))){
 				interest_points_[0] = interest_points_[0];
 				interest_points_[1] = interest_points_[1];

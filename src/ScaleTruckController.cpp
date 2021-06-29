@@ -40,7 +40,9 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/dist",dist_, 30.0f);
   nodeHandle_.param("params/pid/Kp",Kp_, 15.0f);
   nodeHandle_.param("params/pid/Ki",Ki_, 0.01f);
-  nodeHandle_.param("params/pid/Kd",Kd_, 0.25f);
+  nodeHandle_.param("params/pid/Kd",Kd_, 0.25f); 
+  nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);
+  nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);
   return true;
 }
 
@@ -81,7 +83,6 @@ bool ScaleTruckController::isNodeRunning(void){
 
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
-  float k1 = -0.1f, k2 = 0.11f;
   //centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   i_points_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   //float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);
@@ -91,7 +92,7 @@ void* ScaleTruckController::lanedetectInThread() {
   //AngleDegree_ = atanf(centerLine_) * 180.0f/M_PI;
   //AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
 
-  AngleDegree_ = ((-1.0f * k1) * i_points_[1]) + ((-1.0f * k2) * i_points_[0]);
+  AngleDegree_ = ((-1.0f * K1_) * i_points_[1]) + ((-1.0f * K2_) * i_points_[0]);
 }
 
 void* ScaleTruckController::objectdetectInThread() {

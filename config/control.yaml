@@ -55,7 +55,9 @@ LaneDetector:
     dt: 0.1
   filter_param: 10
   center_height: 0.2
-  lat_pose_height: 1.0
+  lat_pose_height: 0.95
+  K1: 0.06
+  K2: 0.06
 
 image_view:
   enable_opencv: true

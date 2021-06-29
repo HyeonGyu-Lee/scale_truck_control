@@ -29,18 +29,9 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
   nodeHandle_.param("params/target_speed", TargetSpeed_, 0.5f); // m/s
   nodeHandle_.param("params/safety_speed", SafetySpeed_, 0.3f); // m/s
-  nodeHandle_.param("params/speed_mode", speed_mode_, 4); // m/s
   nodeHandle_.param("params/target_dist", TargetDist_, 0.3f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.0f); // m
   nodeHandle_.param("params/angle_degree", AngleDegree_, 0.0f); // degree
-  nodeHandle_.param("params/angle_limits/max",AngleMax_, 60.0f);
-  nodeHandle_.param("params/angle_limits/min",AngleMin_, -60.0f);
-  nodeHandle_.param("params/center_err",centerErr_, 640.0f);
-  nodeHandle_.param("params/width2dist",width2dist_, 30.0f);
-  nodeHandle_.param("params/dist",dist_, 30.0f);
-  nodeHandle_.param("params/pid/Kp",Kp_, 15.0f);
-  nodeHandle_.param("params/pid/Ki",Ki_, 0.01f);
-  nodeHandle_.param("params/pid/Kd",Kd_, 0.25f); 
   nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);
   nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);
   return true;
@@ -83,15 +74,7 @@ bool ScaleTruckController::isNodeRunning(void){
 
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
-  //centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   i_points_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
-  //float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);
-  //weight = weight * fabs(weight);
-
-  //AngleDegree_ = atanf(width2dist_*weight/dist_)*(180.0f/M_PI);  
-  //AngleDegree_ = atanf(centerLine_) * 180.0f/M_PI;
-  //AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
-
   AngleDegree_ = ((-1.0f * K1_) * i_points_[1]) + ((-1.0f * K2_) * i_points_[0]);
 }
 
@@ -100,22 +83,17 @@ void* ScaleTruckController::objectdetectInThread() {
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
   distance_ = 10.f;
+  
   for(int i = 0; i < ObjCircles_; i++){
     dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
     if(distance_ >= dist)
       distance_ = dist;
   }
-  static float tmp = TargetSpeed_ / speed_mode_;
+  
   if(distance_ <= TargetDist_) {
     resultSpeed_ = 0;
   } else if(distance_ <= SafetyDist_) {
     resultSpeed_ = (TargetSpeed_-SafetySpeed_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetySpeed_;
-  /*  for(int i = 1; i <= speed_mode_; i++) {
-      if(distance_ < (TargetDist_ + (dist_level_*i))) {
-          resultSpeed_ = (TargetSpeed_ - SafetySpeed_)*tmp + SafetySpeed_;
-        break;
-      }
-    }*/
   } else
     resultSpeed_ = TargetSpeed_;
 
@@ -151,10 +129,6 @@ void ScaleTruckController::spin() {
   geometry_msgs::Twist msg;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
-  
-  dist_level_ = (SafetyDist_ - TargetDist_)/speed_mode_;
-
-  int i = 0;
 
   const auto wait_image = std::chrono::milliseconds(20);
 
@@ -167,8 +141,6 @@ void ScaleTruckController::spin() {
     if(enableConsoleOutput_)
       displayConsole();
  
-    //if((AngleDegree_ > AngleMax_) || (AngleDegree_ < AngleMin_))
-    //  resultSpeed_ = 0.0f;
     msg.angular.z = AngleDegree_;
     msg.linear.x = resultSpeed_;
     msg.linear.y = distance_;
@@ -177,12 +149,6 @@ void ScaleTruckController::spin() {
     if (!readParameters()) {
     ros::requestShutdown();
     }
-    
-    /*
-    msg.linear.y = Kp_;   
-    msg.linear.z = Ki_;   
-    msg.angular.x = Kd_;
-    */
     
     ControlDataPublisher_.publish(msg);
     if(!isNodeRunning()) {

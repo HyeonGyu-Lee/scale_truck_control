@@ -1,8 +1,0 @@
-Kp: 1.0
-Ki: 0.00001
-Kd: 0.0025
-dt: 0.1
-clicker: 1660
-throttle: 1610
-hls_min: 175
-sobel_min: 175

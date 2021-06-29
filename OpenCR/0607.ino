@@ -52,7 +52,7 @@ void rosTwistCallback(const geometry_msgs::Twist& msg) {
   tx_throttle_ = msg.linear.x;
   tx_tdist_ = msg.linear.z;
   tx_dist_ = msg.linear.y;
-  tx_steer_ = msg.angular.z;
+  tx_steer_ = msg.angular.z;	// float64
 }
 /*
    SPEED to RPM
@@ -61,7 +61,7 @@ float Kp_ = 0.8; // 2.0; //0.8;
 float Ki_ = 2.0; // 0.4; //10.0;
 float Kd_ = 0.0; //0.05;
 float Ka_ = 0.8;
-float Kf_ = 0.5;
+float Kf_ = 0.5;	// feed forward const.
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
 std_msgs::Float32 vel_msg_;

@@ -69,6 +69,7 @@ float Ki_ = 2.0;
 float Kd_ = 0.001;
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
+float Kff_ = 0.5;
 std_msgs::Float32 vel_msg_;
 
 float setSPEED(float tar_vel, float cur_vel) {
@@ -86,7 +87,7 @@ float setSPEED(float tar_vel, float cur_vel) {
     I_err += Ki_ * err * dt_;
     D_err = (Kd_ * ((err - prev_err) / dt_ ));
     
-    u = tar_vel + P_err + I_err; // + D_err; 
+    u = tar_vel * Kff_ + P_err + I_err; // + D_err; 
     
     /* sat(u(k))  saturation start */
     if(u > MAX_SPEED) u_k = MAX_SPEED;

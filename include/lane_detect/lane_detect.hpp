@@ -4,6 +4,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <ros/ros.h>
+#include <math.h>
+#include <time.h>
 
 using namespace cv;
 using namespace std;
@@ -15,7 +17,7 @@ public:
 	LaneDetector(ros::NodeHandle nh);
 	~LaneDetector(void);
 
-	int display_img(Mat _frame, int _delay, bool _view);
+	float* display_img(Mat _frame, int _delay, bool _view);
 
 private:
 	void LoadParams(void);
@@ -48,7 +50,7 @@ private:
 		float left_curve_radius_;
 		float right_curve_radius_;
 		float center_position_;
-
+		float interest_points_[4];
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;
 	double Kp_term_, Ki_term_, Kd_term_, err_, prev_err_, I_err_, D_err_, result_;
@@ -63,7 +65,9 @@ private:
 	int width_, height_;
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;
-	double Kp_, Ki_, Kd_, dt_, center_height_;
+	double Kp_, Ki_, Kd_, dt_;
+	float center_height_, lat_pose_height_;
+
 };
 
 }

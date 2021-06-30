@@ -30,27 +30,31 @@ private:
 	void clear_release();
 	void calc_curv_rad_and_center_dist(Mat _frame, bool _view);
 
-        ros::NodeHandle nodeHandle_;
+    ros::NodeHandle nodeHandle_;
+
+	/********** Camera calibration **********/
+	Mat map1_, map2_;
+
 	/********** Lane_detect data ***********/
-		int last_Llane_base_;
-		int last_Rlane_base_;
+	int last_Llane_base_;
+	int last_Rlane_base_;
 
-		vector<int> left_lane_inds_;
-		vector<int> right_lane_inds_;
-		vector<int> left_x_;
-		vector<int> left_y_;
-		vector<int> right_x_;
-		vector<int> right_y_;
-		vector<int> center_x_;
-		vector<int> center_y_;
+	vector<int> left_lane_inds_;
+	vector<int> right_lane_inds_;
+	vector<int> left_x_;
+	vector<int> left_y_;
+	vector<int> right_x_;
+	vector<int> right_y_;
+	vector<int> center_x_;
+	vector<int> center_y_;
 
-		Mat left_coef_;
-		Mat right_coef_;
-		Mat center_coef_;
-		float left_curve_radius_;
-		float right_curve_radius_;
-		float center_position_;
-		float interest_points_[4];
+	Mat left_coef_;
+	Mat right_coef_;
+	Mat center_coef_;
+	float left_curve_radius_;
+	float right_curve_radius_;
+	float center_position_;
+	float interest_points_[4];
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;
 	double Kp_term_, Ki_term_, Kd_term_, err_, prev_err_, I_err_, D_err_, result_;

@@ -40,7 +40,7 @@ float output_;
 volatile int EN_pos_;
 volatile int CountT_;
 volatile int cumCountT_;
-char filename_[] = "LOG00.TXT";
+char filename_[] = "FV1_00.TXT";
 File logfile_;
 HardwareTimer Timer1(TIMER_CH1); // T Method
 HardwareTimer Timer2(TIMER_CH2); // Check EN
@@ -248,8 +248,8 @@ void setup() {
   } else {
     Serial.println("card initialized.");
     for(uint8_t i=0; i<100; i++){
-      filename_[3] = i/10 + '0';
-      filename_[4] = i%10 + '0';
+      filename_[4] = i/10 + '0';
+      filename_[5] = i%10 + '0';
       if(! SD.exists(filename_)){
         logfile_ = SD.open(filename_, FILE_WRITE);
         break;

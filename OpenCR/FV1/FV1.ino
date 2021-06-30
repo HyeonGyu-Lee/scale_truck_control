@@ -6,18 +6,21 @@
 #include <std_msgs/Float32.h>
 #include <SD.h>
 #include <IMU.h>
+
 // Period
 #define BAUD_RATE     (57600)
 #define CYCLE_TIME    (100000) // us
 #define SEC_TIME      (1000000) // us
 #define T_TIME        (100) // us
 #define ANGLE_TIME    (100000) // us
+
 // PIN
 #define STEER_PIN     (6)
 #define SD_PIN        (10)
 #define THROTTLE_PIN  (9)
 #define EN_PINA       (3)
 #define EN_PINB       (2)
+
 // Encoder
 #define TICK2CYCLE    (60) // (65) // 65 ticks(EN_pos_) = 1 wheel cycle
 #define WHEEL_DIM     (0.085) // m
@@ -28,6 +31,9 @@
 #define MAX_STEER     (1800)
 #define MIN_STEER     (1200)
 #define STEER_CENTER  (1500)
+
+#define DATA_LOG      (0)
+
 cIMU  IMU;
 Servo throttle_;
 Servo steer_;
@@ -42,9 +48,11 @@ volatile int CountT_;
 volatile int cumCountT_;
 char filename_[] = "FV1_00.TXT";
 File logfile_;
+
 HardwareTimer Timer1(TIMER_CH1); // T Method
 HardwareTimer Timer2(TIMER_CH2); // Check EN
 HardwareTimer Timer3(TIMER_CH3); // Angle
+
 /*
    ros Subscribe Callback Function
 */
@@ -67,27 +75,28 @@ float circ_ = WHEEL_DIM * M_PI;
 std_msgs::Float32 vel_msg_;
 float setSPEED(float tar_vel, float cur_vel) {
   static float output, err, prev_err, P_err, I_err, D_err;
-  static float prev_u_k, prev_u, A_err;
+  static float prev_u_k, prev_u;//, A_err;
   float u, u_k;
   vel_msg_.data = cur_vel;
   if(tar_vel <= 0 ) {
     output = ZERO_PWM;
     I_err = 0;
-    A_err = 0;
+    //A_err = 0;
   } else {
     err = tar_vel - cur_vel;
     P_err = Kp_ * err;
     I_err += Ki_ * err * dt_;
     D_err = (Kd_ * ((err - prev_err) / dt_ ));
-    A_err += Ka_ * ((prev_u_k - prev_u) / dt_);
+    //A_err += Ka_ * ((prev_u_k - prev_u) / dt_);
     u = P_err + I_err + D_err + tar_vel*Kf_;
+    
     /* sat(u(k))  saturation start */
     if(u > 2.0122) u_k = 2.0122;
     else if(u <= 0) u_k = 0;
     else u_k = u;
+    
     /* inverse function */
-    output = (-4.8278e-02+sqrt(pow(-4.8278e-02, 2)-4*(-1.1446e-05)*(-47.94-u_k)))/(2*(-1.1446e-05));
-    //output = 1600 + (3 * (-0.03602 + sqrt(pow(0.03602,2)+(4*0.0001237*(u_k))))/(2*0.0001237));
+    output = (-8.152e-02 + sqrt(pow(-8.152e-02,2)-4*(-2.0975e-05)*(-76.87-u_k)))/(2*(-2.0975e-05)));
     //output = tx_throttle_;
   }
  /*output command*/
@@ -137,18 +146,6 @@ void getENA() {
   CountT_ = 0;
 }
 /*
-   Encoder B interrupt service routine
-*/
-void getENB() {
-  static boolean PINA = digitalRead(EN_PINA);
-  static boolean PINB = digitalRead(EN_PINB);
-  if (PINA ^ PINB) {
-    EN_pos_ -= 1; // white - black
-  } else {
-    EN_pos_ += 1;   // white + black
-  }
-}
-/*
    RPM Check Function
 */
 void CheckEN() {
@@ -159,32 +156,33 @@ void CheckEN() {
   static float target_ANGLE;
   static float target_RPM;
   static float cur_RPM;
-  //target_RPM = (tx_throttle_ / circ_)* 60; // RPM
   target_vel = tx_throttle_; // m/s
   target_ANGLE = tx_steer_; // degree
   if(cumCountT_ == 0)
     cur_vel = 0;
   else
      cur_vel = (float)EN_pos_ / TICK2CYCLE * ( SEC_TIME / ((float)cumCountT_*T_TIME)) * circ_; // m/s
-  //cur_RPM = (float)EN_pos_ / TICK2CYCLE * ( 60.0 * SEC_TIME / ((float)cumCountT_*T_TIME)); // RPM
   output_vel = setSPEED(target_vel, cur_vel);
   output_angle = IMU.rpy[2];
-  Serial.print(target_vel);
-  Serial.print(" m/s | ");
-  Serial.print(cur_vel);
-  Serial.print(" m/s | ");
-  Serial.print(output_vel);
-  Serial.println(" signal | ");
-  Serial.print(EN_pos_);
-  Serial.print(" count | ");
-  Serial.print(cumCountT_);
-  Serial.print(" count | ");
-  Serial.print(output_vel);
-  Serial.print(" us | ");
-  Serial.print(target_ANGLE);
-  Serial.print(" deg | ");
-  Serial.print(output_angle);
-  Serial.println(" deg");
+  if(DATA_LOG)
+  {
+    Serial.print(target_vel);
+    Serial.print(" m/s | ");
+    Serial.print(cur_vel);
+    Serial.print(" m/s | ");
+    Serial.print(output_vel);
+    Serial.println(" signal | ");
+    Serial.print(EN_pos_);
+    Serial.print(" count | ");
+    Serial.print(cumCountT_);
+    Serial.print(" count | ");
+    Serial.print(output_vel);
+    Serial.print(" us | ");
+    Serial.print(target_ANGLE);
+    Serial.print(" deg | ");
+    Serial.print(output_angle);
+    Serial.println(" deg");
+  }
   logfile_ = SD.open(filename_, FILE_WRITE);
   logfile_.print(target_vel);
   logfile_.print(",");
@@ -282,58 +280,32 @@ void setup() {
 void loop() {
   static unsigned long prevTime = 0;
   static unsigned long currentTime;
-  static float speed_vel;
-  static boolean flag_ = false;
-  float cnt;
-  if(Serial.available() > 0) { // tx_throttle_
-    //tx_steer_ = Serial.parseFloat();
-    //tx_throttle_ = Serial.parseFloat();
-    speed_vel = Serial.parseFloat();
-    flag_ = true;
-    Serial.println(speed_vel);
-  }
-  if(flag_) {
-    /*cnt = 50;
-    delay(1000);
-    for(int i = 0; i <= cnt; i++){
-      tx_throttle_ = ((float)(speed_vel / cnt) * i);
-      Serial.println(tx_throttle_);
-      delay(5000/cnt);
+  
+  if(DATA_LOG)
+  {
+    static float speed_vel;
+    static boolean flag_ = false;
+    if(Serial.available() > 0) {
+      //tx_steer_ = Serial.parseFloat();
+      //tx_throttle_ = Serial.parseFloat();
+      speed_vel = Serial.parseFloat();
+      flag_ = true;
+      Serial.println(speed_vel);
     }
-    //tx_throttle_ = speed_vel;
-    delay(5000);
-    for(int i = cnt; i >= 0; i--){
-      tx_throttle_ = ((float)(speed_vel / cnt) * i);
-      Serial.println(tx_throttle_);
-      delay(5000/cnt);
-    }*/
-    tx_throttle_ = speed_vel;
-    delay(5000);
-    tx_throttle_ = 0;
-    flag_ = false;
+    if(flag_) {
+      delay(1000);
+      tx_throttle_ = speed_vel;
+      delay(5000);
+      tx_throttle_ = 0;
+      flag_ = false;
+    }
   }
   nh_.spinOnce();
   delay(1);
-  /*
+  
   currentTime = millis();
   if ((currentTime - prevTime) >= (CYCLE_TIME / 1000)) {
     rosPubMsg.publish(&vel_msg_);
     prevTime = currentTime;
-    if (tx_throttle_ > 0  )
-    {
-        if ( flag_ ) {
-            test_throttle_ = 0.5;
-            flag_ = false;
-        }
-        if (count == 100 ){
-            test_throttle_ = 0;
-            count = 0;
-            Ki_ += 0.01;
-            stopflag_ = true;
-        }
-        if(flag_ == false && stopflag_ == false)count++;
-    } else {
-        test_throttle_ = 0;
-    }
-  }*/
+  }
 }

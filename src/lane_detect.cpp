@@ -7,6 +7,13 @@ namespace lane_detect {
 
 LaneDetector::LaneDetector(ros::NodeHandle nh)
   : nodeHandle_(nh) {
+    /******* Camera  calibration *******/	  
+	Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
+	Mat dist_coeffs = Mat::zeros(1, 5, CV_64FC1);
+	camera_matrix = (Mat1d(3, 3) << 4.9202194020447860e+02, 0., 640., 0., 4.9202194020447860e+02, 360., 0., 0., 1.);
+	dist_coeffs = (Mat1d(1, 5) << -3.2351286691095799e-01, 1.0868592705240288e-01, 0., 0., -1.7181307581560720e-02);
+	initUndistortRectifyMap(camera_matrix, dist_coeffs, Mat(), camera_matrix, Size(1280, 720), CV_32FC1, map1_, map2_);
+
 	/********** PID control ***********/
 	prev_err_ = 0;
 
@@ -500,10 +507,12 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	//int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 	float* LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		LoadParams();
-		Mat new_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
+		Mat new_frame, temp_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
 		Mat filter(filter_, filter_, CV_8U, Scalar(1));
 
-		resize(_frame, new_frame, Size(width_, height_));
+		resize(_frame, temp_frame, Size(width_, height_));
+		new_frame = temp_frame.clone();
+		remap(temp_frame, new_frame, map1_, map2_, INTER_LINEAR);
 		warped_frame = warped_img(new_frame);
 		cvtColor(warped_frame, gray_frame, COLOR_BGR2GRAY);
 		threshold(gray_frame, binary_frame, 0, 255, THRESH_BINARY|THRESH_OTSU);

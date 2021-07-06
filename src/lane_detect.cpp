@@ -234,8 +234,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		int Llane_current = Llane_base;
 		int Rlane_current = Rlane_base;
 
-		last_Llane_base_ = Llane_base;
-		last_Rlane_base_ = Rlane_base;
+		if (last_Llane_base_!=0 || last_Rlane_base_!=0) {
+			int Llane_current = Llane_base;
+			int Rlane_current = Rlane_base;
+		}
 
 		int L_prev = Llane_current;
 	    int R_prev = Rlane_current;
@@ -324,6 +326,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				if (Llane_current != L_prev) {
 					L_gap = (Llane_current - L_prev);
 				}
+			}
+			else {
+				last_Llane_base_ = Llane_base;
+				last_Rlane_base_ = Rlane_base;
 			}
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);

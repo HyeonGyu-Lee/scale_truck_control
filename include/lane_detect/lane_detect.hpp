@@ -17,7 +17,7 @@ public:
 	LaneDetector(ros::NodeHandle nh);
 	~LaneDetector(void);
 
-	float* display_img(Mat _frame, int _delay, bool _view);
+	float display_img(Mat _frame, int _delay, bool _view);
 
 private:
 	void LoadParams(void);
@@ -54,8 +54,10 @@ private:
 	float left_curve_radius_;
 	float right_curve_radius_;
 	float center_position_;
-	float interest_points_[4];
-	float lp_;
+	float SteerAngle_;
+	float center_height_, trust_height_, lp_, K1_, K2_;
+	float e_values_[2];
+	
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;
 	double Kp_term_, Ki_term_, Kd_term_, err_, prev_err_, I_err_, D_err_, result_;
@@ -71,7 +73,6 @@ private:
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;
 	double Kp_, Ki_, Kd_, dt_;
-	float center_height_, lat_pose_height_, trust_height_;
 
 };
 

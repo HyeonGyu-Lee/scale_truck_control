@@ -55,11 +55,11 @@ LaneDetector:
     dt: 0.1
   filter_param: 10
   center_height: 0.2
-  lat_pose_height: 0.95
   trust_height: 0.6667
   lp: 891 
   K1: 0.06
   K2: 0.06
+  steer_angle: 0.0
 
 image_view:
   enable_opencv: true

@@ -60,7 +60,6 @@ class ScaleTruckController {
     float TargetSpeed_; // -1 ~ 1  - Twist msg linear.x
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
     int centerLine_;
-	float* i_points_;
 	float AngleMax_; // +degree
     float AngleMin_; // -degree
     float resultSpeed_;
@@ -77,7 +76,7 @@ class ScaleTruckController {
     float dist_level_;
     int speed_mode_;
 
-    float Kp_, Ki_, Kd_, K1_, K2_;
+    float Kp_, Ki_, Kd_;
 
     //Thread
     std::thread controlThread_;

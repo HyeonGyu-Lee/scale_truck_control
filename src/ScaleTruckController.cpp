@@ -9,7 +9,6 @@ ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
   }
 
   centerLine_ = 0;
-  i_points_ = NULL;
 
   init();
 }
@@ -41,8 +40,6 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/pid/Kp",Kp_, 15.0f);
   nodeHandle_.param("params/pid/Ki",Ki_, 0.01f);
   nodeHandle_.param("params/pid/Kd",Kd_, 0.25f); 
-  nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);
-  nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);
   return true;
 }
 
@@ -84,7 +81,7 @@ bool ScaleTruckController::isNodeRunning(void){
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
   //centerLine_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
-  i_points_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
+  AngleDegree_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   //float weight = (centerLine_ - centerErr_)/centerErr_*(-1.0f);
   //weight = weight * fabs(weight);
 
@@ -92,7 +89,6 @@ void* ScaleTruckController::lanedetectInThread() {
   //AngleDegree_ = atanf(centerLine_) * 180.0f/M_PI;
   //AngleDegree_ = weight * AngleMax_; // -1 ~ 1 
 
-  AngleDegree_ = ((-1.0f * K1_) * i_points_[1]) + ((-1.0f * K2_) * i_points_[0]);
 }
 
 void* ScaleTruckController::objectdetectInThread() {
@@ -123,8 +119,6 @@ void ScaleTruckController::displayConsole() {
   printf("\nCenter : %d", centerLine_);
   printf("\nDist   : %f", distance_);
   printf("\nMinDist: %f", TargetDist_);
-  printf("\nPreview Distance Error: %2f", i_points_[0]);
-  printf("\nLateral Position Error: %2f", i_points_[1]);
   if(ObjSegments_ > 0)
     printf("\nSegs   : %d", ObjSegments_);
   if(ObjCircles_ > 0)

@@ -58,16 +58,16 @@ class ScaleTruckController {
     bool enableConsoleOutput_;
 	  float* i_points_;
 
+    float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
     float TargetVel_; // -1 ~ 1  - Twist msg linear.x
     float SafetyVel_;
     float ResultVel_;
-    float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
-	
 
     //object
     int ObjSegments_;
     int ObjCircles_;
     float distance_;
+    float distAngle_;
     float TargetDist_;
     float SafetyDist_;
 

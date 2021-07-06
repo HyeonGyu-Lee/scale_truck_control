@@ -79,15 +79,18 @@ void* ScaleTruckController::lanedetectInThread() {
 }
 
 void* ScaleTruckController::objectdetectInThread() {
-  float dist; 
+  float dist, angle; 
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
   distance_ = 10.f;
   
   for(int i = 0; i < ObjCircles_; i++){
     dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
-    if(distance_ >= dist)
+    dist_angle = atan(Obstacle_.circles[i].center.y/Obstacle_.circles[i].center.x)*180/M_PI;
+    if(distance_ >= dist) {
       distance_ = dist;
+      distAngle_ = angle;
+    }
   }
   
   if(distance_ <= TargetDist_) {
@@ -144,7 +147,7 @@ void ScaleTruckController::spin() {
       displayConsole();
  
     msg.angular.z = AngleDegree_;
-    msg.linear.x = resultVel_;
+    msg.linear.x = ResultVel_;
     msg.linear.y = distance_;
     msg.linear.z = TargetDist_;
     

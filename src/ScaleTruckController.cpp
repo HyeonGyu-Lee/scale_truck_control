@@ -7,8 +7,7 @@ ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
   if (!readParameters()) {
     ros::requestShutdown();
   }
-
-  centerLine_ = 0;
+  
   i_points_ = NULL;
 
   init();

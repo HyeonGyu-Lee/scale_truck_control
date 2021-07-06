@@ -56,14 +56,13 @@ class ScaleTruckController {
     bool viewImage_;
     int waitKeyDelay_;
     bool enableConsoleOutput_;
+	  float* i_points_;
 
-    float TargetSpeed_; // -1 ~ 1  - Twist msg linear.x
+    float TargetVel_; // -1 ~ 1  - Twist msg linear.x
+    float SafetyVel_;
+    float ResultVel_;
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
 	
-	float* i_points_;
-	float AngleMax_; // +degree
-    float AngleMin_; // -degree
-    float resultSpeed_;
 
     //object
     int ObjSegments_;
@@ -71,7 +70,6 @@ class ScaleTruckController {
     float distance_;
     float TargetDist_;
     float SafetyDist_;
-    float SafetySpeed_;
 
     float K1_, K2_;
 

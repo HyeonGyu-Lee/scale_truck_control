@@ -27,8 +27,8 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("image_view/enable_opencv", viewImage_, true);
   nodeHandle_.param("image_view/wait_key_delay", waitKeyDelay_, 3);
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
-  nodeHandle_.param("params/target_speed", TargetSpeed_, 0.5f); // m/s
-  nodeHandle_.param("params/safety_speed", SafetySpeed_, 0.3f); // m/s
+  nodeHandle_.param("params/target_vel", TargetVel_, 0.5f); // m/s
+  nodeHandle_.param("params/safety_vel", SafetyVel_, 0.3f); // m/s
   nodeHandle_.param("params/target_dist", TargetDist_, 0.3f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.0f); // m
   nodeHandle_.param("params/angle_degree", AngleDegree_, 0.0f); // degree
@@ -91,11 +91,11 @@ void* ScaleTruckController::objectdetectInThread() {
   }
   
   if(distance_ <= TargetDist_) {
-    resultSpeed_ = 0;
+    ResultVel_ = 0;
   } else if(distance_ <= SafetyDist_) {
-    resultSpeed_ = (TargetSpeed_-SafetySpeed_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetySpeed_;
+    ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetyVel_;
   } else
-    resultSpeed_ = TargetSpeed_;
+    ResultVel_ = TargetVel_;
 
 }
 
@@ -103,7 +103,9 @@ void ScaleTruckController::displayConsole() {
   printf("\033[2J");
   printf("\033[1;1H");
   printf("\nAngle  : %f degree", AngleDegree_);
-  printf("\nSpeed  : %f m/s", resultSpeed_);
+  printf("\nTarVel : %f m/s", ResultVel_);
+  printf("\nSafVel  : %f m/s", ResultVel_);
+  printf("\nResVel  : %f m/s", ResultVel_);
   printf("\nCenter : %d", centerLine_);
   printf("\nDist   : %f", distance_);
   printf("\nMinDist: %f", TargetDist_);
@@ -142,7 +144,7 @@ void ScaleTruckController::spin() {
       displayConsole();
  
     msg.angular.z = AngleDegree_;
-    msg.linear.x = resultSpeed_;
+    msg.linear.x = resultVel_;
     msg.linear.y = distance_;
     msg.linear.z = TargetDist_;
     

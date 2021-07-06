@@ -298,7 +298,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					good_right_inds.push_back(index);
 				}
 			}
-			int Lsum, Rsum, L_memory, R_memory;
+			int Lsum, Rsum;
 			Lsum = Rsum = 0;
 			unsigned int _size;
 
@@ -315,187 +315,187 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			
 			if (good_right_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_right_inds.size());
-			for (index = 0; index < _size; index++) {
-				Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
+				for (index = 0; index < _size; index++) {
+					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
+				}
+				Rlane_current = Rsum / _size;
+				right_x_.insert(right_x_.end(), Rlane_current);
+				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
+			} else
+				Rlane_current += (R_gap);
+			
+			if (window != 0) {	
+				if (Rlane_current != R_prev) {
+					R_gap = (Rlane_current - R_prev);
+				}
+	
+				if (Llane_current != L_prev) {
+					L_gap = (Llane_current - L_prev);
+				}
 			}
-			Rlane_current = Rsum / _size;
-			right_x_.insert(right_x_.end(), Rlane_current);
-			right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
-		} else
-			Rlane_current += (R_gap);
-		
-		if (window != 0) {	
-			if (Rlane_current != R_prev) {
-				R_gap = (Rlane_current - R_prev);
+	
+			if ((Lsum != 0) && (Rsum != 0)) {
+				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
+				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
 			}
+			L_prev = Llane_current;
+			R_prev = Rlane_current;
+		}
+	
+		if (left_x_.size() != 0) {
+			left_coef_ = polyfit(left_y_, left_x_);
+		}
+		if (right_x_.size() != 0) {
+			right_coef_ = polyfit(right_y_, right_x_);
+		}
+	
+		if ((left_x_.size() != 0) && (right_x_.size() != 0)) {
+			center_coef_ = polyfit(center_y_, center_x_);
+		}
+	
+		delete[] hist;
+		delete[] weight_distrib;
+	
+		return result;
+	}
 
-			if (Llane_current != L_prev) {
-				L_gap = (Llane_current - L_prev);
+	Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame, bool _view) {
+		Mat new_frame, left_coef(left_coef_), right_coef(right_coef_), center_coef(center_coef_), trans;
+		trans = getPerspectiveTransform(warpCorners_, corners_);
+		_frame.copyTo(new_frame);
+	
+		vector<Point> left_point;
+		vector<Point> right_point;
+		vector<Point> center_point;
+	
+		vector<Point2f> left_point_f;
+		vector<Point2f> right_point_f;
+		vector<Point2f> center_point_f;
+	
+		vector<Point2f> warped_left_point;
+		vector<Point2f> warped_right_point;
+		vector<Point2f> warped_center_point;
+	
+		vector<Point> left_points;
+		vector<Point> right_points;
+		vector<Point> center_points;
+	
+		if ((!left_coef.empty()) && (!right_coef.empty())) {
+			for (int i = 0; i <= height_; i++) {
+				Point temp_left_point;
+				Point temp_right_point;
+				Point temp_center_point;
+	
+				temp_left_point.x = (int)((left_coef.at<float>(2, 0) * pow(i, 2)) + (left_coef.at<float>(1, 0) * i) + left_coef.at<float>(0, 0));
+				temp_left_point.y = (int)i;
+				temp_right_point.x = (int)((right_coef.at<float>(2, 0) * pow(i, 2)) + (right_coef.at<float>(1, 0) * i) + right_coef.at<float>(0, 0));
+				temp_right_point.y = (int)i;
+				temp_center_point.x = (int)((center_coef.at<float>(2, 0) * pow(i, 2)) + (center_coef.at<float>(1, 0) * i) + center_coef.at<float>(0, 0));
+				temp_center_point.y = (int)i;
+	
+				left_point.push_back(temp_left_point);
+				right_point.push_back(temp_right_point);
+				left_point_f.push_back(temp_left_point);
+				right_point_f.push_back(temp_right_point);
+				center_point.push_back(temp_center_point);
+				center_point_f.push_back(temp_center_point);
 			}
+			const Point* left_points_point_ = (const cv::Point*) Mat(left_point).data;
+			int left_points_number_ = Mat(left_point).rows;
+			const Point* right_points_point_ = (const cv::Point*) Mat(right_point).data;
+			int right_points_number_ = Mat(right_point).rows;
+			const Point* center_points_point_ = (const cv::Point*) Mat(center_point).data;
+			int center_points_number_ = Mat(center_point).rows;
+	
+			if (_view) {
+				polylines(_sliding_frame, &left_points_point_, &left_points_number_, 1, false, Scalar(255, 200, 200), 5);
+				polylines(_sliding_frame, &right_points_point_, &right_points_number_, 1, false, Scalar(200, 200, 255), 5);
+				polylines(_sliding_frame, &center_points_point_, &center_points_number_, 1, false, Scalar(200, 255, 200), 5);
+			}
+			perspectiveTransform(left_point_f, warped_left_point, trans);
+			perspectiveTransform(right_point_f, warped_right_point, trans);
+			perspectiveTransform(center_point_f, warped_center_point, trans);
+	
+			for (int i = 0; i <= height_; i++) {
+				Point temp_left_point;
+				Point temp_right_point;
+				Point temp_center_point;
+	
+				temp_left_point.x = (int)warped_left_point[i].x;
+				temp_left_point.y = (int)warped_left_point[i].y;
+				temp_right_point.x = (int)warped_right_point[i].x;
+				temp_right_point.y = (int)warped_right_point[i].y;
+				temp_center_point.x = (int)warped_center_point[i].x;
+				temp_center_point.y = (int)warped_center_point[i].y;
+	
+				left_points.push_back(temp_left_point);
+				right_points.push_back(temp_right_point);
+				center_points.push_back(temp_center_point);
+			}
+	
+			const Point* left_points_point = (const cv::Point*) Mat(left_points).data;
+			int left_points_number = Mat(left_points).rows;
+			const Point* right_points_point = (const cv::Point*) Mat(right_points).data;
+			int right_points_number = Mat(right_points).rows;
+			const Point* center_points_point = (const cv::Point*) Mat(center_points).data;
+			int center_points_number = Mat(center_points).rows;
+	
+			if (_view) {
+				polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 5);
+				polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 5);
+				polylines(new_frame, &center_points_point, &center_points_number, 1, false, Scalar(100, 255, 100), 5);
+			}
+			left_point.clear();
+			right_point.clear();
+			center_point.clear();
+	
+			return new_frame;
 		}
-
-		if ((Lsum != 0) && (Rsum != 0)) {
-			center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
-			center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
-		}
-		L_prev = Llane_current;
-		R_prev = Rlane_current;
+		return _frame;
+	}
+	
+	void LaneDetector::clear_release() {
+		left_lane_inds_.clear();
+		right_lane_inds_.clear();
+		left_x_.clear();
+		left_y_.clear();
+		right_x_.clear();
+		right_y_.clear();
+		center_x_.clear();
+		center_y_.clear();
 	}
 
-	if (left_x_.size() != 0) {
-		left_coef_ = polyfit(left_y_, left_x_);
-	}
-	if (right_x_.size() != 0) {
-		right_coef_ = polyfit(right_y_, right_x_);
-	}
-
-	if ((left_x_.size() != 0) && (right_x_.size() != 0)) {
-		center_coef_ = polyfit(center_y_, center_x_);
-	}
-
-	delete[] hist;
-	delete[] weight_distrib;
-
-	return result;
-}
-
-Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame, bool _view) {
-	Mat new_frame, left_coef(left_coef_), right_coef(right_coef_), center_coef(center_coef_), trans;
-	trans = getPerspectiveTransform(warpCorners_, corners_);
-	_frame.copyTo(new_frame);
-
-	vector<Point> left_point;
-	vector<Point> right_point;
-	vector<Point> center_point;
-
-	vector<Point2f> left_point_f;
-	vector<Point2f> right_point_f;
-	vector<Point2f> center_point_f;
-
-	vector<Point2f> warped_left_point;
-	vector<Point2f> warped_right_point;
-	vector<Point2f> warped_center_point;
-
-	vector<Point> left_points;
-	vector<Point> right_points;
-	vector<Point> center_points;
-
-	if ((!left_coef.empty()) && (!right_coef.empty())) {
-		for (int i = 0; i <= height_; i++) {
-			Point temp_left_point;
-			Point temp_right_point;
-			Point temp_center_point;
-
-			temp_left_point.x = (int)((left_coef.at<float>(2, 0) * pow(i, 2)) + (left_coef.at<float>(1, 0) * i) + left_coef.at<float>(0, 0));
-			temp_left_point.y = (int)i;
-			temp_right_point.x = (int)((right_coef.at<float>(2, 0) * pow(i, 2)) + (right_coef.at<float>(1, 0) * i) + right_coef.at<float>(0, 0));
-			temp_right_point.y = (int)i;
-			temp_center_point.x = (int)((center_coef.at<float>(2, 0) * pow(i, 2)) + (center_coef.at<float>(1, 0) * i) + center_coef.at<float>(0, 0));
-			temp_center_point.y = (int)i;
-
-			left_point.push_back(temp_left_point);
-			right_point.push_back(temp_right_point);
-			left_point_f.push_back(temp_left_point);
-			right_point_f.push_back(temp_right_point);
-			center_point.push_back(temp_center_point);
-			center_point_f.push_back(temp_center_point);
-		}
-		const Point* left_points_point_ = (const cv::Point*) Mat(left_point).data;
-		int left_points_number_ = Mat(left_point).rows;
-		const Point* right_points_point_ = (const cv::Point*) Mat(right_point).data;
-		int right_points_number_ = Mat(right_point).rows;
-		const Point* center_points_point_ = (const cv::Point*) Mat(center_point).data;
-		int center_points_number_ = Mat(center_point).rows;
-
-		if (_view) {
-			polylines(_sliding_frame, &left_points_point_, &left_points_number_, 1, false, Scalar(255, 200, 200), 5);
-			polylines(_sliding_frame, &right_points_point_, &right_points_number_, 1, false, Scalar(200, 200, 255), 5);
-			polylines(_sliding_frame, &center_points_point_, &center_points_number_, 1, false, Scalar(200, 255, 200), 5);
-		}
-		perspectiveTransform(left_point_f, warped_left_point, trans);
-		perspectiveTransform(right_point_f, warped_right_point, trans);
-		perspectiveTransform(center_point_f, warped_center_point, trans);
-
-		for (int i = 0; i <= height_; i++) {
-			Point temp_left_point;
-			Point temp_right_point;
-			Point temp_center_point;
-
-			temp_left_point.x = (int)warped_left_point[i].x;
-			temp_left_point.y = (int)warped_left_point[i].y;
-			temp_right_point.x = (int)warped_right_point[i].x;
-			temp_right_point.y = (int)warped_right_point[i].y;
-			temp_center_point.x = (int)warped_center_point[i].x;
-			temp_center_point.y = (int)warped_center_point[i].y;
-
-			left_points.push_back(temp_left_point);
-			right_points.push_back(temp_right_point);
-			center_points.push_back(temp_center_point);
-		}
-
-		const Point* left_points_point = (const cv::Point*) Mat(left_points).data;
-		int left_points_number = Mat(left_points).rows;
-		const Point* right_points_point = (const cv::Point*) Mat(right_points).data;
-		int right_points_number = Mat(right_points).rows;
-		const Point* center_points_point = (const cv::Point*) Mat(center_points).data;
-		int center_points_number = Mat(center_points).rows;
-
-		if (_view) {
-			polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 5);
-			polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 5);
-			polylines(new_frame, &center_points_point, &center_points_number, 1, false, Scalar(100, 255, 100), 5);
-		}
-		left_point.clear();
-		right_point.clear();
-		center_point.clear();
-
-		return new_frame;
-	}
-	return _frame;
-}
-
-void LaneDetector::clear_release() {
-	left_lane_inds_.clear();
-	right_lane_inds_.clear();
-	left_x_.clear();
-	left_y_.clear();
-	right_x_.clear();
-	right_y_.clear();
-	center_x_.clear();
-	center_y_.clear();
-}
-
-void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
-	Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
-	float car_position = width_ / 2;
-	int lane_center_position,lane_top, lane_bot;
-	float a, b, c, l1, l2;
-
-	if (!l_fit.empty() && !r_fit.empty()) {
-		float i = ((float)height_) * center_height_;	
-		float j = ((float)height_) * trust_height_;
-		a = c_fit.at<float>(2, 0);
-		b = c_fit.at<float>(1, 0);
-		c = c_fit.at<float>(0, 0);
-		
-		l1 =  j - i;
-		l2 = ((a * pow(i, 2)) + (b * i) + c) - ((a * pow(j, 2)) + (b * j) + c);
-
-		e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
-		e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//e1
-		SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
-
-		/*
-		interest_points_[2] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	
-		interest_points_[3] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	
-		if ((fabs(interest_points_[2]) > 640.0f) || (fabs(interest_points_[3] > 640.0f))){
-				interest_points_[0] = interest_points_[0];
-				interest_points_[1] = interest_points_[1];
-		}
-			else{
-				interest_points_[0] = interest_points_[2];
-				interest_points_[1] = interest_points_[3];
-		}*/
+	void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
+		Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
+		float car_position = width_ / 2;
+		int lane_center_position,lane_top, lane_bot;
+		float a, b, c, l1, l2;
+	
+		if (!l_fit.empty() && !r_fit.empty()) {
+			float i = ((float)height_) * center_height_;	
+			float j = ((float)height_) * trust_height_;
+			a = c_fit.at<float>(2, 0);
+			b = c_fit.at<float>(1, 0);
+			c = c_fit.at<float>(0, 0);
+			
+			l1 =  j - i;
+			l2 = ((a * pow(i, 2)) + (b * i) + c) - ((a * pow(j, 2)) + (b * j) + c);
+	
+			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
+			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//e1
+			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
+	
+			/*
+			interest_points_[2] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	
+			interest_points_[3] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	
+			if ((fabs(interest_points_[2]) > 640.0f) || (fabs(interest_points_[3] > 640.0f))){
+					interest_points_[0] = interest_points_[0];
+					interest_points_[1] = interest_points_[1];
+			}
+				else{
+					interest_points_[0] = interest_points_[2];
+					interest_points_[1] = interest_points_[3];
+			}*/
 
 		}
 	}

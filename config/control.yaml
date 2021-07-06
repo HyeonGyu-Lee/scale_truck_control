@@ -57,7 +57,7 @@ LaneDetector:
   center_height: 0.2
   lat_pose_height: 0.95
   trust_height: 0.6667
-  lp: 500 
+  lp: 891 
   K1: 0.06
   K2: 0.06
 

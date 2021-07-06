@@ -106,16 +106,18 @@ void ScaleTruckController::displayConsole() {
   printf("\033[2J");
   printf("\033[1;1H");
   printf("\nAngle  : %f degree", AngleDegree_);
-  printf("\nTarVel : %f m/s", ResultVel_);
-  printf("\nSafVel  : %f m/s", ResultVel_);
-  printf("\nResVel  : %f m/s", ResultVel_);
-  printf("\nCenter : %d", centerLine_);
-  printf("\nDist   : %f", distance_);
-  printf("\nMinDist: %f", TargetDist_);
+  printf("\nTarVel : %f m/s", TargetVel_);
+  printf("\nSafVel : %f m/s", SafetyVel_);
+  printf("\nCurVel : %f m/s", ResultVel_);
+  printf("\nTarDist: %f", TargetDist_);
+  printf("\nSafDist: %f", SafetyDist_);
+  printf("\nCurDist: %f", distance_);
   printf("\nPreview Distance Error: %2f", i_points_[0]);
   printf("\nLateral Position Error: %2f", i_points_[1]);
-  if(ObjSegments_ > 0)
+  if(ObjSegments_ > 0) {
     printf("\nSegs   : %d", ObjSegments_);
+    printf("\nDistAng: %f", distAngle_);
+  }
   if(ObjCircles_ > 0)
     printf("\nCirs   : %d", ObjCircles_);
   printf("\n");

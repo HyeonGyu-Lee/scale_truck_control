@@ -55,6 +55,7 @@ private:
 	float right_curve_radius_;
 	float center_position_;
 	float interest_points_[4];
+	float lp_;
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;
 	double Kp_term_, Ki_term_, Kd_term_, err_, prev_err_, I_err_, D_err_, result_;
@@ -70,7 +71,7 @@ private:
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;
 	double Kp_, Ki_, Kd_, dt_;
-	float center_height_, lat_pose_height_;
+	float center_height_, lat_pose_height_, trust_height_;
 
 };
 

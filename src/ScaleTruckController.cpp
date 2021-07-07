@@ -3,7 +3,7 @@
 namespace scale_truck_control{
 
 ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
-    : nodeHandle_(nh), laneDetector_(nodeHandle_) {
+    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsocket_() {
   if (!readParameters()) {
     ros::requestShutdown();
   }
@@ -63,8 +63,8 @@ void ScaleTruckController::init() {
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
   
-  const char * addr = ADDR_.c_str()
-  UDPsocket_(addr, PORT_);
+  UDPsocket_.GROUP_ = ADDR_.c_str();
+  UDPsocket_.PORT_ = PORT_;
   if(info_) // send
   {
     UDPsocket_.sendInit();

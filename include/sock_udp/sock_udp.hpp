@@ -12,17 +12,17 @@
 namespace UDPsock{
 class UDPsocket {
 public:
-    UDPsocket(const char* GROUP, int PORT);
+    UDPsocket();
     ~UDPsocket();
     int recvInit();
     int sendInit();
     int recvData(float* Data);
     int sendData(float Data);
+    const char* GROUP_;
+    int PORT_;
 
 private:
     int fd_;
-    const char* GROUP_;
-    int PORT_;
     struct sockaddr_in addr_;
     struct ip_mreq mreq_;
 };

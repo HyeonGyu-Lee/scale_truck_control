@@ -1,7 +1,7 @@
 #include "sock_udp/sock_udp.hpp"
 
 namespace UDPsock{
-UDPsocket::UDPsocket(const char* IP_addr, int PORT)
+UDPsocket::UDPsocket()
 {
     fd_ = socket(AF_INET, SOCK_DGRAM, 0);
     
@@ -9,8 +9,6 @@ UDPsocket::UDPsocket(const char* IP_addr, int PORT)
         perror("socket");
         exit(0);
     }
-    GROUP_ = IP_addr;
-    PORT_ = PORT;
 }
 
 UDPsocket::~UDPsocket()

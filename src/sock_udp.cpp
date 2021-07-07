@@ -1,5 +1,6 @@
 #include "sock_udp/sock_udp.h"
 
+namespace UDPsock{
 UDPsocket::UDPsocket(const char* IP_addr, int PORT)
 {
     fd_ = socket(AF_INET, SOCK_DGRAM, 0);
@@ -73,4 +74,5 @@ int UDPsocket::sendData(float Data)
         perror("sendto");
         return 1;
     }
+}
 }

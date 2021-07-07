@@ -56,27 +56,22 @@ class ScaleTruckController {
     bool viewImage_;
     int waitKeyDelay_;
     bool enableConsoleOutput_;
+	  float* i_points_;
 
-    float TargetSpeed_; // -1 ~ 1  - Twist msg linear.x
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
-    int centerLine_;
-	float AngleMax_; // +degree
-    float AngleMin_; // -degree
-    float resultSpeed_;
-    float centerErr_;
-    float width2dist_, dist_;
+    float TargetVel_; // -1 ~ 1  - Twist msg linear.x
+    float SafetyVel_;
+    float ResultVel_;
 
     //object
     int ObjSegments_;
     int ObjCircles_;
     float distance_;
+    float distAngle_;
     float TargetDist_;
     float SafetyDist_;
-    float SafetySpeed_;
-    float dist_level_;
-    int speed_mode_;
 
-    float Kp_, Ki_, Kd_;
+    float K1_, K2_;
 
     //Thread
     std::thread controlThread_;

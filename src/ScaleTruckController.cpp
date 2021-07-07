@@ -8,9 +8,6 @@ ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
     ros::requestShutdown();
   }
 
-  centerLine_ = 0;
-  i_points_ = NULL;
-
   init();
 }
 
@@ -27,13 +24,11 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("image_view/enable_opencv", viewImage_, true);
   nodeHandle_.param("image_view/wait_key_delay", waitKeyDelay_, 3);
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
-  nodeHandle_.param("params/target_speed", TargetSpeed_, 0.5f); // m/s
-  nodeHandle_.param("params/safety_speed", SafetySpeed_, 0.3f); // m/s
+  nodeHandle_.param("params/target_vel", TargetVel_, 0.5f); // m/s
+  nodeHandle_.param("params/safety_vel", SafetyVel_, 0.3f); // m/s
   nodeHandle_.param("params/target_dist", TargetDist_, 0.3f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.0f); // m
   nodeHandle_.param("params/angle_degree", AngleDegree_, 0.0f); // degree
-  nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);
-  nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);
   return true;
 }
 
@@ -74,45 +69,46 @@ bool ScaleTruckController::isNodeRunning(void){
 
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
-  i_points_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
-  AngleDegree_ = ((-1.0f * K1_) * i_points_[1]) + ((-1.0f * K2_) * i_points_[0]);
+  AngleDegree_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
 }
 
 void* ScaleTruckController::objectdetectInThread() {
-  float dist; 
+  float dist, angle; 
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
   distance_ = 10.f;
   
   for(int i = 0; i < ObjCircles_; i++){
     dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
-    if(distance_ >= dist)
+    angle = atanf(Obstacle_.circles[i].center.y/Obstacle_.circles[i].center.x)*(180.0f/M_PI);
+    if(distance_ >= dist) {
       distance_ = dist;
+      distAngle_ = angle;
+    }
   }
   
   if(distance_ <= TargetDist_) {
-    resultSpeed_ = 0;
+    ResultVel_ = 0;
   } else if(distance_ <= SafetyDist_) {
-    resultSpeed_ = (TargetSpeed_-SafetySpeed_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetySpeed_;
+    ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetyVel_;
   } else
-    resultSpeed_ = TargetSpeed_;
+    ResultVel_ = TargetVel_;
 
 }
 
 void ScaleTruckController::displayConsole() {
   printf("\033[2J");
   printf("\033[1;1H");
-  printf("\nAngle  : %f degree", AngleDegree_);
-  printf("\nSpeed  : %f m/s", resultSpeed_);
-  printf("\nCenter : %d", centerLine_);
-  printf("\nDist   : %f", distance_);
-  printf("\nMinDist: %f", TargetDist_);
-  printf("\nPreview Distance Error: %2f", i_points_[0]);
-  printf("\nLateral Position Error: %2f", i_points_[1]);
-  if(ObjSegments_ > 0)
-    printf("\nSegs   : %d", ObjSegments_);
-  if(ObjCircles_ > 0)
+  printf("\nAngle           : %2.3f degree", AngleDegree_);
+  printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, ResultVel_);
+  printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m/s", TargetDist_, SafetyDist_, distance_);
+  if(ObjCircles_ > 0) {
     printf("\nCirs   : %d", ObjCircles_);
+    printf("\nDistAng: %2.3f", distAngle_);
+  }
+  if(ObjSegments_ > 0) {
+    printf("\nSegs   : %d", ObjSegments_);
+  }
   printf("\n");
 }
 
@@ -142,7 +138,7 @@ void ScaleTruckController::spin() {
       displayConsole();
  
     msg.angular.z = AngleDegree_;
-    msg.linear.x = resultSpeed_;
+    msg.linear.x = ResultVel_;
     msg.linear.y = distance_;
     msg.linear.z = TargetDist_;
     

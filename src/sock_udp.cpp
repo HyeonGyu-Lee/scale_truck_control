@@ -6,7 +6,7 @@ UDPsocket::UDPsocket(const char* IP_addr, int PORT)
     
     if (fd_ < 0) {
         perror("socket");
-        return 1;
+        exit(0);
     }
     GROUP_ = IP_addr;
     PORT_ = PORT;

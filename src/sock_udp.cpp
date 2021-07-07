@@ -38,7 +38,7 @@ int UDPsocket::recvInit()
         return 1;
     }
 
-    mreq_.imr_multiaddr.s_addr = inet_addr(group);
+    mreq_.imr_multiaddr.s_addr = inet_addr(GROUP_);
     mreq_.imr_interface.s_addr = htonl(INADDR_ANY);
     if (setsockopt(fd_, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq_, sizeof(mreq_)) < 0)
     {

@@ -26,7 +26,9 @@
 
 //OpenCV
 #include <cv_bridge/cv_bridge.h>
+
 #include "lane_detect/lane_detect.hpp"
+#include "sock_udp/sock_udp.hpp"
 
 namespace scale_truck_control {
 

@@ -52,11 +52,10 @@ class ScaleTruckController {
     ros::Subscriber objectSubscriber_;
 
     //image
-    lane_detect::LaneDetector laneDetector_;
+    LaneDetect::LaneDetector laneDetector_;
     bool viewImage_;
     int waitKeyDelay_;
     bool enableConsoleOutput_;
-	  float* i_points_;
 
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
     float TargetVel_; // -1 ~ 1  - Twist msg linear.x
@@ -71,7 +70,13 @@ class ScaleTruckController {
     float TargetDist_;
     float SafetyDist_;
 
-    float K1_, K2_;
+    //UDP
+    UDPsock::UDPsocket UDPsocket_;
+    std::string ADDR_;
+    std::string TRUCK_INFO_;
+    bool info_ = true;
+    int PORT_;
+    float udpData_;
 
     //Thread
     std::thread controlThread_;
@@ -97,6 +102,7 @@ class ScaleTruckController {
 
     void* lanedetectInThread();
     void* objectdetectInThread();
+    void* UDPsocketInThread();
     void displayConsole();
 };
 

@@ -11,7 +11,7 @@
 using namespace cv;
 using namespace std;
 
-namespace lane_detect {
+namespace LaneDetect {
 
 class LaneDetector{
 public:

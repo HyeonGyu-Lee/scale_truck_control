@@ -28,7 +28,15 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/safety_vel", SafetyVel_, 0.3f); // m/s
   nodeHandle_.param("params/target_dist", TargetDist_, 0.3f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.0f); // m
-  nodeHandle_.param("params/angle_degree", AngleDegree_, 0.0f); // degree
+  nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
+  nodeHandle_.param("params/udp_group_port", PORT_, 1900);
+  nodeHandle_.param("params/truck_info", TRUCK_INFO_, std::string("LV"));
+
+  if(TRUCK_INFO_.compare(std::string("LV")))
+    info_ = true;
+  else
+    info_ = false;
+
   return true;
 }
 
@@ -55,6 +63,15 @@ void ScaleTruckController::init() {
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
 
+  UDPsocket_(ADDR_.c_str, PORT_);
+  if(info_) // send
+  {
+    UDPsocket_.sendInit();
+  }
+  else // receive
+  {
+    UDPsocket_.recvInit();
+  }
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -96,18 +113,32 @@ void* ScaleTruckController::objectdetectInThread() {
 
 }
 
+void* ScaleTruckController::UDPsocketInThread()
+{
+  if(info_) // send
+  {
+    udpData_ = ResultVel_;
+    UDPsocket_.sendData(udpData_);
+  }
+  else // receive
+  {
+    UDPsocket_.recvData(&udpData_);
+  }
+}
+
 void ScaleTruckController::displayConsole() {
   printf("\033[2J");
   printf("\033[1;1H");
   printf("\nAngle           : %2.3f degree", AngleDegree_);
   printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, ResultVel_);
-  printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m/s", TargetDist_, SafetyDist_, distance_);
+  printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
+  printf("\nUDP_data        : %3.3f m/s", udpData_);
   if(ObjCircles_ > 0) {
-    printf("\nCirs   : %d", ObjCircles_);
-    printf("\nDistAng: %2.3f", distAngle_);
+    printf("\nCirs            : %d", ObjCircles_);
+    printf("\nDistAng         : %2.3f degree", distAngle_);
   }
   if(ObjSegments_ > 0) {
-    printf("\nSegs   : %d", ObjSegments_);
+    printf("\nSegs            : %d", ObjSegments_);
   }
   printf("\n");
 }
@@ -125,14 +156,18 @@ void ScaleTruckController::spin() {
   geometry_msgs::Twist msg;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
+  std::thread udpsocket_thread;
 
   const auto wait_image = std::chrono::milliseconds(20);
 
   while(!controlDone_) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
+    udpsocket_thread = std::thread(&ScaleTruckController::UDPsocketInThread, this);
+
     lanedetect_thread.join();
     objectdetect_thread.join();
+    udpsocket_thread.join();
     
     if(enableConsoleOutput_)
       displayConsole();

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+namespace UDPsock{
 class UDPsocket {
 public:
     UDPsocket(const char* GROUP, int PORT);
@@ -25,3 +26,4 @@ private:
     struct sockaddr_in addr_;
     struct ip_mreq mreq_;
 };
+}

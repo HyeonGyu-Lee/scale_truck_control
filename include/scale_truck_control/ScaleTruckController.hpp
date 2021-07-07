@@ -82,6 +82,7 @@ class ScaleTruckController {
 
     //Thread
     std::thread controlThread_;
+    std::mutex mutex_;
 
     obstacle_detector::Obstacles Obstacle_;
     boost::shared_mutex mutexObjectCallback_;

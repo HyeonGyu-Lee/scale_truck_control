@@ -87,11 +87,17 @@ bool ScaleTruckController::isNodeRunning(void){
 
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
-  AngleDegree_ = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
+  float AngleDegree;
+  AngleDegree = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
+  mutex_.lock();
+  AngleDegree_ = AngleDegree;
+  mutex_.unlock();
 }
 
 void* ScaleTruckController::objectdetectInThread() {
   float dist, angle; 
+
+  mutex_.lock();
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
   distance_ = 10.f;
@@ -111,19 +117,31 @@ void* ScaleTruckController::objectdetectInThread() {
     ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetyVel_;
   } else
     ResultVel_ = TargetVel_;
+  mutex_.unlock();
 
 }
 
 void* ScaleTruckController::UDPsocketInThread()
 {
-  if(info_) // send
+  const auto wait_vel = std::chrono::milliseconds(20);
+  while(1)
   {
-    udpData_ = ResultVel_;
-    UDPsocket_.sendData(udpData_);
-  }
-  else // receive
-  {
-    UDPsocket_.recvData(&udpData_);
+    if(info_) // send
+    {
+      mutex_.lock();
+      udpData_ = ResultVel_;
+      mutex_.unlock();
+      UDPsocket_.sendData(udpData_);
+    }
+    else // receive
+    {
+      float udpData;
+      UDPsocket_.recvData(&udpData);
+      mutex_.lock();
+      udpData_ = udpData;
+      mutex_.unlock();
+    }
+    std::this_thread::sleep_for(wait_vel);
   }
 }
 
@@ -161,14 +179,15 @@ void ScaleTruckController::spin() {
 
   const auto wait_image = std::chrono::milliseconds(20);
 
-  while(!controlDone_) {
-    lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
-    objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
-    udpsocket_thread = std::thread(&ScaleTruckController::UDPsocketInThread, this);
+  lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
+  objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
+  udpsocket_thread = std::thread(&ScaleTruckController::UDPsocketInThread, this);
 
+  udpsocket_thread.detach();
+
+  while(!controlDone_) {
     lanedetect_thread.join();
     objectdetect_thread.join();
-    udpsocket_thread.join();
     
     if(enableConsoleOutput_)
       displayConsole();

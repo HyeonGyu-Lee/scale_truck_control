@@ -3,7 +3,7 @@
 using namespace std;
 using namespace cv;
 
-namespace lane_detect {
+namespace LaneDetect {
 
 LaneDetector::LaneDetector(ros::NodeHandle nh)
   : nodeHandle_(nh) {

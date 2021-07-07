@@ -63,6 +63,7 @@ include_directories(
 
 set(PROJECT_LIB_FILES
   src/lane_detect.cpp					src/ScaleTruckController.cpp
+  src/sock_udp.cpp
 )
 
 #

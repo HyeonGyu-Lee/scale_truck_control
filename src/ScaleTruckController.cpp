@@ -123,9 +123,6 @@ void* ScaleTruckController::objectdetectInThread() {
 
 void* ScaleTruckController::UDPsocketInThread()
 {
-  const auto wait_vel = std::chrono::milliseconds(20);
-  while(1)
-  {
     if(info_) // send
     {
       mutex_.lock();
@@ -141,8 +138,6 @@ void* ScaleTruckController::UDPsocketInThread()
       udpData_ = udpData;
       mutex_.unlock();
     }
-    std::this_thread::sleep_for(wait_vel);
-  }
 }
 
 void ScaleTruckController::displayConsole() {
@@ -183,11 +178,11 @@ void ScaleTruckController::spin() {
   objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
   udpsocket_thread = std::thread(&ScaleTruckController::UDPsocketInThread, this);
 
-  udpsocket_thread.detach();
 
   while(!controlDone_) {
     lanedetect_thread.join();
     objectdetect_thread.join();
+    udpsocket_thread.join();
     
     if(enableConsoleOutput_)
       displayConsole();

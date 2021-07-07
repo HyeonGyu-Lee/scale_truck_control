@@ -50,9 +50,9 @@ int UDPsocket::recvInit()
 int UDPsocket::sendInit()
 {
     memset(&addr_, 0, sizeof(addr_));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(GROUP_);
-    addr.sin_port = htons(PORT_);
+    addr_.sin_family = AF_INET;
+    addr_.sin_addr.s_addr = inet_addr(GROUP_);
+    addr_.sin_port = htons(PORT_);
 }
 
 int UDPsocket::recvData(float* Data)

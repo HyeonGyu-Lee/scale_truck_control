@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <math.h>
 #include <time.h>
+#include <stdbool.h>
 
 using namespace cv;
 using namespace std;
@@ -47,6 +48,11 @@ private:
 	vector<int> right_y_;
 	vector<int> center_x_;
 	vector<int> center_y_;
+
+	vector<int> left_x_prev_;
+	vector<int> left_y_prev_;
+	vector<int> right_x_prev_;
+	vector<int> right_y_prev_;
 
 	Mat left_coef_;
 	Mat right_coef_;

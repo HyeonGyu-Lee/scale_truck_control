@@ -216,7 +216,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				}
 			}
 		}
-
+	
 		cvtColor(frame, result, COLOR_GRAY2BGR);
 
 		int mid_point = width / 2; // 320
@@ -250,6 +250,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		int R_gap = 0;
 
 		unsigned int index;
+
 
 		for (int window = 0; window < n_windows; window++) {
 			int Ly_pos = height - (window + 1) * window_height - 1; // win_y_low , win_y_high = win_y_low - window_height
@@ -298,9 +299,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					good_right_inds.push_back(index);
 				}
 			}
+			
 			int Lsum, Rsum;
 			Lsum = Rsum = 0;
 			unsigned int _size;
+			bool flag = false;
 
 			if (good_left_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_left_inds.size());
@@ -310,9 +313,14 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				Llane_current = Lsum / _size;
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
-			} else
+			} else{
+				if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
+					flag = true;
+					left_x_.insert(left_x_.begin(), left_x_prev_.front());
+					left_y_.insert(left_y_.begin(), left_y_prev_.front());
+				}
 				Llane_current += (L_gap);
-			
+			}
 			if (good_right_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_right_inds.size());
 				for (index = 0; index < _size; index++) {
@@ -321,9 +329,14 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				Rlane_current = Rsum / _size;
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
-			} else
+			} else{
+				if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
+					flag = true;
+					right_x_.insert(right_x_.begin(), right_x_prev_.front());
+					right_y_.insert(right_y_.begin(), right_y_prev_.front());
+				}
 				Rlane_current += (R_gap);
-			
+			}
 			if (window != 0) {	
 				if (Rlane_current != R_prev) {
 					R_gap = (Rlane_current - R_prev);
@@ -333,26 +346,34 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					L_gap = (Llane_current - L_prev);
 				}
 			}
-	
+			if (flag == true){
+				center_x_.insert(center_x_.end(), (left_x_.front() + right_x_.front()) / 2);
+				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
+				flag = false;
+			}
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
-				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
+				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));	
 			}
 			L_prev = Llane_current;
 			R_prev = Rlane_current;
 		}
-	
+
+		left_x_prev_ = left_x_;
+		left_y_prev_ = left_y_;
+		right_x_prev_ = right_x_;
+		right_y_prev_ = right_y_;
+		
 		if (left_x_.size() != 0) {
 			left_coef_ = polyfit(left_y_, left_x_);
 		}
 		if (right_x_.size() != 0) {
 			right_coef_ = polyfit(right_y_, right_x_);
-		}
-	
+		}	
 		if ((left_x_.size() != 0) && (right_x_.size() != 0)) {
 			center_coef_ = polyfit(center_y_, center_x_);
 		}
-	
+		
 		delete[] hist;
 		delete[] weight_distrib;
 	

@@ -13,10 +13,10 @@ class UDPsocket {
 public:
     UDPsocket(const char* GROUP, int PORT);
     ~UDPsocket();
-    void recvInit();
-    void sendInit();
-    float recvData(float* Data);
-    void sendData(float Data);
+    int recvInit();
+    int sendInit();
+    int recvData(float* Data);
+    int sendData(float Data);
 
 private:
     int fd_;

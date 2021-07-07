@@ -18,7 +18,7 @@ UDPsocket::~UDPsocket()
     exit(0);
 }
 
-void UDPsocket::recvInit()
+int UDPsocket::recvInit()
 {
     u_int yes = 1;
     if (setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, (char*) &yes, sizeof(yes)) < 0)
@@ -47,7 +47,7 @@ void UDPsocket::recvInit()
     }
 }
 
-void UDPsocket::sendInit()
+int UDPsocket::sendInit()
 {
     memset(&addr_, 0, sizeof(addr_));
     addr.sin_family = AF_INET;
@@ -55,19 +55,17 @@ void UDPsocket::sendInit()
     addr.sin_port = htons(PORT_);
 }
 
-float UDPsocket::recvData(d)
+int UDPsocket::recvData(float* Data)
 {
-    float Data;
     int addrlen = sizeof(addr_);
-    int nbytes = recvfrom(fd_, &Data, sizeof(float), 0, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
+    int nbytes = recvfrom(fd_, Data, sizeof(float), 0, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
     if (nbytes < 0) {
         perror("recvfrom");
         return 1;
     }
-    return Data;
 }
 
-void UDPsocket::sendData(float Data)
+int UDPsocket::sendData(float Data)
 {
     int nbytes = sendto(fd_, &Data, sizeof(float), 0, (struct sockaddr*) &addr_, sizeof(addr_));
     if (nbytes < 0)

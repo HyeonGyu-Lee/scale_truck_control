@@ -14,7 +14,6 @@ UDPsocket::UDPsocket()
 UDPsocket::~UDPsocket()
 {
     close(fd_);
-    exit(0);
 }
 
 int UDPsocket::recvInit()
@@ -25,6 +24,10 @@ int UDPsocket::recvInit()
        perror("Reusing ADDR failed");
        return 1;
     }
+
+    struct timeval optVal = {0,200};
+    int optLen = sizeof(optVal);
+    setsockopt(fd_, SOL_SOCKET, SO_RCVTIMEO, &optVal, optLen); // set timeout
 
     memset(&addr_, 0, sizeof(addr_));
     addr_.sin_family = AF_INET;

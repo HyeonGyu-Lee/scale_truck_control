@@ -14,7 +14,7 @@ publishers:
 params:
   truck_info: LV
   udp_group_addr: 239.255.255.250
-  udp_group_port: 1900
+  udp_group_port: 9307
   center_err: 640
   target_speed: 0.65
   safety_speed: 0.45

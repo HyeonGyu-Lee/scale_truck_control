@@ -29,10 +29,10 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/target_dist", TargetDist_, 0.3f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.0f); // m
   nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
-  nodeHandle_.param("params/udp_group_port", PORT_, 1900);
+  nodeHandle_.param("params/udp_group_port", PORT_, 9307);
   nodeHandle_.param("params/truck_info", TRUCK_INFO_, std::string("LV"));
 
-  if(TRUCK_INFO_.compare(std::string("LV")))
+  if(!TRUCK_INFO_.compare(std::string("LV")))
     info_ = true;
   else
     info_ = false;
@@ -42,8 +42,6 @@ bool ScaleTruckController::readParameters() {
 
 void ScaleTruckController::init() {
   ROS_INFO("[ScaleTruckController] init()");
-  
-  controlThread_ = std::thread(&ScaleTruckController::spin, this);
 
   std::string imageTopicName;
   int imageQueueSize;
@@ -68,11 +66,15 @@ void ScaleTruckController::init() {
   if(info_) // send
   {
     UDPsocket_.sendInit();
+    printf("\n SendInit() \n");
   }
   else // receive
   {
     UDPsocket_.recvInit();
+    printf("\n RecvInit() \n");
   }
+
+  controlThread_ = std::thread(&ScaleTruckController::spin, this);
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -89,15 +91,12 @@ void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
   float AngleDegree;
   AngleDegree = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
-  mutex_.lock();
   AngleDegree_ = AngleDegree;
-  mutex_.unlock();
 }
 
 void* ScaleTruckController::objectdetectInThread() {
   float dist, angle; 
 
-  mutex_.lock();
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
   distance_ = 10.f;
@@ -117,26 +116,23 @@ void* ScaleTruckController::objectdetectInThread() {
     ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetyVel_;
   } else
     ResultVel_ = TargetVel_;
-  mutex_.unlock();
 
 }
 
 void* ScaleTruckController::UDPsocketInThread()
 {
+    udpData_ = 0;
+
     if(info_) // send
     {
-      mutex_.lock();
       udpData_ = ResultVel_;
-      mutex_.unlock();
       UDPsocket_.sendData(udpData_);
     }
     else // receive
     {
       float udpData;
       UDPsocket_.recvData(&udpData);
-      mutex_.lock();
       udpData_ = udpData;
-      mutex_.unlock();
     }
 }
 
@@ -147,6 +143,8 @@ void ScaleTruckController::displayConsole() {
   printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, ResultVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
   printf("\nUDP_data        : %3.3f m/s", udpData_);
+  printf("\nUDP_data        : %s", UDPsocket_.GROUP_);
+  printf("\nUDP_data        : %d", UDPsocket_.PORT_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);
     printf("\nDistAng         : %2.3f degree", distAngle_);
@@ -174,16 +172,16 @@ void ScaleTruckController::spin() {
 
   const auto wait_image = std::chrono::milliseconds(20);
 
-  lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
-  objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
-  udpsocket_thread = std::thread(&ScaleTruckController::UDPsocketInThread, this);
-
-
   while(!controlDone_) {
+    lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
+    objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
+    
     lanedetect_thread.join();
     objectdetect_thread.join();
-    udpsocket_thread.join();
     
+    udpsocket_thread = std::thread(&ScaleTruckController::UDPsocketInThread, this);
+    udpsocket_thread.join();
+
     if(enableConsoleOutput_)
       displayConsole();
  

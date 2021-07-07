@@ -24,4 +24,4 @@ private:
     int PORT_;
     struct sockaddr_in addr_;
     struct ip_mreq mreq_;
-}
+};

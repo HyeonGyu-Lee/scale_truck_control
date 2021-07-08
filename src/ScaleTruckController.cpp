@@ -61,7 +61,7 @@ void ScaleTruckController::init() {
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
   
-  UDPsocket_.GROUP_ = ADDR_.c_str();
+  /*UDPsocket_.GROUP_ = ADDR_.c_str();
   UDPsocket_.PORT_ = PORT_;
   if(info_) // send
   {
@@ -72,7 +72,7 @@ void ScaleTruckController::init() {
   {
     UDPsocket_.recvInit();
     printf("\n RecvInit() \n");
-  }
+  }*/
 
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
 }
@@ -178,9 +178,6 @@ void ScaleTruckController::spin() {
     
     lanedetect_thread.join();
     objectdetect_thread.join();
-    
-    udpsocket_thread = std::thread(&ScaleTruckController::UDPsocketInThread, this);
-    udpsocket_thread.join();
 
     if(enableConsoleOutput_)
       displayConsole();

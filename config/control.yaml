@@ -44,9 +44,10 @@ LaneDetector:
     Kd: 0.01
     dt: 0.1
   filter_param: 10
-  center_height: 0.2
+  eL_height: 0.2
+  e1_height: 1.625
   trust_height: 0.6667
-  lp: 891 
+  lp: 1026 
   K1: 0.06
   K2: 0.06
   steer_angle: 0.0

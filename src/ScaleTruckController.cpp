@@ -126,7 +126,7 @@ void* ScaleTruckController::objectdetectInThread() {
 void* ScaleTruckController::UDPsocketInThread()
 {
     udpData_ = 0;
-    const auto wait_udp = std::chrono::milliseconds(100);
+    const auto wait_udp = std::chrono::milliseconds(33);
     std::this_thread::sleep_for(wait_udp);
 
     while(!controlDone_)

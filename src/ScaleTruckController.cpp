@@ -141,6 +141,7 @@ void* ScaleTruckController::UDPsocketInThread()
           float udpData;
           UDPsocket_.recvData(&udpData);
           udpData_ = udpData;
+          TargetVel_ = udpData;
         }
         std::this_thread::sleep_for(wait_udp);
         if(!isNodeRunning()) {
@@ -198,14 +199,11 @@ void ScaleTruckController::spin() {
     msg.linear.x = ResultVel_;
     msg.linear.y = distance_;
     msg.linear.z = TargetDist_;
-    
-    if (!readParameters()) {
-    ros::requestShutdown();
-    }
-    
+     
     ControlDataPublisher_.publish(msg);
     if(!isNodeRunning()) {
       controlDone_ = true;
+      ros::requestShutdown();
     } 
     //std::this_thread::sleep_for(wait_image);
   }

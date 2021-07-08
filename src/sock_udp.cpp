@@ -24,11 +24,11 @@ int UDPsocket::recvInit()
        perror("Reusing ADDR failed");
        return 1;
     }
-
-    struct timeval optVal = {0,100};
+    
+    struct timeval optVal = {0,50};
     int optLen = sizeof(optVal);
     setsockopt(fd_, SOL_SOCKET, SO_RCVTIMEO, &optVal, optLen); // set timeout 
-
+    
     memset(&addr_, 0, sizeof(addr_));
     addr_.sin_family = AF_INET;
     addr_.sin_addr.s_addr = htonl(INADDR_ANY); // differs from sender
@@ -60,9 +60,10 @@ int UDPsocket::sendInit()
 int UDPsocket::recvData(float* Data)
 {
     int addrlen = sizeof(addr_);
-    int nbytes = recvfrom(fd_, Data, sizeof(float), MSG_DONTWAIT, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
+    int nbytes = recvfrom(fd_, Data, sizeof(float), 0, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
+    //int nbytes = recvfrom(fd_, Data, sizeof(float), MSG_DONTWAIT, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
     if (nbytes < 0) {
-        perror("recvfrom");
+        //perror("recvfrom");
         return 1;
     }
 }

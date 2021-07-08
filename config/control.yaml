@@ -12,7 +12,7 @@ publishers:
     queue_size: 1
 
 params:
-  truck_info: LV
+  truck_info: FV
   udp_group_addr: 239.255.255.250
   udp_group_port: 9307
   center_err: 640

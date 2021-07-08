@@ -17,6 +17,8 @@ ScaleTruckController::~ScaleTruckController() {
     isNodeRunning_ = false;
   }
   controlThread_.join();
+  udpsocketThread_.join();
+
   ROS_INFO("[ScaleTruckController] Stop.");
 }
 
@@ -75,6 +77,9 @@ void ScaleTruckController::init() {
   }*/
 
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
+  const auto wait_udp = std::chrono::milliseconds(100);
+  std::this_thread::sleep_for(wait_udp);
+  udpsocketThread_ = std::thread(&ScaleTruckController::UDPsocketInThread, this);
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -122,18 +127,28 @@ void* ScaleTruckController::objectdetectInThread() {
 void* ScaleTruckController::UDPsocketInThread()
 {
     udpData_ = 0;
+    const auto wait_udp = std::chrono::milliseconds(100);
+    std::this_thread::sleep_for(wait_udp);
 
-    if(info_) // send
+    while(!controlDone_)
     {
-      udpData_ = ResultVel_;
-      UDPsocket_.sendData(udpData_);
-    }
-    else // receive
-    {
-      float udpData;
-      UDPsocket_.recvData(&udpData);
-      udpData_ = udpData;
-    }
+        if(info_) // send
+        {
+          udpData_ = ResultVel_;
+          UDPsocket_.sendData(udpData_);
+        }
+        else // receive
+        {
+          float udpData;
+          UDPsocket_.recvData(&udpData);
+          udpData_ = udpData;
+          TargetVel_ = udpData;
+        }
+        std::this_thread::sleep_for(wait_udp);
+        if(!isNodeRunning()) {
+          controlDone_ = true;
+        }
+    } 
 }
 
 void ScaleTruckController::displayConsole() {
@@ -168,8 +183,7 @@ void ScaleTruckController::spin() {
   geometry_msgs::Twist msg;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
-  std::thread udpsocket_thread;
-
+  
   const auto wait_image = std::chrono::milliseconds(20);
 
   while(!controlDone_) {
@@ -186,16 +200,13 @@ void ScaleTruckController::spin() {
     msg.linear.x = ResultVel_;
     msg.linear.y = distance_;
     msg.linear.z = TargetDist_;
-    
-    if (!readParameters()) {
-    ros::requestShutdown();
-    }
-    
+     
     ControlDataPublisher_.publish(msg);
     if(!isNodeRunning()) {
       controlDone_ = true;
+      ros::requestShutdown();
     } 
-    std::this_thread::sleep_for(wait_image);
+    //std::this_thread::sleep_for(wait_image);
   }
 }
 

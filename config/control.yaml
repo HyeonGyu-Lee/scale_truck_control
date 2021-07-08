@@ -12,7 +12,7 @@ publishers:
     queue_size: 1
 
 params:
-  truck_info: LV
+  truck_info: FV
   udp_group_addr: 239.255.255.250
   udp_group_port: 9307
   center_err: 640
@@ -45,9 +45,9 @@ LaneDetector:
     dt: 0.1
   filter_param: 10
   eL_height: 0.2
-  e1_height: 1.625
+  e1_height: 1.275
   trust_height: 0.6667
-  lp: 1026 
+  lp: 774 
   K1: 0.06
   K2: 0.06
   steer_angle: 0.0

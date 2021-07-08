@@ -24,7 +24,7 @@ int UDPsocket::recvInit()
        perror("Reusing ADDR failed");
        return 1;
     }
-    
+
     struct timeval optVal = {0,50};
     int optLen = sizeof(optVal);
     setsockopt(fd_, SOL_SOCKET, SO_RCVTIMEO, &optVal, optLen); // set timeout 

@@ -135,7 +135,6 @@ void* ScaleTruckController::UDPsocketInThread()
         {
           udpData_ = ResultVel_;
           UDPsocket_.sendData(udpData_);
-          std::this_thread::sleep_for(wait_udp);
         }
         else // receive
         {
@@ -143,6 +142,7 @@ void* ScaleTruckController::UDPsocketInThread()
           UDPsocket_.recvData(&udpData);
           udpData_ = udpData;
         }
+        std::this_thread::sleep_for(wait_udp);
         if(!isNodeRunning()) {
           controlDone_ = true;
         }

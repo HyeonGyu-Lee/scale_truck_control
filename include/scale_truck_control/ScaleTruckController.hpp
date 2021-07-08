@@ -82,6 +82,7 @@ class ScaleTruckController {
 
     //Thread
     std::thread controlThread_;
+    std::thread udpsocketThread_;
     std::mutex mutex_;
 
     obstacle_detector::Obstacles Obstacle_;

@@ -30,7 +30,7 @@
 #define ZERO_PWM      (1500)
 #define MAX_STEER     (1800)
 #define MIN_STEER     (1200)
-#define STEER_CENTER  (1500)
+#define STEER_CENTER  (1470)
 
 #define DATA_LOG      (0)
 
@@ -96,7 +96,7 @@ float setSPEED(float tar_vel, float cur_vel) {
     else u_k = u;
     
     /* inverse function */
-    output = (-8.152e-02 + sqrt(pow(-8.152e-02,2)-4*(-2.0975e-05)*(-76.87-u_k)))/(2*(-2.0975e-05)));
+    output = (-8.152e-02 + sqrt(pow(-8.152e-02,2)-4*(-2.0975e-05)*(-76.87-u_k)))/(2*(-2.0975e-05));
     //output = tx_throttle_;
   }
  /*output command*/

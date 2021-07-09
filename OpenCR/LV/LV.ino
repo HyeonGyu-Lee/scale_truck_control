@@ -30,7 +30,7 @@
 #define ZERO_PWM      (1500)
 #define MAX_STEER     (1800)
 #define MIN_STEER     (1200)
-#define STEER_CENTER  (1500)
+#define STEER_CENTER  (1480)
 
 #define DATA_LOG      (0)
 

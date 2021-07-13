@@ -74,7 +74,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
 		nodeHandle_.param("LaneDetector/eL_height",eL_height_, 1.0f);	
 		nodeHandle_.param("LaneDetector/e1_height",e1_height_, 1.0f);	
-		//nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
+		nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
 		nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
 		nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
 		nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
@@ -495,19 +495,19 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		float a, b, c, l1, l2;
 	
 		if (!l_fit.empty() && !r_fit.empty()) {
-			float i = ((float)height_) * eL_height_;	
-			float j = ((float)height_) * e1_height_;
+			//float i = ((float)height_) * eL_height_;	
+			//float j = ((float)height_) * e1_height_;
 			a = c_fit.at<float>(2, 0);
 			b = c_fit.at<float>(1, 0);
 			c = c_fit.at<float>(0, 0);
-			
-			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
+			/*
+			evalues_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
 			e_values_[1] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
-
-			/*
+			*/
+			
 			//trust_height_ = 0.6667
-			float i = ((float)height_) * center_height_;	
+			float i = ((float)height_) * eL_height_;	
 			float j = ((float)height_) * trust_height_;
 			l1 =  j - i;
 			l2 = ((a * pow(i, 2)) + (b * i) + c) - ((a * pow(j, 2)) + (b * j) + c);
@@ -515,7 +515,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
 			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
-			*/
+			
 
 			/*
 			interest_points_[2] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	

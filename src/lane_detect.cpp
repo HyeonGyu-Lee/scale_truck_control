@@ -506,7 +506,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
 			*/
 			
-			//trust_height_ = 0.6667
 			float i = ((float)height_) * eL_height_;	
 			float j = ((float)height_) * trust_height_;
 			l1 =  j - i;

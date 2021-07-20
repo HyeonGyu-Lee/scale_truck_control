@@ -138,7 +138,6 @@ void* ScaleTruckController::objectdetectInThread() {
 	  	I_err = Ki_d_ * dist_err * 0.1f;
 	  	ResultVel_ = P_err + I_err + TargetVel_;
 	  	if (ResultVel_ > 0.8f) ResultVel_ = 0.8f;	// Max velocity
->>>>>>> 49203469becbb3786817605b05fe3a16cf2f82f6
 	  }
   }
 }

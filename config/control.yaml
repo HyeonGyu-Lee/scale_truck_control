@@ -21,8 +21,8 @@ params:
   target_dist: 0.5
   safety_dist: 1.5
   angle_degree: 0.0
-  Kp_d: 2.0
-  Ki_d: 0.4
+  Kp_d: 1.2
+  Ki_d: 0.2
   
 ROI:
   width: 1280

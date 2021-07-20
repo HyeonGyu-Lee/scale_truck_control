@@ -128,15 +128,16 @@ void* ScaleTruckController::objectdetectInThread() {
   }
   else{	// Interval Control
 	  static float dist_err, P_err, I_err;
-	  if(distance_ <= TargetDist_ - 0.1f){
-		  ResultVel_ = 0.0f;	// Min velocity
-	  } else if(TargetVel_ <= 0.1f) ResultVel_ = 0.0f;
-	  	else {
-		  dist_err = distance_ - TargetDist_;
-	  	  P_err = Kp_d_ * dist_err;
-	  	  I_err = Ki_d_ * dist_err * 0.1f;
-	  	  ResultVel_ = P_err + I_err + TargetVel_;
-	  	  if (ResultVel_ > 0.8f) ResultVel_ = 0.8f;	// Max velocity
+	  if(distance_ <= TargetDist_ - 0.325f){	// Min distance
+		  ResultVel_ = 0.0f;
+	  }
+	  else if(TargetVel_ <= 0.1f) ResultVel_ = 0.0f;	// Emergency
+	  else {
+	  	dist_err = distance_ - TargetDist_;
+	  	P_err = Kp_d_ * dist_err;
+	  	I_err = Ki_d_ * dist_err * 0.1f;
+	  	ResultVel_ = P_err + I_err + TargetVel_;
+	  	if (ResultVel_ > 0.8f) ResultVel_ = 0.8f;	// Max velocity
 	  }
   }
 }

@@ -6,7 +6,6 @@
 #include <ros/ros.h>
 #include <math.h>
 #include <time.h>
-#include <stdbool.h>
 
 using namespace cv;
 using namespace std;
@@ -19,6 +18,8 @@ public:
 	~LaneDetector(void);
 
 	float display_img(Mat _frame, int _delay, bool _view);
+	void get_steer_coef(float vel);
+	float K1_, K2_;
 
 private:
 	void LoadParams(void);
@@ -61,10 +62,10 @@ private:
 	float right_curve_radius_;
 	float center_position_;
 	float SteerAngle_;
-	float eL_height_, trust_height_, e1_height_, lp_, K1_, K2_;
+	float eL_height_, trust_height_, e1_height_, lp_;//, K1_, K2_;
 	//float center_height_, trust_height_, lp_, K1_, K2_;
 	float e_values_[2];
-	
+
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;
 	double Kp_term_, Ki_term_, Kd_term_, err_, prev_err_, I_err_, D_err_, result_;
@@ -77,6 +78,7 @@ private:
 	int sobel_min_th_, sobel_max_th_;
 	int hls_min_th_, hls_max_th_;
 	int width_, height_;
+	double diff_;
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;
 	double Kp_, Ki_, Kd_, dt_;

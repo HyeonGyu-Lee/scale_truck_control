@@ -60,6 +60,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	warpCorners_[1] = Point2f(width_ - wide_extra_upside_, 0.0);
 	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
 	warpCorners_[3] = Point2f(width_ - wide_extra_downside_, height_);
+
 }
 
 	LaneDetector::~LaneDetector(void) {
@@ -76,8 +77,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		nodeHandle_.param("LaneDetector/e1_height",e1_height_, 1.0f);	
 		nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
 		nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
-		nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
-		nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
+		//nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
+		//nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
 		nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
 	}
 
@@ -489,6 +490,15 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		center_y_.clear();
 	}
 
+	void LaneDetector::get_steer_coef(float vel){
+		if(vel < 0.5f){
+			K1_ = K2_ =  0.06f;	
+		}
+		else{
+			K1_ = K2_ = (3.7866f * pow(vel, 3)) + ((-8.0032f) * pow(vel, 2)) + (5.4267f * vel) - 1.1259f;
+		}
+	}
+
 	void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
 		Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
 		float car_position = width_ / 2;
@@ -531,7 +541,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		}
 	}
 
-	//int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		LoadParams();
 		Mat new_frame, temp_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
@@ -576,8 +585,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			waitKey(_delay);
 		}
 
-		//return center_position_;
 		return SteerAngle_;
-	};
+	}
 
 } /* namespace lane_detect */

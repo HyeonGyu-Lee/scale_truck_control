@@ -33,6 +33,8 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
   nodeHandle_.param("params/udp_group_port", PORT_, 9307);
   nodeHandle_.param("params/truck_info", TRUCK_INFO_, std::string("LV"));
+  nodeHandle_.param("params/Kp_d", Kp_d_, 2.0f);
+  nodeHandle_.param("params/Ki_d", Ki_d_, 0.4f);
 
   if(!TRUCK_INFO_.compare(std::string("LV")))
     info_ = true;
@@ -95,6 +97,7 @@ bool ScaleTruckController::isNodeRunning(void){
 void* ScaleTruckController::lanedetectInThread() {
   Mat camImageTmp = camImageCopy_.clone();
   float AngleDegree;
+  laneDetector_.get_steer_coef(ResultVel_);
   AngleDegree = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
   AngleDegree_ = AngleDegree;
 }
@@ -114,14 +117,23 @@ void* ScaleTruckController::objectdetectInThread() {
       distAngle_ = angle;
     }
   }
-  
-  if(distance_ <= TargetDist_) {
-    ResultVel_ = 0;
-  } else if(distance_ <= SafetyDist_) {
-    ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetyVel_;
-  } else
-    ResultVel_ = TargetVel_;
 
+  if(info_){
+	  if(distance_ <= TargetDist_) {
+	    ResultVel_ = 0;
+	  } else if(distance_ <= SafetyDist_) {
+	    ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetyVel_;
+	  } else
+	    ResultVel_ = TargetVel_;
+  }
+  else{	// Interval Control
+	  static float dist_err, P_err, I_err;
+	  dist_err = distance_ - TargetDist_;
+	  P_err = Kp_d_ * dist_err;
+	  I_err = Ki_d_ * dist_err * 0.1f;
+	  ResultVel_ = P_err + I_err + TargetVel_;
+	  if (ResultVel_ > 0.8f) ResultVel_ = 0.8f;	// Max velocity
+  }
 }
 
 void* ScaleTruckController::UDPsocketInThread()
@@ -144,7 +156,7 @@ void* ScaleTruckController::UDPsocketInThread()
           UDPsocket_.recvData(&udpData);
           std::this_thread::sleep_for(wait_udp);
           udpData_ = udpData;
-          TargetVel_ = udpData;
+          //TargetVel_ = udpData;
         }
         if(!isNodeRunning()) {
           controlDone_ = true;
@@ -168,6 +180,7 @@ void ScaleTruckController::displayConsole() {
   if(ObjSegments_ > 0) {
     printf("\nSegs            : %d", ObjSegments_);
   }
+  printf("\nK1/K2		: %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   printf("\n");
 }
 
@@ -196,7 +209,7 @@ void ScaleTruckController::spin() {
 
     if(enableConsoleOutput_)
       displayConsole();
- 
+	
     msg.angular.z = AngleDegree_;
     msg.linear.x = ResultVel_;
     msg.linear.y = distance_;

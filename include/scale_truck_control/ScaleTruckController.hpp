@@ -16,6 +16,7 @@
 #include <cmath>
 #include <boost/thread/thread.hpp>
 #include <vector>
+#include <sys/time.h>
 
 //ROS
 #include <geometry_msgs/Twist.h>
@@ -71,6 +72,10 @@ class ScaleTruckController {
     float distAngle_;
     float TargetDist_;
     float SafetyDist_;
+
+	//Interval Control
+	float Kp_d_;
+	float Ki_d_;
 
     //UDP
     UDPsock::UDPsocket UDPsocket_;

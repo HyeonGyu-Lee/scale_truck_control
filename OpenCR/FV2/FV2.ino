@@ -314,4 +314,3 @@ void loop() {
     prevTime = currentTime;
   }
 }
->>>>>>> upstream/master

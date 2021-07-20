@@ -32,7 +32,7 @@
 #define MIN_STEER     (1200)
 #define STEER_CENTER  (1470)
 
-#define DATA_LOG      (0)
+#define DATA_LOG      (1)
 
 cIMU  IMU;
 Servo throttle_;

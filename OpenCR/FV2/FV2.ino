@@ -91,12 +91,17 @@ float setSPEED(float tar_vel, float cur_vel) {
     u = P_err + I_err + D_err + tar_vel*Kf_;
     
     /* sat(u(k))  saturation start */
-    if(u > 2.0122) u_k = 2.0122;
-    else if(u <= 0) u_k = 0;
+    if(u > 2.073) u_k = 2.073;
+    else if(u <= 0.0) u_k = 0;
     else u_k = u;
     
     /* inverse function */
-    output = (-0.043253 + sqrt(pow(0.043253,2)-4*(-1.0444e-05)*(-43.3682-u_k)))/(2*(-1.0444e-05));
+    double a, b, c;
+    a = -4.3253e-02;
+    b = sqrt(pow(4.3253e-02,2)-4*(-1.0444e-05)*(-43.3682-u_k));
+    c = 2*(-1.0444e-05);
+    output = (a + b) / c;
+    output = (-4.3253e-02 + sqrt(pow(4.3253e-02,2)-4*(-1.0444e-05)*(-42.3682-u_k)))/(2*(-1.0444e-05));
     //output = tx_throttle_;
   }
  /*output command*/
@@ -309,3 +314,4 @@ void loop() {
     prevTime = currentTime;
   }
 }
+>>>>>>> upstream/master

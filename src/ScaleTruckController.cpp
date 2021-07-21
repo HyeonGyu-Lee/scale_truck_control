@@ -128,7 +128,7 @@ void* ScaleTruckController::objectdetectInThread() {
   }
   else{	// Interval Control
 	  static float dist_err, P_err, I_err;
-	  if(distance_ <= TargetDist_ - 0.325f){	// Min distance
+	  if(distance_ <= (TargetDist_ - 0.325f)){	// Min distance
 		  ResultVel_ = 0.0f;
 	  }
 	  else if(TargetVel_ <= 0.1f) ResultVel_ = 0.0f;	// Emergency

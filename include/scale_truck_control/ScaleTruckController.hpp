@@ -75,9 +75,9 @@ class ScaleTruckController {
     float TargetDist_;
     float SafetyDist_;
 
-	//Interval Control
-	float Kp_d_;
-	float Ki_d_;
+    //Interval Control
+    float Kp_d_;
+    float Ki_d_;
 
     //UDP
     UDPsock::UDPsocket UDPsocket_;

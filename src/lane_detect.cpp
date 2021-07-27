@@ -307,7 +307,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			int Lsum, Rsum;
 			Lsum = Rsum = 0;
 			unsigned int _size;
-			bool flag = false;
+			//bool flag = false;
 
 			if (good_left_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_left_inds.size());
@@ -318,11 +318,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
-				if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
+				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
 					flag = true;
 					left_x_.insert(left_x_.begin(), left_x_prev_.front());
 					left_y_.insert(left_y_.begin(), left_y_prev_.front());
-				}
+				}*/
 				Llane_current += (L_gap);
 			}
 			if (good_right_inds.size() > (size_t)min_pix) {
@@ -334,11 +334,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
-				if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
+				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
 					flag = true;
 					right_x_.insert(right_x_.begin(), right_x_prev_.front());
 					right_y_.insert(right_y_.begin(), right_y_prev_.front());
-				}
+				}*/
 				Rlane_current += (R_gap);
 			}
 			if (window != 0) {	
@@ -350,11 +350,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					L_gap = (Llane_current - L_prev);
 				}
 			}
-			if (flag == true){
+			/*if (flag == true){
 				center_x_.insert(center_x_.end(), (left_x_.front() + right_x_.front()) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
 				flag = false;
-			}
+			}*/
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));	

@@ -70,12 +70,14 @@ class ScaleTruckController {
     int ObjCircles_;
     float distance_;
     float distAngle_;
+    float LVstopDist_;
+    float FVstopDist_;
     float TargetDist_;
     float SafetyDist_;
 
-	//Interval Control
-	float Kp_d_;
-	float Ki_d_;
+    //Interval Control
+    float Kp_d_;
+    float Ki_d_;
 
     //UDP
     UDPsock::UDPsocket UDPsocket_;

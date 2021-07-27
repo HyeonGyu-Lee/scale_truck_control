@@ -21,6 +21,9 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	last_Llane_base_ = 0;
 	last_Rlane_base_ = 0;
 
+	zero_[4] = { 0, };
+	zero_cnt_[2] = { 0, };
+
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 
@@ -217,23 +220,24 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					hist[i] += 1;
 				}
 			}
-		}
-	
+		}	
+		
 		cvtColor(frame, result, COLOR_GRAY2BGR);
 
-		int mid_point = width / 2; // 320
-		int quarter_point = mid_point / 2; // 160
+		int mid_point = width / 2; // 640
+		int quarter_point = mid_point / 2; // 320
 		int n_windows = 9;
 		int margin = 120 * width / 1280;
 		int min_pix = 50 * width / 1280;
 
-		int window_width = margin * 2;
-		int window_height = height / n_windows;
+		int window_width = margin * 2;	// 240
+		int window_height = height / n_windows;	// 71
 
-		int offset = 0;
+		//int offset = 0;
+		int offset = margin;
 		int range = 120 / 4;
-		int Lstart = quarter_point - offset; // 160 - 0
-		int Rstart = mid_point + quarter_point + offset; // 480 - 0
+		//int Lstart = quarter_point - offset; // 320 - 120
+		//int Rstart = mid_point + quarter_point - offset; // 960 - 120
 		// mid_point = 320, Lstart +- range = 40 ~ 280
 		//int Llane_base = arrMaxIdx(hist, Lstart - range, Lstart + range, _width);
 		//int Rlane_base = arrMaxIdx(hist, Rstart - range, Rstart + range, _width);
@@ -248,8 +252,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			int Rlane_current = Rlane_base;
 		}
 
-		int L_prev = Llane_current;
-	    int R_prev = Rlane_current;
+		int L_prev =  Llane_current;
+	    int R_prev =  Rlane_current;
 		int L_gap = 0;
 		int R_gap = 0;
 
@@ -260,8 +264,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			int Ly_pos = height - (window + 1) * window_height - 1; // win_y_low , win_y_high = win_y_low - window_height
 			int Ry_pos = height - (window + 1) * window_height - 1;
 
-			int Lx_pos = Llane_current - margin; // win_xleft_low, win_xleft_high = win_xleft_low + margin*2
-			int Rx_pos = Rlane_current - margin; // win_xrignt_low, win_xright_high = win_xright_low + margin*2
+			int	Lx_pos = Llane_current - margin; // win_xleft_low, win_xleft_high = win_xleft_low + margin*2
+			int	Rx_pos = Rlane_current - margin; // win_xrignt_low, win_xright_high = win_xright_low + margin*2
 			if (_view) {
 				rectangle(result, \
 					Rect(Lx_pos, Ly_pos, window_width, window_height), \
@@ -272,7 +276,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			}
 			uchar* data_output = result.data;
 			int nZ_y, nZ_x;
-
 			good_left_inds.clear();
 			good_right_inds.clear();
 
@@ -315,6 +318,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
 				}
 				Llane_current = Lsum / _size;
+				if(window == 0){
+					zero_[0] += Llane_current;
+					zero_[1] += Ly_pos + (window_height / 2);
+					zero_cnt_[0]++;
+				}
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
@@ -331,6 +339,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
 				}
 				Rlane_current = Rsum / _size;
+				if(window == 0){
+					zero_[2] += Rlane_current;
+					zero_[3] += Ry_pos + (window_height / 2);
+					zero_cnt_[1]++;
+				}
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
@@ -345,7 +358,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				if (Rlane_current != R_prev) {
 					R_gap = (Rlane_current - R_prev);
 				}
-	
 				if (Llane_current != L_prev) {
 					L_gap = (Llane_current - L_prev);
 				}
@@ -491,7 +503,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	}
 
 	void LaneDetector::get_steer_coef(float vel){
-		if(vel < 0.5f){
+		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
+			K1_ = K2_ = 0.0f;
+		}
+		else if(vel < 0.5f){
 			K1_ = K2_ =  0.06f;	
 		}
 		else{
@@ -524,20 +539,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
 			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
-			
-
-			/*
-			interest_points_[2] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	
-			interest_points_[3] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	
-			if ((fabs(interest_points_[2]) > 640.0f) || (fabs(interest_points_[3] > 640.0f))){
-					interest_points_[0] = interest_points_[0];
-					interest_points_[1] = interest_points_[1];
-			}
-				else{
-					interest_points_[0] = interest_points_[2];
-					interest_points_[1] = interest_points_[3];
-			}*/
-
 		}
 	}
 

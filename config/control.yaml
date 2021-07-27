@@ -20,6 +20,7 @@ params:
   safety_vel: 0.45
   target_dist: 0.8
   safety_dist: 1.5
+  target_dist: 0.8
   angle_degree: 0.0
   Kp_d: 1.2
   Ki_d: 0.2
@@ -50,12 +51,12 @@ LaneDetector:
   eL_height: 0.2
   e1_height: 1.4375
   trust_height: 0.6667
-  lp: 891 
+  lp: 891
   <!-- K1: 0.06 -->
   <!-- K2: 0.06 -->
 
 image_view:
-  enable_opencv: false
+  enable_opencv: true
   wait_key_delay: 1
   enable_console_output: true
 

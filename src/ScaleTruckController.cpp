@@ -16,6 +16,14 @@ ScaleTruckController::~ScaleTruckController() {
     boost::unique_lock<boost::shared_mutex> lockNodeStatus(mutexNodeStatus_);
     isNodeRunning_ = false;
   }
+
+  geometry_msgs::Twist msg;
+  msg.angular.z = 0;
+  msg.linear.x = 0;
+  msg.linear.y = distance_;
+  msg.linear.z = TargetDist_;
+       
+  ControlDataPublisher_.publish(msg);
   controlThread_.join();
   udpsocketThread_.join();
 
@@ -28,8 +36,10 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
   nodeHandle_.param("params/target_vel", TargetVel_, 0.5f); // m/s
   nodeHandle_.param("params/safety_vel", SafetyVel_, 0.3f); // m/s
-  nodeHandle_.param("params/target_dist", TargetDist_, 0.3f); // m
-  nodeHandle_.param("params/safety_dist", SafetyDist_, 1.0f); // m
+  nodeHandle_.param("params/lv_stop_dist", LVstopDist_, 0.5f); // m
+  nodeHandle_.param("params/fv_stop_dist", FVstopDist_, 0.5f); // m
+  nodeHandle_.param("params/safety_dist", SafetyDist_, 1.5f); // m
+  nodeHandle_.param("params/target_dist", TargetDist_, 0.8f); // m
   nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
   nodeHandle_.param("params/udp_group_port", PORT_, 9307);
   nodeHandle_.param("params/truck_info", TRUCK_INFO_, std::string("LV"));
@@ -118,15 +128,15 @@ void* ScaleTruckController::objectdetectInThread() {
     }
   }
 
-  if(info_){
-	  if(distance_ <= TargetDist_) {
-	    ResultVel_ = 0;
+  if(info_){	// LV velocity
+	  if(distance_ <= LVstopDist_) {
+	    ResultVel_ = 0.0f;
 	  } else if(distance_ <= SafetyDist_) {
-	    ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-TargetDist_)/(SafetyDist_-TargetDist_))+SafetyVel_;
+	    ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-LVstopDist_)/(SafetyDist_-LVstopDist_))+SafetyVel_;
 	  } else
 	    ResultVel_ = TargetVel_;
   }
-  else{	// Interval Control
+  else{		// FV velocity
 	  static float dist_err, P_err, I_err;
 	  if((distance_ <= (TargetDist_ - 0.3f)) || (TargetVel_ <= 0.1f)){	// Emergency
 		ResultVel_ = 0;

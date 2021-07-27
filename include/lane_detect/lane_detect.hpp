@@ -4,7 +4,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <ros/ros.h>
-#include <math.h>
 #include <time.h>
 
 using namespace cv;
@@ -54,6 +53,9 @@ private:
 	vector<int> left_y_prev_;
 	vector<int> right_x_prev_;
 	vector<int> right_y_prev_;
+	
+	int zero_[4];
+	int zero_cnt_[2];
 
 	Mat left_coef_;
 	Mat right_coef_;

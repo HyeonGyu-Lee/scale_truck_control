@@ -16,6 +16,9 @@ public:
 	LaneDetector(ros::NodeHandle nh);
 	~LaneDetector(void);
 
+	//Timer
+	struct timeval start_;
+
 	float display_img(Mat _frame, int _delay, bool _view);
 	void get_steer_coef(float vel);
 	float K1_, K2_;
@@ -29,6 +32,7 @@ private:
 	Mat detect_lines_sliding_window(Mat _frame, bool _view);
 	Mat draw_lane(Mat _sliding_frame, Mat _frame, bool _view);
 	void clear_release();
+	void steer_error_log();
 	void calc_curv_rad_and_center_dist(Mat _frame, bool _view);
 
     ros::NodeHandle nodeHandle_;
@@ -55,7 +59,7 @@ private:
 	vector<int> right_y_prev_;
 	
 	int zero_[4];
-	int zero_cnt_[2];
+	int zero_cnt_[4];
 
 	Mat left_coef_;
 	Mat right_coef_;
@@ -66,7 +70,7 @@ private:
 	float SteerAngle_;
 	float eL_height_, trust_height_, e1_height_, lp_;//, K1_, K2_;
 	//float center_height_, trust_height_, lp_, K1_, K2_;
-	float e_values_[2];
+	float e_values_[3];
 
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;

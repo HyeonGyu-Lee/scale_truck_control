@@ -1,5 +1,7 @@
 #include "lane_detect/lane_detect.hpp"
 
+#define PATH "/home/avees/catkin_ws/src/logfiles/"
+
 using namespace std;
 using namespace cv;
 
@@ -22,7 +24,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	last_Rlane_base_ = 0;
 
 	zero_[4] = { 0, };
-	zero_cnt_[2] = { 0, };
+	zero_cnt_[4] = { 0, };
 
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
@@ -30,7 +32,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
-	e_values_[2] = { 0, };	
+	e_values_[3] = { 0, };	
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
@@ -310,7 +312,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			int Lsum, Rsum;
 			Lsum = Rsum = 0;
 			unsigned int _size;
-			bool flag = false;
+			//bool flag = false;
 
 			if (good_left_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_left_inds.size());
@@ -318,25 +320,30 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
 				}
 				Llane_current = Lsum / _size;
-				if(window == 0){
-					zero_[0] += Llane_current;
-					zero_[1] += Ly_pos + (window_height / 2);
+				/*if(window == 0){
 					zero_cnt_[0]++;
+					zero_cnt_[1] += zero_cnt_[0];
+					zero_[0] += zero_cnt_[0] * Llane_current;
+					zero_[1] += Ly_pos + (window_height / 2);
 				}
+				if(zero_cnt_[0] > 100) zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;*/
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
-				if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-					//flag = true;
+				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
+					flag = true;
 					//left_x_.insert(left_x_.begin(), left_x_prev_.front());
 					//left_y_.insert(left_y_.begin(), left_y_prev_.front());
 					if(zero_cnt_[0] != 0){
-						left_x_.insert(left_x_.begin(), zero_[0]/zero_cnt_[0]);
+						left_x_.insert(left_x_.begin(), zero_[0]/zero_cnt_[1]);
 						left_y_.insert(left_y_.begin(), zero_[1]/zero_cnt_[0]);
-						zero_[0] = zero_[1] = zero_cnt_[0] = 0;
-						flag = true;
+						zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;
 					}
-				}
+					else{
+						left_x_.insert(left_x_.begin(), left_x_prev_.front());
+						left_y_.insert(left_y_.begin(), left_y_prev_.front());
+					}
+				}*/
 				Llane_current += (L_gap);
 			}
 			if (good_right_inds.size() > (size_t)min_pix) {
@@ -345,25 +352,30 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
 				}
 				Rlane_current = Rsum / _size;
-				if(window == 0){
-					zero_[2] += Rlane_current;
+				/*if(window == 0){
+					zero_cnt_[2]++;
+					zero_cnt_[3] += zero_cnt_[2];
+					zero_[2] += zero_cnt_[2] * Rlane_current;
 					zero_[3] += Ry_pos + (window_height / 2);
-					zero_cnt_[1]++;
 				}
+				if(zero_cnt_[2] > 100) zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;*/
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
-				if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-					//flag = true;
+				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
+					flag = true;
 					//right_x_.insert(right_x_.begin(), right_x_prev_.front());
 					//right_y_.insert(right_y_.begin(), right_y_prev_.front());
-					if(zero_cnt_[1] != 0){
-						right_x_.insert(right_x_.begin(), zero_[2]/zero_cnt_[1]);
-						right_y_.insert(right_y_.begin(), zero_[3]/zero_cnt_[1]);
-						zero_[2] = zero_[3] = zero_cnt_[1] = 0;
-						flag = true;
+					if(zero_cnt_[2] != 0){
+						right_x_.insert(right_x_.begin(), zero_[2]/zero_cnt_[3]);
+						right_y_.insert(right_y_.begin(), zero_[3]/zero_cnt_[2]);
+						zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;
 					}
-				}
+					else{
+						right_x_.insert(right_x_.begin(), right_x_prev_.front());
+						right_y_.insert(right_y_.begin(), right_y_prev_.front());
+					}
+				}*/
 				Rlane_current += (R_gap);
 			}
 			if (window != 0) {	
@@ -374,11 +386,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					L_gap = (Llane_current - L_prev);
 				}
 			}
-			if (flag == true){
+			/*if (flag == true){
 				center_x_.insert(center_x_.end(), (left_x_.front() + right_x_.front()) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
 				flag = false;
-			}
+			}*/
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));	
@@ -514,16 +526,47 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		center_y_.clear();
 	}
 
+	void LaneDetector::steer_error_log(){
+		struct timeval end;
+		double time;
+		const char *fname = "SteerError00.csv";
+		char file[64] = { 0x00, };
+	   	static bool flag = false;
+		sprintf(file, "%s%s", PATH, fname);
+		FILE *fp = fopen(file, "a");
+		
+		if(fp == NULL){
+			("Couldn't open the log file");
+			return;
+		}
+		if(!flag){
+			fprintf(fp, "time[s],e1[m]\n");
+			flag = true;
+		}
+		else{
+			gettimeofday(&end, NULL);
+			time = (end.tv_sec - start_.tv_sec) + ((end.tv_usec - start_.tv_usec)/1000000.0);
+			fprintf(fp, "%.2lf,%.3f\n", time, (e_values_[2]/9.0*2.0/100.0));
+		}
+		fflush(fp);
+		fclose(fp);
+	}
+
 	void LaneDetector::get_steer_coef(float vel){
 		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
 			K1_ = K2_ = 0.0f;
 		}
+		else{
+			K1_ = K2_ = 0.06f;
+		}
+		/*
 		else if(vel < 0.5f){
 			K1_ = K2_ =  0.06f;	
 		}
 		else{
 			K1_ = K2_ = (3.7866f * pow(vel, 3)) + ((-8.0032f) * pow(vel, 2)) + (5.4267f * vel) - 1.1259f;
 		}
+		*/
 	}
 
 	void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
@@ -532,14 +575,17 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		float a, b, c, l1, l2;
 	
 		if (!l_fit.empty() && !r_fit.empty()) {
-			//float i = ((float)height_) * eL_height_;	
-			//float j = ((float)height_) * e1_height_;
 			a = c_fit.at<float>(2, 0);
 			b = c_fit.at<float>(1, 0);
 			c = c_fit.at<float>(0, 0);
+
+			
+			//float i = ((float)height_) * eL_height_;	
+			float k = ((float)height_) * e1_height_;
 			/*
-			evalues_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
+			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
 			e_values_[1] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	//e1
+			steer_error_log();
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
 			*/
 			
@@ -549,8 +595,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			l2 = ((a * pow(i, 2)) + (b * i) + c) - ((a * pow(j, 2)) + (b * j) + c);
 	
 			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
-			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//e1
+			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//trust_e1
+			e_values_[2] = ((a * pow(k, 2)) + (b * k) + c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
+			steer_error_log();
+			
 		}
 	}
 

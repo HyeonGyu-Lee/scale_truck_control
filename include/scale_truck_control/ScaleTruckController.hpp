@@ -53,7 +53,7 @@ class ScaleTruckController {
     ros::Publisher ControlDataPublisher_;
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
-
+	
     //image
     LaneDetect::LaneDetector laneDetector_;
     bool viewImage_;

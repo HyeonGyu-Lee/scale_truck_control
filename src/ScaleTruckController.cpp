@@ -141,16 +141,16 @@ void* ScaleTruckController::objectdetectInThread() {
 	    ResultVel_ = TargetVel_;
   }
   else{		// FV velocity
-	  static float dist_err, P_err, I_err;
-	  if((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){
-		  ResultVel_ = 0.0f;
+	  float dist_err, P_err, I_err;
+	  if((distance_ <= (TargetDist_ - 0.3f)) || (TargetVel_ <= 0.1f)){	// Emergency
+		ResultVel_ = 0;
 	  }
-	  else{	// Constant Distance Gap control
-		  dist_err = distance_ - TargetDist_;
-		  P_err = Kp_d_ * dist_err;
-		  I_err = Ki_d_ * dist_err * 0.1f;
-		  ResultVel_ = P_err + I_err + TargetVel_;
-		  if (ResultVel_ > 0.8f) ResultVel_ = 0.8f;	// Max velocity
+	  else {
+	  	dist_err = distance_ - TargetDist_;
+	  	P_err = Kp_d_ * dist_err;
+	  	I_err = Ki_d_ * dist_err * 0.1f;
+	  	ResultVel_ = P_err + I_err + TargetVel_;
+	  	if (ResultVel_ > 0.8f) ResultVel_ = 0.8f;	// Max velocity
 	  }
   }
 }

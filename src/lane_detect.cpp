@@ -556,17 +556,18 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
 			K1_ = K2_ = 0.0f;
 		}
+		/*
 		else{
 			K1_ = K2_ = 0.06f;
 		}
-		/*
+		*/
 		else if(vel < 0.5f){
 			K1_ = K2_ =  0.06f;	
 		}
 		else{
 			K1_ = K2_ = (3.7866f * pow(vel, 3)) + ((-8.0032f) * pow(vel, 2)) + (5.4267f * vel) - 1.1259f;
 		}
-		*/
+		
 	}
 
 	void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
@@ -584,9 +585,9 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			float k = ((float)height_) * e1_height_;
 			/*
 			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
-			e_values_[1] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	//e1
-			steer_error_log();
+			e_values_[1] = ((a * pow(k, 2)) + (b * k) + c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
+			steer_error_log();
 			*/
 			
 			float i = ((float)height_) * eL_height_;	

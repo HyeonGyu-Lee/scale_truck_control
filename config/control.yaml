@@ -18,7 +18,8 @@ params:
   center_err: 640
   target_vel: 0.65
   safety_vel: 0.45
-  target_dist: 0.8
+  lv_stop_dist: 0.5
+  fv_stop_dist: 0.3
   safety_dist: 1.5
   target_dist: 0.8
   angle_degree: 0.0

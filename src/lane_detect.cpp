@@ -1,6 +1,6 @@
 #include "lane_detect/lane_detect.hpp"
 
-#define PATH "/home/avees/catkin_ws/src/logfiles/"
+#define PATH "/home/avees/catkin_ws/logfiles/"
 
 using namespace std;
 using namespace cv;

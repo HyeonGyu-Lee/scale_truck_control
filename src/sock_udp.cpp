@@ -7,7 +7,6 @@ UDPsocket::UDPsocket()
     
     if (fd_ < 0) {
         perror("socket");
-        printf("\nsocket\n");
         exit(0);
     }
 }

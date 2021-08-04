@@ -56,6 +56,10 @@ bool ScaleTruckController::readParameters() {
 
 void ScaleTruckController::init() {
   ROS_INFO("[ScaleTruckController] init()");
+  
+  struct timeval start;
+  gettimeofday(&start, NULL);
+  laneDetector_.start_ = start;
 
   std::string imageTopicName;
   int imageQueueSize;
@@ -137,9 +141,9 @@ void* ScaleTruckController::objectdetectInThread() {
 	    ResultVel_ = TargetVel_;
   }
   else{		// FV velocity
-	  static float dist_err, P_err, I_err;
-	  if((distance_ <= (TargetDist_ - 0.3f)) || (TargetVel_ <= 0.1f)){	// Emergency
-		ResultVel_ = 0;
+	  float dist_err, P_err, I_err;
+	  if((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){	// Emergency
+		ResultVel_ = 0.0f;
 	  }
 	  else {
 	  	dist_err = distance_ - TargetDist_;

@@ -74,7 +74,7 @@ void ScaleTruckController::init() {
   imageSubscriber_ = nodeHandle_.subscribe(imageTopicName, imageQueueSize, &ScaleTruckController::imageCallback, this);
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
-  
+ 
   UDPsocket_.GROUP_ = ADDR_.c_str();
   UDPsocket_.PORT_ = PORT_;
   if(info_) // send

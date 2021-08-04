@@ -1,5 +1,7 @@
 #include "lane_detect/lane_detect.hpp"
 
+#define PATH "/home/jetson/catkin_ws/logfiles/"
+
 using namespace std;
 using namespace cv;
 
@@ -253,7 +255,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		}
 
 		int L_prev =  Llane_current;
-	    int R_prev =  Rlane_current;
+		int R_prev =  Rlane_current;
 		int L_gap = 0;
 		int R_gap = 0;
 
@@ -318,11 +320,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
 				}
 				Llane_current = Lsum / _size;
-				if(window == 0){
+				/*if(window == 0){
 					zero_[0] += Llane_current;
 					zero_[1] += Ly_pos + (window_height / 2);
 					zero_cnt_[0]++;
-				}
+				}*/
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
@@ -339,11 +341,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
 				}
 				Rlane_current = Rsum / _size;
-				if(window == 0){
+				/*if(window == 0){
 					zero_[2] += Rlane_current;
 					zero_[3] += Ry_pos + (window_height / 2);
 					zero_cnt_[1]++;
-				}
+				}*/
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
@@ -374,12 +376,12 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			L_prev = Llane_current;
 			R_prev = Rlane_current;
 		}
-
+		/*
 		left_x_prev_ = left_x_;
 		left_y_prev_ = left_y_;
 		right_x_prev_ = right_x_;
 		right_y_prev_ = right_y_;
-		
+		*/
 		if (left_x_.size() != 0) {
 			left_coef_ = polyfit(left_y_, left_x_);
 		}
@@ -502,6 +504,34 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		center_y_.clear();
 	}
 
+	void LaneDetector::steer_error_log(){
+		static struct timeval start;
+		struct timeval end;
+		double time;
+		const char *fname = "SteerError00.csv";
+		char file[128] = {0x00, };
+		static bool flag = false;
+		sprintf(file, "%s%s", PATH, fname);
+		FILE *fp = fopen(file, "a");
+
+		if(fp = NULL){
+			printf("Couldn't open the log file\n");
+		}
+		if(!flag){
+			fprintf(fp, "time[s],e1[m]\n");
+			gettimeofday(&start, NULL);
+			flag = true;
+		}
+		else{
+			gettimeofday(&end, NULL);
+			time = (end.tv_sec - start.tv_sec) + ((end.tv_usec - start.tv_usec)/1000000.0);
+			fprintf(fp, "%.2lf,%.3f\n", time, (e_values_[2]/2155.0f));
+		}
+		fflush(fp);
+		fclose(fp);
+	}
+
+
 	void LaneDetector::get_steer_coef(float vel){
 		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
 			K1_ = K2_ = 0.0f;
@@ -525,26 +555,31 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			a = c_fit.at<float>(2, 0);
 			b = c_fit.at<float>(1, 0);
 			c = c_fit.at<float>(0, 0);
+			
+			float i = ((float)height_) * eL_height_;	
+			float j = ((float)height_) * trust_height_;
+			float k = ((float)height_) * e1_height_;
+
 			/*
 			evalues_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
 			e_values_[1] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
 			*/
-			
-			float i = ((float)height_) * eL_height_;	
-			float j = ((float)height_) * trust_height_;
+
 			l1 =  j - i;
 			l2 = ((a * pow(i, 2)) + (b * i) + c) - ((a * pow(j, 2)) + (b * j) + c);
 	
 			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
-			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//e1
+			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//trust_e1
+			e_values_[2] = ((a * pow(k, 2)) + (b * k) + c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
+			//steer_error_log();
 		}
 	}
 
 	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		LoadParams();
-		Mat new_frame, temp_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
+		Mat new_frame, temp_frame, warped_frame, gray_frame, blur_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
 		Mat filter(filter_, filter_, CV_8U, Scalar(1));
 		remap(_frame, temp_frame, map1_, map2_, INTER_LINEAR);
 		resize(temp_frame, temp_frame, Size(width_, height_));
@@ -554,7 +589,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		threshold(gray_frame, binary_frame, 0, 255, THRESH_BINARY|THRESH_OTSU);
 		morphologyEx(binary_frame, blur_frame, MORPH_OPEN, filter);
 		//binary_frame = pipeline_img(blur_frame);
-		sliding_frame = detect_lines_sliding_window(blur_frame, _view);
+		Canny(blur_frame, edge_frame, 50, 150);
+		sliding_frame = detect_lines_sliding_window(edge_frame, _view);
 		resized_frame = draw_lane(sliding_frame, new_frame, _view);
 		calc_curv_rad_and_center_dist(resized_frame, _view);
 		clear_release();

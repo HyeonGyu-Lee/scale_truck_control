@@ -1,6 +1,6 @@
 #include "lane_detect/lane_detect.hpp"
 
-#define PATH "/home/jetson/catkin_ws/logfiles/"
+#define PATH "/home/avees/catkin_ws/logfiles/"
 
 using namespace std;
 using namespace cv;
@@ -230,12 +230,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		int quarter_point = mid_point / 2; // 320
 		int n_windows = 9;
 		int margin = 120 * width / 1280;
-		int min_pix = 50 * width / 1280;
+		int min_pix = 30 * width / 1280;
 
 		int window_width = margin * 2;	// 240
 		int window_height = height / n_windows;	// 71
 
-		//int offset = 0;
 		int offset = margin;
 		int range = 120 / 4;
 		//int Lstart = quarter_point - offset; // 320 - 120
@@ -527,7 +526,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	}
 
 	void LaneDetector::steer_error_log(){
-		static struct timeval start;
 		struct timeval end;
 		double time;
 		const char *fname = "SteerError00.csv";
@@ -541,12 +539,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		}
 		if(!flag){
 			fprintf(fp, "time[s],e1[m]\n");
-			gettimeofday(&start, NULL);
 			flag = true;
 		}
 		else{
 			gettimeofday(&end, NULL);
-			time = (end.tv_sec - start.tv_sec) + ((end.tv_usec - start.tv_usec)/1000000.0);
+			time = (end.tv_sec - start_.tv_sec) + ((end.tv_usec - start_.tv_usec)/1000000.0);
 			fprintf(fp, "%.2lf,%.3f\n", time, (e_values_[2]/2155.0f));
 		}
 		fflush(fp);
@@ -604,20 +601,34 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 
 	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		LoadParams();
-		Mat new_frame, temp_frame, warped_frame, gray_frame, blur_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
-		Mat filter(filter_, filter_, CV_8U, Scalar(1));
+		struct timeval start, end;
+		double diff;
+		gettimeofday(&start, NULL);
+		Mat new_frame, temp_frame, warped_frame, gray_frame, blur_frame, morphology_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
 		remap(_frame, temp_frame, map1_, map2_, INTER_LINEAR);
 		resize(temp_frame, temp_frame, Size(width_, height_));
 		new_frame = temp_frame.clone();
 		warped_frame = warped_img(new_frame);
-		cvtColor(warped_frame, gray_frame, COLOR_BGR2GRAY);
+		GaussianBlur(warped_frame, blur_frame, Size(5, 5), 0);
+		cvtColor(blur_frame, gray_frame, COLOR_BGR2GRAY);
+
+		/*
+		Canny(gray_frame, edge_frame, 30, 150);
+		*/
+	
+		Mat filter(filter_, filter_, CV_8U, Scalar(1));
 		threshold(gray_frame, binary_frame, 0, 255, THRESH_BINARY|THRESH_OTSU);
-		morphologyEx(binary_frame, blur_frame, MORPH_OPEN, filter);
-		//binary_frame = pipeline_img(blur_frame);
-		Canny(blur_frame, edge_frame, 50, 150);
+		morphologyEx(binary_frame, morphology_frame, MORPH_OPEN, filter);
+		Canny(morphology_frame, edge_frame, 50, 150);
+		
+
 		sliding_frame = detect_lines_sliding_window(edge_frame, _view);
 		resized_frame = draw_lane(sliding_frame, new_frame, _view);
 		calc_curv_rad_and_center_dist(resized_frame, _view);
+		gettimeofday(&end, NULL);
+		diff = (end.tv_sec - start.tv_sec)*1000.0 + ((end.tv_usec - start.tv_usec)/1000.0);
+		printf("steer control time : %.3lf", diff);
+
 		clear_release();
 		if (_view) {
 			namedWindow("Window1");
@@ -646,6 +657,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 
 			waitKey(_delay);
 		}
+
 
 		return SteerAngle_;
 	}

@@ -16,6 +16,9 @@ public:
 	LaneDetector(ros::NodeHandle nh);
 	~LaneDetector(void);
 
+	//Timer
+	struct timeval start_;
+
 	float display_img(Mat _frame, int _delay, bool _view);
 	void get_steer_coef(float vel);
 	float K1_, K2_;

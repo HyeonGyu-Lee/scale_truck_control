@@ -57,6 +57,10 @@ bool ScaleTruckController::readParameters() {
 void ScaleTruckController::init() {
   ROS_INFO("[ScaleTruckController] init()");
   
+  struct timeval start;
+  gettimeofday(&start, NULL);
+  laneDetector_.start_ = start;
+
   std::string imageTopicName;
   int imageQueueSize;
   std::string objectTopicName;

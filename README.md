@@ -10,7 +10,7 @@
 >## 1.1 Jetpack 4.5.1 (ubuntu 18.04 LTS)
 
 >## 2.1 OpenCV 4.4.0
-'''
+~~~
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
 -D CMAKE_INSTALL_PREFIX=/usr/local \
 -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
@@ -43,7 +43,7 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 -D OPENCV_GENERATE_PKGCONFIG=ON \
 -D BUILD_EXAMPLES=OFF
  ..
-'''
+~~~
 
 # 1. Install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu

@@ -49,15 +49,13 @@
 >~~~
 
 >## 0.2.2 Environment setup
-~~~
-/opt/ros/melodic/share/cv_bridge/cmake/cv_bridgeConfig.cmake
-
-sudo ln -s [OpenCV DIR] /usr/include/opencv
-sudo ldconfig
-
-sudo vim /usr/lib/pkgconfig/opencv.pc
-
-~~~
+>~~~
+>/opt/ros/melodic/share/cv_bridge/cmake/cv_bridgeConfig.cmake
+>sudo ln -s [OpenCV DIR] /usr/include/opencv
+>sudo ldconfig
+>sudo vim /usr/lib/pkgconfig/opencv.pc
+>
+>~~~
 
 # 1. Install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu

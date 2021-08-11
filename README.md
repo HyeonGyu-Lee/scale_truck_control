@@ -8,6 +8,7 @@
 
 # 0. Install Environment
 >## 0.1 Jetpack 4.5.1 (ubuntu 18.04 LTS)
+>https://developer.nvidia.com/embedded/jetpack
 
 >## 0.2.1 OpenCV 4.4.0
 >~~~

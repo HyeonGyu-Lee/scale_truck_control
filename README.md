@@ -1,15 +1,15 @@
 # Scale Truck Control
 
 # Hardware
->Nvidia Jetson Xavier (18.04 LTS - JetPack 4.5.1)   
+>Nvidia Jetson Xavier
 >USB Camera (Camera)   
 >RPLidar A3 (Lidar)   
 >OpenCR 1.0 (ARM)
 
 # 0. Install Environment
->## 1.1 Jetpack 4.5.1 (ubuntu 18.04 LTS)
+>## 0.1 Jetpack 4.5.1 (ubuntu 18.04 LTS)
 
->## 2.1 OpenCV 4.4.0
+>## 0.2.1 OpenCV 4.4.0
 ~~~
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
 -D CMAKE_INSTALL_PREFIX=/usr/local \
@@ -43,6 +43,20 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 -D OPENCV_GENERATE_PKGCONFIG=ON \
 -D BUILD_EXAMPLES=OFF
  ..
+~~~
+~~~
+sudo make install
+~~~
+
+>## 0.2.2 Environment setup
+~~~
+/opt/ros/melodic/share/cv_bridge/cmake/cv_bridgeConfig.cmake
+
+sudo ln -s [OpenCV DIR] /usr/include/opencv
+sudo ldconfig
+
+sudo vim /usr/lib/pkgconfig/opencv.pc
+
 ~~~
 
 # 1. Install ROS (melodic)

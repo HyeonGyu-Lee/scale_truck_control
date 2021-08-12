@@ -321,8 +321,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				_size = (unsigned int)(good_left_inds.size());
 				for (index = 0; index < _size; index++) {
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
-					left_x_.insert(left_x_.end(), nonZero.at<Point>(good_left_inds.at(index)).x);
-					left_y_.insert(left_y_.end(), nonZero.at<Point>(good_left_inds.at(index)).y);
+					//left_x_.insert(left_x_.end(), nonZero.at<Point>(good_left_inds.at(index)).x);
+					//left_y_.insert(left_y_.end(), nonZero.at<Point>(good_left_inds.at(index)).y);
 				}
 				Llane_current = Lsum / _size;
 				/*if(window == 0){
@@ -332,8 +332,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					zero_[1] += Ly_pos + (window_height / 2);
 				}
 				if(zero_cnt_[0] > 100) zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;*/
-				//left_x_.insert(left_x_.end(), Llane_current);
-				//left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
+				left_x_.insert(left_x_.end(), Llane_current);
+				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
 				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
 					flag = true;
@@ -355,8 +355,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				_size = (unsigned int)(good_right_inds.size());
 				for (index = 0; index < _size; index++) {
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
-					right_y_.insert(right_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
-					right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
+					//right_y_.insert(right_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
+					//right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
 				}
 				Rlane_current = Rsum / _size;
 				/*if(window == 0){
@@ -366,8 +366,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					zero_[3] += Ry_pos + (window_height / 2);
 				}
 				if(zero_cnt_[2] > 100) zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;*/
-				//right_x_.insert(right_x_.end(), Rlane_current);
-				//right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
+				right_x_.insert(right_x_.end(), Rlane_current);
+				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
 				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
 					flag = true;
@@ -562,18 +562,12 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
 			K1_ = K2_ = 0.0f;
 		}
-		
-		else{
-			K1_ = K2_ = 0.03f;
-		}
-		
-		/*
 		else if(vel < 0.5f){
 			K1_ = K2_ =  0.06f;	
 		}
 		else{
 			K1_ = K2_ = (3.7866f * pow(vel, 3)) + ((-8.0032f) * pow(vel, 2)) + (5.4267f * vel) - 1.1259f;
-		}*/
+		}
 		
 	}
 
@@ -619,13 +613,14 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		Mat trans = getPerspectiveTransform(corners_, warpCorners_);
 
 		cuda::GpuMat gpu_map1, gpu_map2;
-		gpu_map2.upload(map2_);
 		gpu_map1.upload(map1_);
+		gpu_map2.upload(map2_);
 
 		cuda::GpuMat gpu_frame, gpu_remap_frame, gpu_warped_frame, gpu_blur_frame, gpu_gray_frame, gpu_binary_frame;
 
 		gpu_frame.upload(new_frame);
 		cuda::remap(gpu_frame, gpu_remap_frame, gpu_map1, gpu_map2, INTER_LINEAR);
+		gpu_remap_frame.download(new_frame);
 		cuda::warpPerspective(gpu_remap_frame, gpu_warped_frame, trans, Size(width_, height_));
 		static cv::Ptr< cv::cuda::Filter > filters;
 		filters = cv::cuda::createGaussianFilter(gpu_warped_frame.type(), gpu_blur_frame.type(), cv::Size(5,5), 0, 0, cv::BORDER_DEFAULT);

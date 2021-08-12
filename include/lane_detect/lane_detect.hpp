@@ -2,11 +2,15 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudafeatures2d.hpp>
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <opencv2/cudawarping.hpp>
+#include <opencv2/cudafilters.hpp>
 #include <iostream>
 #include <ros/ros.h>
-#include <math.h>
 #include <time.h>
-#include <stdbool.h>
 
 using namespace cv;
 using namespace std;
@@ -18,7 +22,12 @@ public:
 	LaneDetector(ros::NodeHandle nh);
 	~LaneDetector(void);
 
+	//Timer
+	struct timeval start_;
+
 	float display_img(Mat _frame, int _delay, bool _view);
+	void get_steer_coef(float vel);
+	float K1_, K2_;
 
 private:
 	void LoadParams(void);
@@ -29,9 +38,10 @@ private:
 	Mat detect_lines_sliding_window(Mat _frame, bool _view);
 	Mat draw_lane(Mat _sliding_frame, Mat _frame, bool _view);
 	void clear_release();
+	void steer_error_log();
 	void calc_curv_rad_and_center_dist(Mat _frame, bool _view);
 
-    ros::NodeHandle nodeHandle_;
+	ros::NodeHandle nodeHandle_;
 
 	/********** Camera calibration **********/
 	Mat map1_, map2_;
@@ -53,6 +63,9 @@ private:
 	vector<int> left_y_prev_;
 	vector<int> right_x_prev_;
 	vector<int> right_y_prev_;
+	
+	int zero_[4];
+	int zero_cnt_[4];
 
 	Mat left_coef_;
 	Mat right_coef_;
@@ -61,9 +74,10 @@ private:
 	float right_curve_radius_;
 	float center_position_;
 	float SteerAngle_;
-	float center_height_, trust_height_, lp_, K1_, K2_;
-	float e_values_[2];
-	
+	float eL_height_, trust_height_, e1_height_, lp_;//, K1_, K2_;
+	//float center_height_, trust_height_, lp_, K1_, K2_;
+	float e_values_[3];
+
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;
 	double Kp_term_, Ki_term_, Kd_term_, err_, prev_err_, I_err_, D_err_, result_;
@@ -76,6 +90,7 @@ private:
 	int sobel_min_th_, sobel_max_th_;
 	int hls_min_th_, hls_max_th_;
 	int width_, height_;
+	double diff_;
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;
 	double Kp_, Ki_, Kd_, dt_;

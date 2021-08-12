@@ -1,5 +1,7 @@
 #include "lane_detect/lane_detect.hpp"
 
+#define PATH "/home/avees/catkin_ws/logfiles/"
+
 using namespace std;
 using namespace cv;
 
@@ -21,13 +23,16 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	last_Llane_base_ = 0;
 	last_Rlane_base_ = 0;
 
+	zero_[4] = { 0, };
+	zero_cnt_[4] = { 0, };
+
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
-	e_values_[2] = { 0, };	
+	e_values_[3] = { 0, };	
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
@@ -60,6 +65,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	warpCorners_[1] = Point2f(width_ - wide_extra_upside_, 0.0);
 	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
 	warpCorners_[3] = Point2f(width_ - wide_extra_downside_, height_);
+
 }
 
 	LaneDetector::~LaneDetector(void) {
@@ -72,11 +78,12 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
 		nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
 		nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
-		nodeHandle_.param("LaneDetector/center_height",center_height_, 1.0f);	
+		nodeHandle_.param("LaneDetector/eL_height",eL_height_, 1.0f);	
+		nodeHandle_.param("LaneDetector/e1_height",e1_height_, 1.0f);	
 		nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
 		nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
-		nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
-		nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
+		//nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
+		//nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
 		nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
 	}
 
@@ -109,8 +116,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				max_index = i;
 			}
 		}
-		if (max_index == -1)
+		if (max_index == -1) {
 			cout << "ERROR : hist range" << endl;
+			return -1;
+		}
 		return max_index;
 	}
 
@@ -215,28 +224,30 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					hist[i] += 1;
 				}
 			}
-		}
-	
+		}	
+		
 		cvtColor(frame, result, COLOR_GRAY2BGR);
 
-		int mid_point = width / 2; // 320
-		int quarter_point = mid_point / 2; // 160
+		int mid_point = width / 2; // 640
+		int quarter_point = mid_point / 2; // 320
 		int n_windows = 9;
 		int margin = 120 * width / 1280;
-		int min_pix = 50 * width / 1280;
+		int min_pix = 30 * width / 1280;
 
-		int window_width = margin * 2;
-		int window_height = height / n_windows;
+		int window_width = margin * 2;	// 240
+		int window_height = height / n_windows;	// 71
 
-		int offset = 0;
+		int offset = margin;
 		int range = 120 / 4;
-		int Lstart = quarter_point - offset; // 160 - 0
-		int Rstart = mid_point + quarter_point + offset; // 480 - 0
+		//int Lstart = quarter_point - offset; // 320 - 120
+		//int Rstart = mid_point + quarter_point - offset; // 960 - 120
 		// mid_point = 320, Lstart +- range = 40 ~ 280
 		//int Llane_base = arrMaxIdx(hist, Lstart - range, Lstart + range, _width);
 		//int Rlane_base = arrMaxIdx(hist, Rstart - range, Rstart + range, _width);
 		int Llane_base = arrMaxIdx(hist, 100, mid_point, width);
 		int Rlane_base = arrMaxIdx(hist, mid_point, width - 100, width);
+		if (Llane_base == -1 || Rlane_base == -1)
+			return result;
 
 		int Llane_current = Llane_base;
 		int Rlane_current = Rlane_base;
@@ -246,8 +257,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			int Rlane_current = Rlane_base;
 		}
 
-		int L_prev = Llane_current;
-	    int R_prev = Rlane_current;
+		int L_prev =  Llane_current;
+		int R_prev =  Rlane_current;
 		int L_gap = 0;
 		int R_gap = 0;
 
@@ -258,8 +269,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			int Ly_pos = height - (window + 1) * window_height - 1; // win_y_low , win_y_high = win_y_low - window_height
 			int Ry_pos = height - (window + 1) * window_height - 1;
 
-			int Lx_pos = Llane_current - margin; // win_xleft_low, win_xleft_high = win_xleft_low + margin*2
-			int Rx_pos = Rlane_current - margin; // win_xrignt_low, win_xright_high = win_xright_low + margin*2
+			int	Lx_pos = Llane_current - margin; // win_xleft_low, win_xleft_high = win_xleft_low + margin*2
+			int	Rx_pos = Rlane_current - margin; // win_xrignt_low, win_xright_high = win_xright_low + margin*2
 			if (_view) {
 				rectangle(result, \
 					Rect(Lx_pos, Ly_pos, window_width, window_height), \
@@ -270,7 +281,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			}
 			uchar* data_output = result.data;
 			int nZ_y, nZ_x;
-
 			good_left_inds.clear();
 			good_right_inds.clear();
 
@@ -305,54 +315,89 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			int Lsum, Rsum;
 			Lsum = Rsum = 0;
 			unsigned int _size;
-			bool flag = false;
+			//bool flag = false;
 
 			if (good_left_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_left_inds.size());
 				for (index = 0; index < _size; index++) {
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
+					left_x_.insert(left_x_.end(), nonZero.at<Point>(good_left_inds.at(index)).x);
+					left_y_.insert(left_y_.end(), nonZero.at<Point>(good_left_inds.at(index)).y);
 				}
 				Llane_current = Lsum / _size;
-				left_x_.insert(left_x_.end(), Llane_current);
-				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
-			} else{
-				if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-					flag = true;
-					left_x_.insert(left_x_.begin(), left_x_prev_.front());
-					left_y_.insert(left_y_.begin(), left_y_prev_.front());
+				/*if(window == 0){
+					zero_cnt_[0]++;
+					zero_cnt_[1] += zero_cnt_[0];
+					zero_[0] += zero_cnt_[0] * Llane_current;
+					zero_[1] += Ly_pos + (window_height / 2);
 				}
+				if(zero_cnt_[0] > 100) zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;*/
+				//left_x_.insert(left_x_.end(), Llane_current);
+				//left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
+			} else{
+				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
+					flag = true;
+					//left_x_.insert(left_x_.begin(), left_x_prev_.front());
+					//left_y_.insert(left_y_.begin(), left_y_prev_.front());
+					if(zero_cnt_[0] != 0){
+						left_x_.insert(left_x_.begin(), zero_[0]/zero_cnt_[1]);
+						left_y_.insert(left_y_.begin(), zero_[1]/zero_cnt_[0]);
+						zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;
+					}
+					else{
+						left_x_.insert(left_x_.begin(), left_x_prev_.front());
+						left_y_.insert(left_y_.begin(), left_y_prev_.front());
+					}
+				}*/
 				Llane_current += (L_gap);
 			}
 			if (good_right_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_right_inds.size());
 				for (index = 0; index < _size; index++) {
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
+					right_y_.insert(right_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
+					right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
 				}
 				Rlane_current = Rsum / _size;
-				right_x_.insert(right_x_.end(), Rlane_current);
-				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
-			} else{
-				if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-					flag = true;
-					right_x_.insert(right_x_.begin(), right_x_prev_.front());
-					right_y_.insert(right_y_.begin(), right_y_prev_.front());
+				/*if(window == 0){
+					zero_cnt_[2]++;
+					zero_cnt_[3] += zero_cnt_[2];
+					zero_[2] += zero_cnt_[2] * Rlane_current;
+					zero_[3] += Ry_pos + (window_height / 2);
 				}
+				if(zero_cnt_[2] > 100) zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;*/
+				//right_x_.insert(right_x_.end(), Rlane_current);
+				//right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
+			} else{
+				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
+					flag = true;
+					//right_x_.insert(right_x_.begin(), right_x_prev_.front());
+					//right_y_.insert(right_y_.begin(), right_y_prev_.front());
+					if(zero_cnt_[2] != 0){
+						right_x_.insert(right_x_.begin(), zero_[2]/zero_cnt_[3]);
+						right_y_.insert(right_y_.begin(), zero_[3]/zero_cnt_[2]);
+						zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;
+					}
+					else{
+						right_x_.insert(right_x_.begin(), right_x_prev_.front());
+						right_y_.insert(right_y_.begin(), right_y_prev_.front());
+					}
+				}*/
 				Rlane_current += (R_gap);
 			}
 			if (window != 0) {	
 				if (Rlane_current != R_prev) {
 					R_gap = (Rlane_current - R_prev);
 				}
-	
 				if (Llane_current != L_prev) {
 					L_gap = (Llane_current - L_prev);
 				}
 			}
-			if (flag == true){
+			/*if (flag == true){
 				center_x_.insert(center_x_.end(), (left_x_.front() + right_x_.front()) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
 				flag = false;
-			}
+			}*/
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));	
@@ -360,12 +405,12 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			L_prev = Llane_current;
 			R_prev = Rlane_current;
 		}
-
+		/*
 		left_x_prev_ = left_x_;
 		left_y_prev_ = left_y_;
 		right_x_prev_ = right_x_;
 		right_y_prev_ = right_y_;
-		
+		*/
 		if (left_x_.size() != 0) {
 			left_coef_ = polyfit(left_y_, left_x_);
 		}
@@ -417,8 +462,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				temp_center_point.y = (int)i;
 	
 				left_point.push_back(temp_left_point);
-				right_point.push_back(temp_right_point);
 				left_point_f.push_back(temp_left_point);
+				right_point.push_back(temp_right_point);
 				right_point_f.push_back(temp_right_point);
 				center_point.push_back(temp_center_point);
 				center_point_f.push_back(temp_center_point);
@@ -488,57 +533,114 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		center_y_.clear();
 	}
 
+	void LaneDetector::steer_error_log(){
+		struct timeval end;
+		double time;
+		const char *fname = "SteerError00.csv";
+		char file[128] = {0x00, };
+		static bool flag = false;
+		sprintf(file, "%s%s", PATH, fname);
+		FILE *fp = fopen(file, "a");
+
+		if(fp = NULL){
+			printf("Couldn't open the log file\n");
+		}
+		if(!flag){
+			fprintf(fp, "time[s],e1[m]\n");
+			flag = true;
+		}
+		else{
+			gettimeofday(&end, NULL);
+			time = (end.tv_sec - start_.tv_sec) + ((end.tv_usec - start_.tv_usec)/1000000.0);
+			fprintf(fp, "%.2lf,%.3f\n", time, (e_values_[2]/2155.0f));
+		}
+		fflush(fp);
+		fclose(fp);
+	}
+
+	void LaneDetector::get_steer_coef(float vel){
+		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
+			K1_ = K2_ = 0.0f;
+		}
+		
+		else{
+			K1_ = K2_ = 0.03f;
+		}
+		
+		/*
+		else if(vel < 0.5f){
+			K1_ = K2_ =  0.06f;	
+		}
+		else{
+			K1_ = K2_ = (3.7866f * pow(vel, 3)) + ((-8.0032f) * pow(vel, 2)) + (5.4267f * vel) - 1.1259f;
+		}*/
+		
+	}
+
 	void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
 		Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
 		float car_position = width_ / 2;
-		int lane_center_position,lane_top, lane_bot;
 		float a, b, c, l1, l2;
 	
 		if (!l_fit.empty() && !r_fit.empty()) {
-			float i = ((float)height_) * center_height_;	
-			float j = ((float)height_) * trust_height_;
 			a = c_fit.at<float>(2, 0);
 			b = c_fit.at<float>(1, 0);
 			c = c_fit.at<float>(0, 0);
 			
+			float i = ((float)height_) * eL_height_;	
+			float j = ((float)height_) * trust_height_;
+			float k = ((float)height_) * e1_height_;
+
+			/*
+			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
+			e_values_[1] = ((a * pow(k, 2)) + (b * k) + c) - car_position;	//e1
+			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
+			*/
+
 			l1 =  j - i;
 			l2 = ((a * pow(i, 2)) + (b * i) + c) - ((a * pow(j, 2)) + (b * j) + c);
 	
 			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
-			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//e1
+			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//trust_e1
+			e_values_[2] = ((a * pow(k, 2)) + (b * k) + c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
-	
-			/*
-			interest_points_[2] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	
-			interest_points_[3] = ((a * pow(j, 2)) + (b * j) + c) - car_position;	
-			if ((fabs(interest_points_[2]) > 640.0f) || (fabs(interest_points_[3] > 640.0f))){
-					interest_points_[0] = interest_points_[0];
-					interest_points_[1] = interest_points_[1];
-			}
-				else{
-					interest_points_[0] = interest_points_[2];
-					interest_points_[1] = interest_points_[3];
-			}*/
-
+			//steer_error_log();
 		}
 	}
 
-	//int LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		LoadParams();
-		Mat new_frame, temp_frame, warped_frame, gray_frame, blur_frame, binary_frame, sliding_frame, resized_frame;
-		Mat filter(filter_, filter_, CV_8U, Scalar(1));
-		remap(_frame, temp_frame, map1_, map2_, INTER_LINEAR);
-		resize(temp_frame, temp_frame, Size(width_, height_));
-		new_frame = temp_frame.clone();
-		warped_frame = warped_img(new_frame);
-		cvtColor(warped_frame, gray_frame, COLOR_BGR2GRAY);
-		threshold(gray_frame, binary_frame, 0, 255, THRESH_BINARY|THRESH_OTSU);
-		morphologyEx(binary_frame, blur_frame, MORPH_OPEN, filter);
-		//binary_frame = pipeline_img(blur_frame);
-		sliding_frame = detect_lines_sliding_window(blur_frame, _view);
+		struct timeval start, end;
+		double diff;
+		gettimeofday(&start, NULL);
+		Mat new_frame, gray_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
+
+		resize(_frame, new_frame, Size(width_, height_));
+		Mat trans = getPerspectiveTransform(corners_, warpCorners_);
+
+		cuda::GpuMat gpu_map1, gpu_map2;
+		gpu_map2.upload(map2_);
+		gpu_map1.upload(map1_);
+
+		cuda::GpuMat gpu_frame, gpu_remap_frame, gpu_warped_frame, gpu_blur_frame, gpu_gray_frame, gpu_binary_frame;
+
+		gpu_frame.upload(new_frame);
+		cuda::remap(gpu_frame, gpu_remap_frame, gpu_map1, gpu_map2, INTER_LINEAR);
+		cuda::warpPerspective(gpu_remap_frame, gpu_warped_frame, trans, Size(width_, height_));
+		static cv::Ptr< cv::cuda::Filter > filters;
+		filters = cv::cuda::createGaussianFilter(gpu_warped_frame.type(), gpu_blur_frame.type(), cv::Size(5,5), 0, 0, cv::BORDER_DEFAULT);
+		filters->apply(gpu_warped_frame, gpu_blur_frame);
+		cuda::cvtColor(gpu_blur_frame, gpu_gray_frame, COLOR_BGR2GRAY);
+		cuda::threshold(gpu_gray_frame, gpu_binary_frame, 128, 255, THRESH_BINARY);
+		gpu_binary_frame.download(gray_frame);
+
+		sliding_frame = detect_lines_sliding_window(gray_frame, _view);
 		resized_frame = draw_lane(sliding_frame, new_frame, _view);
 		calc_curv_rad_and_center_dist(resized_frame, _view);
+		gettimeofday(&end, NULL);
+		diff = (end.tv_sec - start.tv_sec)*1000.0 + ((end.tv_usec - start.tv_usec)/1000.0);
+		printf("steer control time : %.3lf\n", diff);
+
 		clear_release();
 		if (_view) {
 			namedWindow("Window1");
@@ -556,20 +658,26 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			line(new_frame, corners_[2], corners_[3], Scalar(0, 0, 255), 5);
 			line(new_frame, corners_[3], corners_[1], Scalar(0, 0, 255), 5);
 			line(new_frame, corners_[1], corners_[0], Scalar(0, 0, 255), 5);
+			
+			if(!new_frame.empty()) {
+				resize(new_frame, new_frame, Size(640, 480));
+				imshow("Window1", new_frame);
+			}
+			if(!sliding_frame.empty()) {
+				resize(sliding_frame, sliding_frame, Size(640, 480));
+				imshow("Window2", sliding_frame);
+			}
+			if(!resized_frame.empty()){
+				resize(resized_frame, resized_frame, Size(640, 480));
+				imshow("Window3", resized_frame);
+			}
 
-			resize(new_frame, new_frame, Size(640, 360));
-			resize(sliding_frame, sliding_frame, Size(640, 360));
-			resize(resized_frame, resized_frame, Size(640, 360));
-
-			imshow("Window1", new_frame);
-			imshow("Window2", sliding_frame);
-			imshow("Window3", resized_frame);
 
 			waitKey(_delay);
 		}
 
-		//return center_position_;
+
 		return SteerAngle_;
-	};
+	}
 
 } /* namespace lane_detect */

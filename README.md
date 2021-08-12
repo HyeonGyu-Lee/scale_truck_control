@@ -78,6 +78,11 @@
 >~~~
 >sudo make install -j8
 >~~~
+>
+>~~~
+>sudo apt install ros-melodic-filters
+>sudo apt install ros-melodic-laser-geometry
+>~~~
 
 >## 0.2.2 Environment setup
 >~~~
@@ -87,6 +92,13 @@
 >sudo vim /usr/lib/pkgconfig/opencv.pc
 >
 >~~~
+
+>## 0.2.3 Jetson Stats
+>~~~
+>sudo -H pip3 install jetson-stats
+>~~~
+
+
 
 # 1. Install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu
@@ -158,20 +170,27 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >```
 >git clone https://github.com/ros-perception/laser_filters.git 
 >```
+>## 2.7 vison_opencv (vision_opencv, image_geometry, cv_bridge)
+>```
+>git clone https://github.com/ros-perception/vision_opencv.git
+>```
 
 # 3. Install module & Environment setup
 - melodic is ros-version (18.04 LTS)
 >## 3.1 cv_bridge Setup
 >```
->sudo apt-get install ros-melodic-cv-bridge   
->sudo apt-get install ros-melodic-vision-opencv   
+>catkin_ws/src/vision_opencv/cv_bridge/CMakelist.txt
+>~~~
+>~~~
 >```
 >## 3.2 OpenCV4 Setup
 > ``` -y
 >cd /opt/ros/melodic/share/cv_bridge/cmake
 >sudo vim cv_bridgeConfig.cmake
+>~~~
 >--set(_include_dirs "include;/usr/include;/usr/include/opencv
 >++set(_include_dirs "include;/usr/include;/usr/include/opencv4
+>~~~
 > ```
 > ```
 >cd ~/catkin_ws/src/scale_truck_control

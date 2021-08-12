@@ -29,10 +29,13 @@
 >sudo apt-get install mesa-utils libgl1-mesa-dri libgtkgl2.0-dev libgtkglext1-dev
 >sudo apt-get install libatlas-base-dev gfortran libeigen3-dev
 >sudo apt-get install python3-dev python3-numpy
+>~~~
+>~~~
 >mkdir OpenCV && cd OpenCV
 >git clone -b 4.4.0 https://github.com/opencv/opencv
 >git clone -b 4.4.0 https://github.com/opencv/opencv_contrib
 >cd opencv && mkdir build && cd build
+>~~~
 >cmake -D CMAKE_BUILD_TYPE=RELEASE \
 >-D CMAKE_INSTALL_PREFIX=/usr/local \
 >-D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
@@ -63,11 +66,11 @@
 >-D BUILD_NEW_PYTHON_SUPPORT=ON \
 >-D BUILD_opencv_python3=TRUE \
 >-D OPENCV_GENERATE_PKGCONFIG=ON \
->-D BUILD_EXAMPLES=OFF
+>-D BUILD_EXAMPLES=OFF \
 > ..
 >~~~
 >~~~
->sudo make install
+>sudo make install -j8
 >~~~
 
 >## 0.2.2 Environment setup

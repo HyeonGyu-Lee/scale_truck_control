@@ -98,8 +98,6 @@
 >sudo -H pip3 install jetson-stats
 >~~~
 
-
-
 # 1. Install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu
 
@@ -179,9 +177,13 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 - melodic is ros-version (18.04 LTS)
 >## 3.1 cv_bridge Setup
 >```
->catkin_ws/src/vision_opencv/cv_bridge/CMakelist.txt
->~~~
->~~~
+>vim ~/catkin_ws/src/vision_opencv/cv_bridge/CMakelist.txt
+>--find_package(Boost REQUIRED python37)
+>++find_package(Boost REQUIRED python)
+>vim ~/catkin_ws/src/vision_opencv/cv_bridge/src/module.hpp
+>--static void * do_numpy_import( )
+>++static void do_numpy_import( )
+>--return nullptr;
 >```
 >## 3.2 OpenCV4 Setup
 > ``` -y

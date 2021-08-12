@@ -13,7 +13,7 @@
 #define CYCLE_TIME    (100000) // us
 #define SEC_TIME      (1000000) // us
 #define T_TIME        (100) // us
-#define ANGLE_TIME    (50000) // us
+#define ANGLE_TIME    (33000) // us
 
 // PIN
 #define STEER_PIN     (6)

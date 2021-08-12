@@ -193,7 +193,9 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >--set(_include_dirs "include;/usr/include;/usr/include/opencv
 >++set(_include_dirs "include;/usr/include;/usr/include/opencv4
 ># Package Information for pkg-config
->
+>```
+>```
+>sudo vim /usr/lib/pkgconfig/opencv.pc
 >prefix=/usr/local
 >exec_prefix=${prefix}libdir=${exec_prefix}/lib/aarch64-linux-gnu
 >includedir_old=${prefix}/include/opencv4/opencv

@@ -1,10 +1,10 @@
 # Scale Truck Control
 
 # Hardware
->Nvidia Jetson Xavier
+>Nvidia Jetson Xavier 
 >USB Camera (Camera)   
->RPLidar A3 (Lidar)   
->OpenCR 1.0 (ARM)
+>RPLidar A3 (Lidar) 
+>OpenCR 1.0 (ARM) 
 
 # 0. Install Environment
 >## 0.1 Jetpack 4.5.1 (ubuntu 18.04 LTS)

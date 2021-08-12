@@ -4,6 +4,7 @@
 #include <ros.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float32.h>
+#include <sensor_msgs/Imu.h>
 #include <SD.h>
 #include <IMU.h>
 
@@ -12,7 +13,7 @@
 #define CYCLE_TIME    (100000) // us
 #define SEC_TIME      (1000000) // us
 #define T_TIME        (100) // us
-#define ANGLE_TIME    (100000) // us
+#define ANGLE_TIME    (50000) // us
 
 // PIN
 #define STEER_PIN     (6)
@@ -73,6 +74,7 @@ float Kf_ = 0.5;	// feed forward const.
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
 std_msgs::Float32 vel_msg_;
+sensor_msgs::Imu imu_msg_;
 float setSPEED(float tar_vel, float cur_vel) {
   static float output, err, prev_err, P_err, I_err, D_err;
   static float prev_u_k, prev_u;//, A_err;
@@ -115,8 +117,8 @@ float setSPEED(float tar_vel, float cur_vel) {
 void setANGLE() {
   static float output;
   float angle = tx_steer_;
-  //if(IMU.update() > 0)
-  //  angle = -IMU.rpy[2];
+  if(IMU.update() > 0) {
+    imu_msg_.orientation.x = IMU.quat[0];
     imu_msg_.orientation.y = IMU.quat[1];
     imu_msg_.orientation.z = IMU.quat[2];
     imu_msg_.orientation.w = IMU.quat[3];

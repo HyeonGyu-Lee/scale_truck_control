@@ -12,6 +12,27 @@
 
 >## 0.2.1 OpenCV 4.4.0
 >~~~
+>sudo apt-get purge  libopencv* python-opencv
+>sudo apt-get autoremove
+>sudo find /usr/local/ -name "*opencv*" -exec rm -i {} \;
+>
+>sudo apt-get update
+>sudo apt-get upgrade
+>
+>sudo apt-get install build-essential cmake
+>sudo apt-get install pkg-config
+>sudo apt-get install libjpeg-dev libtiff5-dev libpng-dev
+>sudo apt-get install ffmpeg libavcodec-dev libavformat-dev libswscale-dev libxvidcore-dev libx264-dev libxine2-dev
+>sudo apt-get install libv4l-dev v4l-utils
+>sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev 
+>sudo apt-get install libgtk-3-dev
+>sudo apt-get install mesa-utils libgl1-mesa-dri libgtkgl2.0-dev libgtkglext1-dev
+>sudo apt-get install libatlas-base-dev gfortran libeigen3-dev
+>sudo apt-get install python3-dev python3-numpy
+>mkdir OpenCV && cd OpenCV
+>git clone -b 4.4.0 https://github.com/opencv/opencv
+>git clone -b 4.4.0 https://github.com/opencv/opencv_contrib
+>cd opencv && mkdir build && cd build
 >cmake -D CMAKE_BUILD_TYPE=RELEASE \
 >-D CMAKE_INSTALL_PREFIX=/usr/local \
 >-D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \

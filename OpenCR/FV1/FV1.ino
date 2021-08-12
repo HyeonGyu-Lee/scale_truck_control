@@ -4,6 +4,7 @@
 #include <ros.h>
 #include <geometry_msgs/Twist.h>
 #include <std_msgs/Float32.h>
+#include <sensor_msgs/Imu.h>
 #include <SD.h>
 #include <IMU.h>
 
@@ -12,7 +13,7 @@
 #define CYCLE_TIME    (100000) // us
 #define SEC_TIME      (1000000) // us
 #define T_TIME        (100) // us
-#define ANGLE_TIME    (100000) // us
+#define ANGLE_TIME    (50000) // us
 
 // PIN
 #define STEER_PIN     (6)
@@ -30,7 +31,7 @@
 #define ZERO_PWM      (1500)
 #define MAX_STEER     (1800)
 #define MIN_STEER     (1200)
-#define STEER_CENTER  (1470)
+#define STEER_CENTER  (1480)
 
 #define DATA_LOG      (0)
 
@@ -46,7 +47,7 @@ float output_;
 volatile int EN_pos_;
 volatile int CountT_;
 volatile int cumCountT_;
-char filename_[] = "FV1_00.TXT";
+char filename_[] = "LV1_00.TXT";
 File logfile_;
 
 HardwareTimer Timer1(TIMER_CH1); // T Method
@@ -60,7 +61,7 @@ void rosTwistCallback(const geometry_msgs::Twist& msg) {
   tx_throttle_ = msg.linear.x;
   tx_tdist_ = msg.linear.z;
   tx_dist_ = msg.linear.y;
-  tx_steer_ = msg.angular.z;	// float64
+  tx_steer_ = msg.angular.z;  // float64
 }
 /*
    SPEED to RPM
@@ -69,10 +70,11 @@ float Kp_ = 0.8; // 2.0; //0.8;
 float Ki_ = 2.0; // 0.4; //10.0;
 float Kd_ = 0.0; //0.05;
 float Ka_ = 0.8;
-float Kf_ = 0.5;	// feed forward const.
+float Kf_ = 0.5;  // feed forward const.
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
 std_msgs::Float32 vel_msg_;
+sensor_msgs::Imu imu_msg_;
 float setSPEED(float tar_vel, float cur_vel) {
   static float output, err, prev_err, P_err, I_err, D_err;
   static float prev_u_k, prev_u;//, A_err;
@@ -112,8 +114,18 @@ float setSPEED(float tar_vel, float cur_vel) {
 void setANGLE() {
   static float output;
   float angle = tx_steer_;
-  //if(IMU.update() > 0)
-  //  angle = -IMU.rpy[2];
+  if(IMU.update() > 0) {
+    imu_msg_.orientation.x = IMU.quat[0];
+    imu_msg_.orientation.y = IMU.quat[1];
+    imu_msg_.orientation.z = IMU.quat[2];
+    imu_msg_.orientation.w = IMU.quat[3];
+    imu_msg_.angular_velocity.x = IMU.angle[0];
+    imu_msg_.angular_velocity.y = IMU.angle[1];
+    imu_msg_.angular_velocity.z = IMU.angle[2];
+    imu_msg_.linear_acceleration.x = IMU.rpy[0];
+    imu_msg_.linear_acceleration.y = IMU.rpy[1];
+    imu_msg_.linear_acceleration.z = IMU.rpy[2];
+  }
   output = (angle * 12.0) + (float)STEER_CENTER;
   if(output > MAX_STEER)
     output = MAX_STEER;
@@ -225,20 +237,21 @@ void CountT() {
 */
 ros::NodeHandle nh_;
 ros::Subscriber<geometry_msgs::Twist> rosSubMsg("/twist_msg", &rosTwistCallback);
-ros::Publisher rosPubMsg("/vel_msg", &vel_msg_);
+ros::Publisher rosPubVel("/vel_msg", &vel_msg_);
+ros::Publisher rosPubImu("/imu_msg", &imu_msg_);
 /*
    Arduino setup()
 */
 void setup() {
   nh_.initNode();
   nh_.subscribe(rosSubMsg);
-  nh_.advertise(rosPubMsg);
+  nh_.advertise(rosPubVel);
+  nh_.advertise(rosPubImu);
   throttle_.attach(THROTTLE_PIN);
   steer_.attach(STEER_PIN);
   pinMode(EN_PINA, INPUT);
   pinMode(EN_PINB, INPUT);
   attachInterrupt(0, getENA, CHANGE);
-  //attachInterrupt(1, getENB, CHANGE);
   IMU.begin();
   Serial.begin(BAUD_RATE);
   if(!SD.begin(10)){
@@ -255,7 +268,6 @@ void setup() {
     }
     Serial.print("Logging to: ");
     Serial.print(filename_);
-    //logfile_.println(filename_);
     logfile_.close();
   }
   Timer1.stop();
@@ -300,12 +312,14 @@ void loop() {
       flag_ = false;
     }
   }
+  
   nh_.spinOnce();
   delay(1);
   
   currentTime = millis();
-  if ((currentTime - prevTime) >= (CYCLE_TIME / 1000)) {
-    rosPubMsg.publish(&vel_msg_);
+  if ((currentTime - prevTime) >= (ANGLE_TIME / 1000)) {
+    rosPubVel.publish(&vel_msg_);
+    rosPubImu.publish(&imu_msg_);
     prevTime = currentTime;
   }
 }

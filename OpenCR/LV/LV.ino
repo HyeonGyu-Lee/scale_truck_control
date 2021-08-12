@@ -117,6 +117,16 @@ void setANGLE() {
   float angle = tx_steer_;
   //if(IMU.update() > 0)
   //  angle = -IMU.rpy[2];
+    imu_msg_.orientation.y = IMU.quat[1];
+    imu_msg_.orientation.z = IMU.quat[2];
+    imu_msg_.orientation.w = IMU.quat[3];
+    imu_msg_.angular_velocity.x = IMU.angle[0];
+    imu_msg_.angular_velocity.y = IMU.angle[1];
+    imu_msg_.angular_velocity.z = IMU.angle[2];
+    imu_msg_.linear_acceleration.x = IMU.rpy[0];
+    imu_msg_.linear_acceleration.y = IMU.rpy[1];
+    imu_msg_.linear_acceleration.z = IMU.rpy[2];
+  }
   output = (angle * 12.0) + (float)STEER_CENTER;
   if(output > MAX_STEER)
     output = MAX_STEER;
@@ -228,14 +238,16 @@ void CountT() {
 */
 ros::NodeHandle nh_;
 ros::Subscriber<geometry_msgs::Twist> rosSubMsg("/twist_msg", &rosTwistCallback);
-ros::Publisher rosPubMsg("/vel_msg", &vel_msg_);
+ros::Publisher rosPubVel("/vel_msg", &vel_msg_);
+ros::Publisher rosPubImu("/imu_msg", &imu_msg_);
 /*
    Arduino setup()
 */
 void setup() {
   nh_.initNode();
   nh_.subscribe(rosSubMsg);
-  nh_.advertise(rosPubMsg);
+  nh_.advertise(rosPubVel);
+  nh_.advertise(rosPubImu);
   throttle_.attach(THROTTLE_PIN);
   steer_.attach(STEER_PIN);
   pinMode(EN_PINA, INPUT);
@@ -306,8 +318,9 @@ void loop() {
   delay(1);
   
   currentTime = millis();
-  if ((currentTime - prevTime) >= (CYCLE_TIME / 1000)) {
-    rosPubMsg.publish(&vel_msg_);
+  if ((currentTime - prevTime) >= (ANGLE_TIME / 1000)) {
+    rosPubVel.publish(&vel_msg_);
+    rosPubImu.publish(&imu_msg_);
     prevTime = currentTime;
   }
 }

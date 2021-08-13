@@ -240,17 +240,23 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 
 # 4. Run
 >## 4.1 rosbag test
->- bag file download (2.2G)
+>- LV(Leading Vehicle) rosbag file download (3.57G)
 >```
->curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" > /dev/null
+>curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1ATriInXrn-BYf4-K1rT65GYfE_tnerWV" > /dev/null
 >curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" -o "2020-10-06-17-23-14.bag"
 >```
+>
+>- FV(Following Vehicle) rosbag file download (3.66G)
+>```
+>curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1Uo-cWdeLFKnIperpsSOJ3AoVdohLcVgp" > /dev/null
+>curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" -o "2020-10-06-17-23-14.bag"
+>```
+>
 >## 4.2 Rosbag run
 >```
->rosbag play 2020-10-06-17-23-14.bag
+>rosbag play [rosbag file name].bag
 >```
 >## 4.3 Ros Launch
 >```
->sudo chmod 666 /dev/ACM0
 >roslaunch scale_truck_control control_test.launch
 >```

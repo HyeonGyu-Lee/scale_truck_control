@@ -11,15 +11,15 @@
 >https://developer.nvidia.com/embedded/jetpack
 
 >## 0.2.1 OpenCV 4.4.0
->~~~
 >-Uninstall old version of OpenCV
+>~~~
 >sudo apt-get purge  libopencv* python-opencv
 >sudo apt-get autoremove
 >sudo find /usr/local/ -name "*opencv*" -exec rm -i {} \;
 >~~~
 >
->~~~
 >-install 4.4.0 version of OpenCV
+>~~~
 >sudo apt-get update
 >sudo apt-get upgrade
 >
@@ -35,16 +35,16 @@
 >sudo apt-get -y install python3-dev python3-numpy
 >~~~
 >
->~~~
 >-Download OpenCV 4.4.0 source file
+>~~~
 >mkdir OpenCV && cd OpenCV
 >git clone -b 4.4.0 https://github.com/opencv/opencv
 >git clone -b 4.4.0 https://github.com/opencv/opencv_contrib
 >cd opencv && mkdir build && cd build
 >~~~
 >
->~~~
 >-Build OpenCV 4.4.0
+>~~~
 >cmake -D CMAKE_BUILD_TYPE=RELEASE \
 >-D CMAKE_INSTALL_PREFIX=/usr/local \
 >-D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
@@ -82,17 +82,13 @@
 >~~~
 >sudo make install -j8
 >~~~
->
->~~~
->-If ros is already installed
->sudo apt install ros-melodic-filters
->sudo apt install ros-melodic-laser-geometry
->~~~
 
 >## 0.2.2 Environment setup
 >~~~
->```
 >sudo vim /usr/lib/pkgconfig/opencv.pc
+>~~~
+>-add the below
+>~~~
 ># Package Information for pkg-config
 >prefix=/usr/local
 >exec_prefix=${prefix}libdir=${exec_prefix}/lib/aarch64-linux-gnu
@@ -105,7 +101,6 @@
 >Libs: -L${exec_prefix}/lib/aarch64-linux-gnu -lopencv_dnn -lopencv_gapi -lopencv_highgui -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d -lopencv_flann -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core
 >Libs.private: -ldl -lm -lpthread -lrt
 >Cflags: -I${includedir_old} -I${includedir_new}
-> ```
 >~~~
 
 >## 0.2.3 Jetson Stats
@@ -194,9 +189,16 @@ cd ~/catkin_ws/src
 >## 3.1 cv_bridge Setup
 >```
 >vim ~/catkin_ws/src/vision_opencv/cv_bridge/CMakelist.txt
+>```
+>-fix the below
+>```
 >--find_package(Boost REQUIRED python37)
 >++find_package(Boost REQUIRED python)
+>```
 >vim ~/catkin_ws/src/vision_opencv/cv_bridge/src/module.hpp
+>```
+>-fix the below
+>```
 >--static void * do_numpy_import( )
 >++static void do_numpy_import( )
 >--return nullptr;
@@ -217,6 +219,9 @@ cd ~/catkin_ws/src
 >## 3.4 alias command Setup
 >```
 >sudo vim ~/bashrc
+>```
+>-add the below
+>```
 >++source ~/catkin_ws/devel/setup.bashrc
 >++alias cw='cd ~/catkin_ws'
 >++alias cs='cd ~/catkin_ws/src'

@@ -218,7 +218,7 @@ cd ~/catkin_ws/src
 > ```
 >## 3.4 alias command Setup
 >```
->sudo vim ~/bashrc
+>sudo vim ~/.bashrc
 >```
 >-add the below
 >```

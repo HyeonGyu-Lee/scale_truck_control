@@ -36,7 +36,7 @@
 >~~~
 >
 >~~~
->-Download OpenCV 4.4.0
+>-Download OpenCV 4.4.0 source file
 >mkdir OpenCV && cd OpenCV
 >git clone -b 4.4.0 https://github.com/opencv/opencv
 >git clone -b 4.4.0 https://github.com/opencv/opencv_contrib

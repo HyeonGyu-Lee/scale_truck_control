@@ -116,7 +116,7 @@
 
 # 1. Install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu
-
+cd ~/catkin_ws/src
 >## 1.1 Setup your sources.list
 >```
 >sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'

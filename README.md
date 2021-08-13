@@ -12,12 +12,14 @@
 
 >## 0.2.1 OpenCV 4.4.0
 >~~~
+>-Uninstall old version of OpenCV
 >sudo apt-get purge  libopencv* python-opencv
 >sudo apt-get autoremove
 >sudo find /usr/local/ -name "*opencv*" -exec rm -i {} \;
 >~~~
 >
 >~~~
+>-install 4.4.0 version of OpenCV
 >sudo apt-get update
 >sudo apt-get upgrade
 >
@@ -34,6 +36,7 @@
 >~~~
 >
 >~~~
+>-Download OpenCV 4.4.0
 >mkdir OpenCV && cd OpenCV
 >git clone -b 4.4.0 https://github.com/opencv/opencv
 >git clone -b 4.4.0 https://github.com/opencv/opencv_contrib
@@ -41,6 +44,7 @@
 >~~~
 >
 >~~~
+>-Build OpenCV 4.4.0
 >cmake -D CMAKE_BUILD_TYPE=RELEASE \
 >-D CMAKE_INSTALL_PREFIX=/usr/local \
 >-D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
@@ -80,6 +84,7 @@
 >~~~
 >
 >~~~
+>-If ros is already installed
 >sudo apt install ros-melodic-filters
 >sudo apt install ros-melodic-laser-geometry
 >~~~

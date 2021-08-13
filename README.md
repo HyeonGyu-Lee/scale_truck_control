@@ -217,11 +217,20 @@ cd ~/catkin_ws/src
 >## 3.4 alias command Setup
 >```
 >sudo vim ~/bashrc
+>++source ~/catkin_ws/devel/setup.bashrc
 >++alias cw='cd ~/catkin_ws'
 >++alias cs='cd ~/catkin_ws/src'
 >++alias cm='cd ~/catkin_ws && catkin_make'
 >++alias cb='source ~/catkin_ws/devel/setup.bashrc'
 >++alias sb='source ~/.bashrc'
+>```
+>```
+>source ~/.bashrc
+>```
+>
+>## 3.5 ros package build
+>```
+>cm
 >```
 
 # 4. Run

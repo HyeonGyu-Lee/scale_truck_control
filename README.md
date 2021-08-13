@@ -98,8 +98,6 @@
 >sudo -H pip3 install jetson-stats
 >~~~
 
-
-
 # 1. Install ROS (melodic)
 http://wiki.ros.org/melodic/Installation/Ubuntu
 
@@ -179,18 +177,36 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 - melodic is ros-version (18.04 LTS)
 >## 3.1 cv_bridge Setup
 >```
->catkin_ws/src/vision_opencv/cv_bridge/CMakelist.txt
->~~~
->~~~
+>vim ~/catkin_ws/src/vision_opencv/cv_bridge/CMakelist.txt
+>--find_package(Boost REQUIRED python37)
+>++find_package(Boost REQUIRED python)
+>vim ~/catkin_ws/src/vision_opencv/cv_bridge/src/module.hpp
+>--static void * do_numpy_import( )
+>++static void do_numpy_import( )
+>--return nullptr;
 >```
 >## 3.2 OpenCV4 Setup
 > ``` -y
 >cd /opt/ros/melodic/share/cv_bridge/cmake
 >sudo vim cv_bridgeConfig.cmake
->~~~
+>
 >--set(_include_dirs "include;/usr/include;/usr/include/opencv
 >++set(_include_dirs "include;/usr/include;/usr/include/opencv4
->~~~
+># Package Information for pkg-config
+>```
+>```
+>sudo vim /usr/lib/pkgconfig/opencv.pc
+>prefix=/usr/local
+>exec_prefix=${prefix}libdir=${exec_prefix}/lib/aarch64-linux-gnu
+>includedir_old=${prefix}/include/opencv4/opencv
+>includedir_new=${prefix}/include/opencv4
+>
+>Name: OpenCV
+>Description: Open Source Computer Vision Library
+>Version: 4.4.0
+>Libs: -L${exec_prefix}/lib/aarch64-linux-gnu -lopencv_dnn -lopencv_gapi -lopencv_highgui -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d -lopencv_flann -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core
+>Libs.private: -ldl -lm -lpthread -lrt
+>Cflags: -I${includedir_old} -I${includedir_new}
 > ```
 > ```
 >cd ~/catkin_ws/src/scale_truck_control

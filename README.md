@@ -91,11 +91,21 @@
 
 >## 0.2.2 Environment setup
 >~~~
->/opt/ros/melodic/share/cv_bridge/cmake/cv_bridgeConfig.cmake
->sudo ln -s [OpenCV DIR] /usr/include/opencv
->sudo ldconfig
+>```
 >sudo vim /usr/lib/pkgconfig/opencv.pc
+># Package Information for pkg-config
+>prefix=/usr/local
+>exec_prefix=${prefix}libdir=${exec_prefix}/lib/aarch64-linux-gnu
+>includedir_old=${prefix}/include/opencv4/opencv
+>includedir_new=${prefix}/include/opencv4
 >
+>Name: OpenCV
+>Description: Open Source Computer Vision Library
+>Version: 4.4.0
+>Libs: -L${exec_prefix}/lib/aarch64-linux-gnu -lopencv_dnn -lopencv_gapi -lopencv_highgui -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d -lopencv_flann -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core
+>Libs.private: -ldl -lm -lpthread -lrt
+>Cflags: -I${includedir_old} -I${includedir_new}
+> ```
 >~~~
 
 >## 0.2.3 Jetson Stats
@@ -191,49 +201,20 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >++static void do_numpy_import( )
 >--return nullptr;
 >```
->## 3.2 OpenCV4 Setup
-> ``` -y
->cd /opt/ros/melodic/share/cv_bridge/cmake
->sudo vim cv_bridgeConfig.cmake
->
->--set(_include_dirs "include;/usr/include;/usr/include/opencv
->++set(_include_dirs "include;/usr/include;/usr/include/opencv4
-># Package Information for pkg-config
->```
->```
->sudo vim /usr/lib/pkgconfig/opencv.pc
->prefix=/usr/local
->exec_prefix=${prefix}libdir=${exec_prefix}/lib/aarch64-linux-gnu
->includedir_old=${prefix}/include/opencv4/opencv
->includedir_new=${prefix}/include/opencv4
->
->Name: OpenCV
->Description: Open Source Computer Vision Library
->Version: 4.4.0
->Libs: -L${exec_prefix}/lib/aarch64-linux-gnu -lopencv_dnn -lopencv_gapi -lopencv_highgui -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d -lopencv_flann -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core
->Libs.private: -ldl -lm -lpthread -lrt
->Cflags: -I${includedir_old} -I${includedir_new}
-> ```
-> ```
->cd ~/catkin_ws/src/scale_truck_control
->vim CMakeLists.txt
->++set OpenCV_DIR /usr/share/opencv4
->--find_package(catkin REQUIRED COMPONENTS OpenCV REQUIRED }
->++find_package(OpenCV REQUIRED)
->```
->## 3.3 rosserial_Arduino Module
+
+>## 3.2 rosserial_Arduino Module
 >- communicate with OpenCR 1.0
 >```
 >sudo apt-get install ros-melodic-rosserial-arduino   
 >sudo apt-get install ros-melodic-rosserial   
 >```
->## 3.4 armadillo , qtbase5 Module
+>## 3.3 armadillo , qtbase5 Module
 >- Python UI Module -y
 >```
 >sudo apt-get install libarmadillo-dev
 >sudo apt-get qtbase5-dev 
 > ```
->## 3.5 alias command Setup
+>## 3.4 alias command Setup
 >```
 >sudo vim ~/bashrc
 >++alias cw='cd ~/catkin_ws'

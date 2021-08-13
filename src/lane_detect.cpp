@@ -82,8 +82,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		nodeHandle_.param("LaneDetector/e1_height",e1_height_, 1.0f);	
 		nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
 		nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
-		//nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
-		//nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
+		nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
+		nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
 		nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
 	}
 
@@ -559,7 +559,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	}
 
 	void LaneDetector::get_steer_coef(float vel){
-		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
+		/*if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
 			K1_ = K2_ = 0.0f;
 		}
 		else if(vel < 0.5f){
@@ -567,7 +567,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		}
 		else{
 			K1_ = K2_ = (3.7866f * pow(vel, 3)) + ((-8.0032f) * pow(vel, 2)) + (5.4267f * vel) - 1.1259f;
-		}
+		}*/
 		
 	}
 
@@ -655,15 +655,15 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			line(new_frame, corners_[1], corners_[0], Scalar(0, 0, 255), 5);
 			
 			if(!new_frame.empty()) {
-				resize(new_frame, new_frame, Size(640, 480));
+				resize(new_frame, new_frame, Size(640, 360));
 				imshow("Window1", new_frame);
 			}
 			if(!sliding_frame.empty()) {
-				resize(sliding_frame, sliding_frame, Size(640, 480));
+				resize(sliding_frame, sliding_frame, Size(640, 360));
 				imshow("Window2", sliding_frame);
 			}
 			if(!resized_frame.empty()){
-				resize(resized_frame, resized_frame, Size(640, 480));
+				resize(resized_frame, resized_frame, Size(640, 360));
 				imshow("Window3", resized_frame);
 			}
 

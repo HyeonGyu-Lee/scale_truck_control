@@ -25,7 +25,7 @@ ScaleTruckController::~ScaleTruckController() {
        
   ControlDataPublisher_.publish(msg);
   controlThread_.join();
-  //udpsocketThread_.join();
+  udpsocketThread_.join();
 
   ROS_INFO("[ScaleTruckController] Stop.");
 }
@@ -100,7 +100,7 @@ void ScaleTruckController::init() {
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
   const auto wait_udp = std::chrono::milliseconds(100);
   std::this_thread::sleep_for(wait_udp);
-  //udpsocketThread_ = std::thread(&ScaleTruckController::UDPsocketInThread, this);
+  udpsocketThread_ = std::thread(&ScaleTruckController::UDPsocketInThread, this);
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -170,7 +170,7 @@ void* ScaleTruckController::UDPsocketInThread()
     {
         if(info_) // send
         {
-          udpData_ = ResultVel_;
+          udpData_ = CurVel_;
           //std::this_thread::sleep_for(wait_udp);
           UDPsocket_.sendData(udpData_);
         }
@@ -178,7 +178,7 @@ void* ScaleTruckController::UDPsocketInThread()
         {
           float udpData;
           UDPsocket_.recvData(&udpData);
-          std::this_thread::sleep_for(wait_udp);
+          //std::this_thread::sleep_for(wait_udp);
           udpData_ = udpData;
           TargetVel_ = udpData;
         }

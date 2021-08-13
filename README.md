@@ -96,6 +96,7 @@
 >## 0.2.3 Jetson Stats
 >~~~
 >sudo -H pip3 install jetson-stats
+>jeson_release
 >~~~
 
 # 1. Install ROS (melodic)

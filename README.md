@@ -11,12 +11,14 @@
 >https://developer.nvidia.com/embedded/jetpack
 
 >## 0.2.1 OpenCV 4.4.0
+>-Uninstall old version of OpenCV
 >~~~
 >sudo apt-get purge  libopencv* python-opencv
 >sudo apt-get autoremove
 >sudo find /usr/local/ -name "*opencv*" -exec rm -i {} \;
 >~~~
 >
+>-install 4.4.0 version of OpenCV
 >~~~
 >sudo apt-get update
 >sudo apt-get upgrade
@@ -33,6 +35,7 @@
 >sudo apt-get -y install python3-dev python3-numpy
 >~~~
 >
+>-Download OpenCV 4.4.0 source file
 >~~~
 >mkdir OpenCV && cd OpenCV
 >git clone -b 4.4.0 https://github.com/opencv/opencv
@@ -40,6 +43,7 @@
 >cd opencv && mkdir build && cd build
 >~~~
 >
+>-Build OpenCV 4.4.0
 >~~~
 >cmake -D CMAKE_BUILD_TYPE=RELEASE \
 >-D CMAKE_INSTALL_PREFIX=/usr/local \
@@ -78,29 +82,36 @@
 >~~~
 >sudo make install -j8
 >~~~
->
->~~~
->sudo apt install ros-melodic-filters
->sudo apt install ros-melodic-laser-geometry
->~~~
 
 >## 0.2.2 Environment setup
 >~~~
->/opt/ros/melodic/share/cv_bridge/cmake/cv_bridgeConfig.cmake
->sudo ln -s [OpenCV DIR] /usr/include/opencv
->sudo ldconfig
 >sudo vim /usr/lib/pkgconfig/opencv.pc
+>~~~
+>-add the below
+>~~~
+># Package Information for pkg-config
+>prefix=/usr/local
+>exec_prefix=${prefix}libdir=${exec_prefix}/lib/aarch64-linux-gnu
+>includedir_old=${prefix}/include/opencv4/opencv
+>includedir_new=${prefix}/include/opencv4
 >
+>Name: OpenCV
+>Description: Open Source Computer Vision Library
+>Version: 4.4.0
+>Libs: -L${exec_prefix}/lib/aarch64-linux-gnu -lopencv_dnn -lopencv_gapi -lopencv_highgui -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d -lopencv_flann -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core
+>Libs.private: -ldl -lm -lpthread -lrt
+>Cflags: -I${includedir_old} -I${includedir_new}
 >~~~
 
 >## 0.2.3 Jetson Stats
 >~~~
 >sudo -H pip3 install jetson-stats
+>jeson_release
 >~~~
 
 # 1. Install ROS (melodic)
-http://wiki.ros.org/melodic/Installation/Ubuntu
-
+http://wiki.ros.org/melodic/Installation/Ubuntu  
+cd ~/catkin_ws/src
 >## 1.1 Setup your sources.list
 >```
 >sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -178,78 +189,74 @@ http://wiki.ros.org/melodic/Installation/Ubuntu
 >## 3.1 cv_bridge Setup
 >```
 >vim ~/catkin_ws/src/vision_opencv/cv_bridge/CMakelist.txt
+>```
+>-fix the below
+>```
 >--find_package(Boost REQUIRED python37)
 >++find_package(Boost REQUIRED python)
+>```
 >vim ~/catkin_ws/src/vision_opencv/cv_bridge/src/module.hpp
+>```
+>-fix the below
+>```
 >--static void * do_numpy_import( )
 >++static void do_numpy_import( )
 >--return nullptr;
 >```
->## 3.2 OpenCV4 Setup
-> ``` -y
->cd /opt/ros/melodic/share/cv_bridge/cmake
->sudo vim cv_bridgeConfig.cmake
->
->--set(_include_dirs "include;/usr/include;/usr/include/opencv
->++set(_include_dirs "include;/usr/include;/usr/include/opencv4
-># Package Information for pkg-config
->```
->```
->sudo vim /usr/lib/pkgconfig/opencv.pc
->prefix=/usr/local
->exec_prefix=${prefix}libdir=${exec_prefix}/lib/aarch64-linux-gnu
->includedir_old=${prefix}/include/opencv4/opencv
->includedir_new=${prefix}/include/opencv4
->
->Name: OpenCV
->Description: Open Source Computer Vision Library
->Version: 4.4.0
->Libs: -L${exec_prefix}/lib/aarch64-linux-gnu -lopencv_dnn -lopencv_gapi -lopencv_highgui -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d -lopencv_flann -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core
->Libs.private: -ldl -lm -lpthread -lrt
->Cflags: -I${includedir_old} -I${includedir_new}
-> ```
-> ```
->cd ~/catkin_ws/src/scale_truck_control
->vim CMakeLists.txt
->++set OpenCV_DIR /usr/share/opencv4
->--find_package(catkin REQUIRED COMPONENTS OpenCV REQUIRED }
->++find_package(OpenCV REQUIRED)
->```
->## 3.3 rosserial_Arduino Module
+
+>## 3.2 rosserial_Arduino Module
 >- communicate with OpenCR 1.0
 >```
 >sudo apt-get install ros-melodic-rosserial-arduino   
 >sudo apt-get install ros-melodic-rosserial   
 >```
->## 3.4 armadillo , qtbase5 Module
+>## 3.3 armadillo , qtbase5 Module
 >- Python UI Module -y
 >```
 >sudo apt-get install libarmadillo-dev
 >sudo apt-get qtbase5-dev 
 > ```
->## 3.5 alias command Setup
+>## 3.4 alias command Setup
 >```
->sudo vim ~/bashrc
+>sudo vim ~/.bashrc
+>```
+>-add the below
+>```
+>++source ~/catkin_ws/devel/setup.bashrc
 >++alias cw='cd ~/catkin_ws'
 >++alias cs='cd ~/catkin_ws/src'
 >++alias cm='cd ~/catkin_ws && catkin_make'
 >++alias cb='source ~/catkin_ws/devel/setup.bashrc'
 >++alias sb='source ~/.bashrc'
 >```
+>```
+>source ~/.bashrc
+>```
+>
+>## 3.5 ros package build
+>```
+>cm
+>```
 
 # 4. Run
 >## 4.1 rosbag test
->- bag file download (2.2G)
+>- LV(Leading Vehicle) rosbag file download (3.57G)
 >```
->curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" > /dev/null
+>curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1ATriInXrn-BYf4-K1rT65GYfE_tnerWV" > /dev/null
 >curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" -o "2020-10-06-17-23-14.bag"
 >```
+>
+>- FV(Following Vehicle) rosbag file download (3.66G)
+>```
+>curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1Uo-cWdeLFKnIperpsSOJ3AoVdohLcVgp" > /dev/null
+>curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" -o "2020-10-06-17-23-14.bag"
+>```
+>
 >## 4.2 Rosbag run
 >```
->rosbag play 2020-10-06-17-23-14.bag
+>rosbag play [rosbag file name].bag
 >```
 >## 4.3 Ros Launch
 >```
->sudo chmod 666 /dev/ACM0
 >roslaunch scale_truck_control control_test.launch
 >```

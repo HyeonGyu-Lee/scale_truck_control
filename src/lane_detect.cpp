@@ -116,8 +116,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				max_index = i;
 			}
 		}
-		if (max_index == -1)
+		if (max_index == -1) {
 			cout << "ERROR : hist range" << endl;
+			return -1;
+		}
 		return max_index;
 	}
 
@@ -244,6 +246,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		//int Rlane_base = arrMaxIdx(hist, Rstart - range, Rstart + range, _width);
 		int Llane_base = arrMaxIdx(hist, 100, mid_point, width);
 		int Rlane_base = arrMaxIdx(hist, mid_point, width - 100, width);
+		if (Llane_base == -1 || Rlane_base == -1)
+			return result;
 
 		int Llane_current = Llane_base;
 		int Rlane_current = Rlane_base;
@@ -317,6 +321,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				_size = (unsigned int)(good_left_inds.size());
 				for (index = 0; index < _size; index++) {
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
+					//left_x_.insert(left_x_.end(), nonZero.at<Point>(good_left_inds.at(index)).x);
+					//left_y_.insert(left_y_.end(), nonZero.at<Point>(good_left_inds.at(index)).y);
 				}
 				Llane_current = Lsum / _size;
 				/*if(window == 0){
@@ -349,6 +355,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				_size = (unsigned int)(good_right_inds.size());
 				for (index = 0; index < _size; index++) {
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
+					//right_y_.insert(right_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
+					//right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
 				}
 				Rlane_current = Rsum / _size;
 				/*if(window == 0){
@@ -454,8 +462,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				temp_center_point.y = (int)i;
 	
 				left_point.push_back(temp_left_point);
-				right_point.push_back(temp_right_point);
 				left_point_f.push_back(temp_left_point);
+				right_point.push_back(temp_right_point);
 				right_point_f.push_back(temp_right_point);
 				center_point.push_back(temp_center_point);
 				center_point_f.push_back(temp_center_point);
@@ -554,16 +562,12 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
 			K1_ = K2_ = 0.0f;
 		}
-		/*
-		else{
-			K1_ = K2_ = 0.06f;
-		}
-		*/
 		else if(vel < 0.5f){
-			K1_ = K2_ =  0.06f;	
+			K1_ = K2_ =  0.15f;	
 		}
 		else{
-			K1_ = K2_ = (3.7866f * pow(vel, 3)) + ((-8.0032f) * pow(vel, 2)) + (5.4267f * vel) - 1.1259f;
+			K1_ = ((-4.1551f) * pow(vel, 4)) + (14.7461f * pow(vel, 3)) + ((-19.0274f) * pow(vel, 2)) + (10.3868f * vel) - 1.8701f;
+			K2_ = ((-8.1168f) * pow(vel, 4)) + (27.6464f * pow(vel, 3)) + ((-34.1671f) * pow(vel, 2)) + (18.0079f * vel) - 3.2609f;
 		}
 		
 	}
@@ -604,30 +608,34 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		struct timeval start, end;
 		double diff;
 		gettimeofday(&start, NULL);
-		Mat new_frame, temp_frame, warped_frame, gray_frame, blur_frame, morphology_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
-		remap(_frame, temp_frame, map1_, map2_, INTER_LINEAR);
-		resize(temp_frame, temp_frame, Size(width_, height_));
-		new_frame = temp_frame.clone();
-		warped_frame = warped_img(new_frame);
-		GaussianBlur(warped_frame, blur_frame, Size(5, 5), 0);
-		cvtColor(blur_frame, gray_frame, COLOR_BGR2GRAY);
+		Mat new_frame, gray_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
 
-		/*
-		Canny(gray_frame, edge_frame, 30, 150);
-		*/
-	
-		Mat filter(filter_, filter_, CV_8U, Scalar(1));
-		threshold(gray_frame, binary_frame, 0, 255, THRESH_BINARY|THRESH_OTSU);
-		morphologyEx(binary_frame, morphology_frame, MORPH_OPEN, filter);
-		Canny(morphology_frame, edge_frame, 50, 150);
-		
+		resize(_frame, new_frame, Size(width_, height_));
+		Mat trans = getPerspectiveTransform(corners_, warpCorners_);
 
-		sliding_frame = detect_lines_sliding_window(edge_frame, _view);
+		cuda::GpuMat gpu_map1, gpu_map2;
+		gpu_map1.upload(map1_);
+		gpu_map2.upload(map2_);
+
+		cuda::GpuMat gpu_frame, gpu_remap_frame, gpu_warped_frame, gpu_blur_frame, gpu_gray_frame, gpu_binary_frame;
+
+		gpu_frame.upload(new_frame);
+		cuda::remap(gpu_frame, gpu_remap_frame, gpu_map1, gpu_map2, INTER_LINEAR);
+		gpu_remap_frame.download(new_frame);
+		cuda::warpPerspective(gpu_remap_frame, gpu_warped_frame, trans, Size(width_, height_));
+		static cv::Ptr< cv::cuda::Filter > filters;
+		filters = cv::cuda::createGaussianFilter(gpu_warped_frame.type(), gpu_blur_frame.type(), cv::Size(5,5), 0, 0, cv::BORDER_DEFAULT);
+		filters->apply(gpu_warped_frame, gpu_blur_frame);
+		cuda::cvtColor(gpu_blur_frame, gpu_gray_frame, COLOR_BGR2GRAY);
+		cuda::threshold(gpu_gray_frame, gpu_binary_frame, 128, 255, THRESH_BINARY);
+		gpu_binary_frame.download(gray_frame);
+
+		sliding_frame = detect_lines_sliding_window(gray_frame, _view);
 		resized_frame = draw_lane(sliding_frame, new_frame, _view);
 		calc_curv_rad_and_center_dist(resized_frame, _view);
 		gettimeofday(&end, NULL);
 		diff = (end.tv_sec - start.tv_sec)*1000.0 + ((end.tv_usec - start.tv_usec)/1000.0);
-		printf("steer control time : %.3lf", diff);
+		printf("steer control time : %.3lf\n", diff);
 
 		clear_release();
 		if (_view) {
@@ -646,14 +654,20 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			line(new_frame, corners_[2], corners_[3], Scalar(0, 0, 255), 5);
 			line(new_frame, corners_[3], corners_[1], Scalar(0, 0, 255), 5);
 			line(new_frame, corners_[1], corners_[0], Scalar(0, 0, 255), 5);
+			
+			if(!new_frame.empty()) {
+				resize(new_frame, new_frame, Size(640, 360));
+				imshow("Window1", new_frame);
+			}
+			if(!sliding_frame.empty()) {
+				resize(sliding_frame, sliding_frame, Size(640, 360));
+				imshow("Window2", sliding_frame);
+			}
+			if(!resized_frame.empty()){
+				resize(resized_frame, resized_frame, Size(640, 360));
+				imshow("Window3", resized_frame);
+			}
 
-			resize(new_frame, new_frame, Size(640, 360));
-			resize(sliding_frame, sliding_frame, Size(640, 360));
-			resize(resized_frame, resized_frame, Size(640, 360));
-
-			imshow("Window1", new_frame);
-			imshow("Window2", sliding_frame);
-			imshow("Window3", resized_frame);
 
 			waitKey(_delay);
 		}

@@ -21,6 +21,7 @@
 //ROS
 #include <geometry_msgs/Twist.h>
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <obstacle_detector/Obstacles.h>
@@ -47,12 +48,14 @@ class ScaleTruckController {
 
     void imageCallback(const sensor_msgs::ImageConstPtr &msg);
     void objectCallback(const obstacle_detector::Obstacles &msg);
+    void velCallback(const std_msgs::Float32 &msg);
     bool publishControlMsg(const geometry_msgs::Twist msg);
 
     ros::NodeHandle nodeHandle_;
     ros::Publisher ControlDataPublisher_;
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
+    ros::Subscriber velSubscriber_;
 	
     //image
     LaneDetect::LaneDetector laneDetector_;
@@ -98,6 +101,9 @@ class ScaleTruckController {
     std_msgs::Header imageHeader_;
     cv::Mat camImageCopy_;
     boost::shared_mutex mutexImageCallback_;
+
+    float CurVel_;
+    boost::shared_mutex mutexVelCallback_;
 
     bool imageStatus_ = false;
     boost::shared_mutex mutexImageStatus_;

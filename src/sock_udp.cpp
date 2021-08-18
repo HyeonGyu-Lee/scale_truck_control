@@ -25,7 +25,7 @@ int UDPsocket::recvInit()
        return 1;
     }
 
-    struct timeval optVal = {0,50};
+    struct timeval optVal = {0,10};
     int optLen = sizeof(optVal);
     setsockopt(fd_, SOL_SOCKET, SO_RCVTIMEO, &optVal, optLen); // set timeout 
     

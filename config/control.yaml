@@ -1,9 +1,12 @@
 subscribers:
   camera_reading:
     topic: /usb_cam/image_raw
-    queue_size: 10
+    queue_size: 1
   obstacle_reading:
     topic: /raw_obstacles
+    queue_size: 100
+  velocity_reading:
+    topic: /vel_msg
     queue_size: 100
 
 publishers:
@@ -15,7 +18,6 @@ params:
   truck_info: LV
   udp_group_addr: 239.255.255.250
   udp_group_port: 9307 
-  center_err: 640
   target_vel: 0.65
   safety_vel: 0.45
   lv_stop_dist: 0.5
@@ -27,15 +29,15 @@ params:
   Ki_d: 0.2
   
 ROI:
-  width: 1280
-  height: 720
-  top_gap: 0.306
-  bot_gap: 0.048
-  top_height: 0.903
-  bot_height: 0.508
+  width: 640
+  height: 480
+  top_gap: 0.406
+  bot_gap: 0.185
+  top_height: 0.99
+  bot_height: 0.47
   extra: 0.00
-  extra_up: 0
-  extra_down: 0
+  extra_up: 140
+  extra_down: 180
 
 LaneDetector:  
   sob_min_th: 175
@@ -52,9 +54,9 @@ LaneDetector:
   eL_height: 0.2
   e1_height: 1.4375
   trust_height: 0.6667
-  lp: 891
-  <!-- K1: 0.060 -->
-  <!-- K2: 0.060 -->
+  lp: 607.3 
+  <!-- K1: 0.15 -->
+  <!-- K2: 0.15 -->
 
 image_view:
   enable_opencv: true

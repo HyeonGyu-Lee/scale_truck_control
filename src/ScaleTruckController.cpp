@@ -64,7 +64,9 @@ void ScaleTruckController::init() {
   std::string imageTopicName;
   int imageQueueSize;
   std::string objectTopicName;
-  int objectQueueSize;
+  int objectQueueSize; 
+  std::string velTopicName;
+  int velQueueSize;
   std::string ControlDataTopicName;
   int ControlDataQueueSize;
 
@@ -72,11 +74,14 @@ void ScaleTruckController::init() {
   nodeHandle_.param("subscribers/camera_reading/queue_size",imageQueueSize, 1);
   nodeHandle_.param("subscribers/obstacle_reading/topic", objectTopicName, std::string("/raw_obstacles"));
   nodeHandle_.param("subscribers/obstacle_reading/queue_size",objectQueueSize, 100);
+  nodeHandle_.param("subscribers/velocity_reading/topic", velTopicName, std::string("/raw_obstacles"));
+  nodeHandle_.param("subscribers/velocity_reading/queue_size",velQueueSize, 100);
   nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("twist_msg"));
   nodeHandle_.param("publishers/control_data/queue_size", ControlDataQueueSize, 1);
 
   imageSubscriber_ = nodeHandle_.subscribe(imageTopicName, imageQueueSize, &ScaleTruckController::imageCallback, this);
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
+  velSubscriber_ = nodeHandle_.subscribe(velTopicName, velQueueSize, &ScaleTruckController::velCallback, this);
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
  
   UDPsocket_.GROUP_ = ADDR_.c_str();
@@ -165,15 +170,15 @@ void* ScaleTruckController::UDPsocketInThread()
     {
         if(info_) // send
         {
-          udpData_ = ResultVel_;
-          std::this_thread::sleep_for(wait_udp);
+          udpData_ = CurVel_;
+          //std::this_thread::sleep_for(wait_udp);
           UDPsocket_.sendData(udpData_);
         }
         else // receive
         {
           float udpData;
           UDPsocket_.recvData(&udpData);
-          std::this_thread::sleep_for(wait_udp);
+          //std::this_thread::sleep_for(wait_udp);
           udpData_ = udpData;
           TargetVel_ = udpData;
         }
@@ -187,11 +192,12 @@ void ScaleTruckController::displayConsole() {
   printf("\033[2J");
   printf("\033[1;1H");
   printf("\nAngle           : %2.3f degree", AngleDegree_);
-  printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, ResultVel_);
+  printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, CurVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
   printf("\nUDP_data        : %3.3f m/s", udpData_);
   printf("\nUDP_data        : %s", UDPsocket_.GROUP_);
   printf("\nUDP_data        : %d", UDPsocket_.PORT_);
+  printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);
     printf("\nDistAng         : %2.3f degree", distAngle_);
@@ -199,7 +205,6 @@ void ScaleTruckController::displayConsole() {
   if(ObjSegments_ > 0) {
     printf("\nSegs            : %d", ObjSegments_);
   }
-  printf("\nK1/K2		: %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   printf("\n");
 }
 
@@ -268,6 +273,13 @@ void ScaleTruckController::imageCallback(const sensor_msgs::ImageConstPtr &msg) 
       boost::unique_lock<boost::shared_mutex> lockImageStatus(mutexImageStatus_);
       imageStatus_ = true;
     }
+  }
+}
+
+void ScaleTruckController::velCallback(const std_msgs::Float32 &msg) {
+  {
+    boost::unique_lock<boost::shared_mutex> lockVelCallback(mutexVelCallback_);
+    CurVel_ = msg.data;
   }
 }
 

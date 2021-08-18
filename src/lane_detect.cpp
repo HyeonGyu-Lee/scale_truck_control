@@ -1,6 +1,6 @@
 #include "lane_detect/lane_detect.hpp"
 
-#define PATH "/home/avees/catkin_ws/logfiles/"
+#define PATH "/home/jetson/catkin_ws/logfiles/"
 
 using namespace std;
 using namespace cv;
@@ -534,28 +534,40 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	}
 
 	void LaneDetector::steer_error_log(){
-		struct timeval end;
 		double time;
-		const char *fname = "SteerError00.csv";
-		char file[128] = {0x00, };
+		float data;
+		char fname[] = "SteerError00.csv";
+		static char file[128] = {0x00, };
 		static bool flag = false;
-		sprintf(file, "%s%s", PATH, fname);
-		FILE *fp = fopen(file, "a");
+		ofstream writeFile;
+		ifstream readFile;
 
-		if(fp = NULL){
-			printf("Couldn't open the log file\n");
-		}
-		if(!flag){
-			fprintf(fp, "time[s],e1[m]\n");
+		if(!flag) {
+			for(int i = 0; i<100; i++)
+			{
+				fname[10] = i/10 + '0';
+				fname[11] = i%10 + '0';
+				sprintf(file, "%s%s", PATH, fname);
+				readFile.open(file);
+				if(readFile.fail()) {
+					readFile.close();
+					writeFile.open(file);
+					break;
+				}
+				readFile.close();
+			}
+			writeFile << "time[s],e1[m]" << endl;
 			flag = true;
 		}
-		else{
-			gettimeofday(&end, NULL);
-			time = (end.tv_sec - start_.tv_sec) + ((end.tv_usec - start_.tv_usec)/1000000.0);
-			fprintf(fp, "%.2lf,%.3f\n", time, (e_values_[2]/2155.0f));
+		else {
+			writeFile.open(file, fstream::out | fstream::app);
+			gettimeofday(&end_, NULL);
+			time = (end_.tv_sec - start_.tv_sec) + ((end_.tv_usec - start_.tv_usec)/1000000.0);
+			data = (e_values_[2]/2155.0f);
+			writeFile << time << ", " << data << endl;
 		}
-		fflush(fp);
-		fclose(fp);
+
+		writeFile.close();
 	}
 
 	void LaneDetector::get_steer_coef(float vel){
@@ -574,13 +586,21 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	void LaneDetector::calc_curv_rad_and_center_dist(Mat _frame, bool _view) {
 		Mat l_fit(left_coef_), r_fit(right_coef_), c_fit(center_coef_);
 		float car_position = width_ / 2;
-		float a, b, c, l1, l2;
+		float l1, l2;
 	
 		if (!l_fit.empty() && !r_fit.empty()) {
-			a = c_fit.at<float>(2, 0);
-			b = c_fit.at<float>(1, 0);
-			c = c_fit.at<float>(0, 0);
-			
+			lane_coef_.right.a = r_fit.at<float>(2, 0);
+			lane_coef_.right.b = r_fit.at<float>(1, 0);
+			lane_coef_.right.c = r_fit.at<float>(0, 0);
+
+			lane_coef_.left.a = l_fit.at<float>(2, 0);
+			lane_coef_.left.b = l_fit.at<float>(1, 0);
+			lane_coef_.left.c = l_fit.at<float>(0, 0);
+
+			lane_coef_.center.a = c_fit.at<float>(2, 0);
+			lane_coef_.center.b = c_fit.at<float>(1, 0);
+			lane_coef_.center.c = c_fit.at<float>(0, 0);
+
 			float i = ((float)height_) * eL_height_;	
 			float j = ((float)height_) * trust_height_;
 			float k = ((float)height_) * e1_height_;
@@ -592,21 +612,20 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			*/
 
 			l1 =  j - i;
-			l2 = ((a * pow(i, 2)) + (b * i) + c) - ((a * pow(j, 2)) + (b * j) + c);
+			l2 = ((lane_coef_.center.a * pow(i, 2)) + (lane_coef_.center.b * i) + lane_coef_.center.c) - ((lane_coef_.center.a * pow(j, 2)) + (lane_coef_.center.b * j) + lane_coef_.center.c);
 	
-			e_values_[0] = ((a * pow(i, 2)) + (b * i) + c) - car_position;	//eL
+			e_values_[0] = ((lane_coef_.center.a * pow(i, 2)) + (lane_coef_.center.b * i) + lane_coef_.center.c) - car_position;	//eL
 			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//trust_e1
-			e_values_[2] = ((a * pow(k, 2)) + (b * k) + c) - car_position;	//e1
+			e_values_[2] = ((lane_coef_.center.a * pow(k, 2)) + (lane_coef_.center.b * k) + lane_coef_.center.c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
-			//steer_error_log();
+			steer_error_log();
 		}
 	}
 
 	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		LoadParams();
-		struct timeval start, end;
-		double diff;
-		gettimeofday(&start, NULL);
+		
+		gettimeofday(&start_, NULL);
 		Mat new_frame, gray_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
 
 		resize(_frame, new_frame, Size(width_, height_));
@@ -632,9 +651,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		sliding_frame = detect_lines_sliding_window(gray_frame, _view);
 		resized_frame = draw_lane(sliding_frame, new_frame, _view);
 		calc_curv_rad_and_center_dist(resized_frame, _view);
-		gettimeofday(&end, NULL);
-		diff = (end.tv_sec - start.tv_sec)*1000.0 + ((end.tv_usec - start.tv_usec)/1000.0);
-		printf("steer control time : %.3lf\n", diff);
 
 		clear_release();
 		if (_view) {

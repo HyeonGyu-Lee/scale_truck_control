@@ -170,7 +170,7 @@ void* ScaleTruckController::UDPsocketInThread()
     {
         if(info_) // send
         {
-          udpData_ = CurVel_;
+          udpData_ = ResultVel_;
           //std::this_thread::sleep_for(wait_udp);
           UDPsocket_.sendData(udpData_);
         }
@@ -192,11 +192,12 @@ void ScaleTruckController::displayConsole() {
   printf("\033[2J");
   printf("\033[1;1H");
   printf("\nAngle           : %2.3f degree", AngleDegree_);
-  printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, CurVel_);
+  printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, ResultVel_, CurVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
   printf("\nUDP_data        : %3.3f m/s", udpData_);
   printf("\nUDP_data        : %s", UDPsocket_.GROUP_);
   printf("\nUDP_data        : %d", UDPsocket_.PORT_);
+  printf("\n%3.6f %3.6f %3.6f",laneDetector_.lane_coef_.center.a, laneDetector_.lane_coef_.center.b, laneDetector_.lane_coef_.center.c);
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);

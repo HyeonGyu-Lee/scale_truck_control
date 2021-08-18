@@ -9,6 +9,7 @@
 #include <opencv2/cudawarping.hpp>
 #include <opencv2/cudafilters.hpp>
 #include <iostream>
+#include <cmath>
 #include <ros/ros.h>
 #include <time.h>
 
@@ -22,12 +23,11 @@ public:
 	LaneDetector(ros::NodeHandle nh);
 	~LaneDetector(void);
 
-	//Timer
-	struct timeval start_;
-
+	Mat center_coef_;
 	float display_img(Mat _frame, int _delay, bool _view);
 	void get_steer_coef(float vel);
 	float K1_, K2_;
+	bool steer_flag_;
 
 private:
 	void LoadParams(void);
@@ -69,13 +69,12 @@ private:
 
 	Mat left_coef_;
 	Mat right_coef_;
-	Mat center_coef_;
+	//Mat center_coef_;
 	float left_curve_radius_;
 	float right_curve_radius_;
 	float center_position_;
 	float SteerAngle_;
 	float eL_height_, trust_height_, e1_height_, lp_;//, K1_, K2_;
-	//float center_height_, trust_height_, lp_, K1_, K2_;
 	float e_values_[3];
 
 	/********** PID control ***********/

@@ -15,11 +15,12 @@ publishers:
     queue_size: 1
 
 params:
-  truck_info: LV
+  truck_info: FV
   udp_group_addr: 239.255.255.250
   udp_group_port: 9307 
-  target_vel: 0.65
+  target_vel: 0.80
   safety_vel: 0.45
+  fv_max_vel: 1.00
   lv_stop_dist: 0.5
   fv_stop_dist: 0.3
   safety_dist: 1.5

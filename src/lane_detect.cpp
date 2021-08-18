@@ -32,7 +32,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
-	e_values_[3] = { 0, };	
+	e_values_[3] = { 0, };
+	steer_flag_ = false;	
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
@@ -534,6 +535,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	}
 
 	void LaneDetector::steer_error_log(){
+		static struct timeval start;
 		struct timeval end;
 		double time;
 		const char *fname = "SteerError00.csv";
@@ -542,16 +544,17 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		sprintf(file, "%s%s", PATH, fname);
 		FILE *fp = fopen(file, "a");
 
-		if(fp = NULL){
+		if (fp = NULL){
 			printf("Couldn't open the log file\n");
 		}
-		if(!flag){
+		if (!flag){
+			gettimeofday(&start, NULL);
 			fprintf(fp, "time[s],e1[m]\n");
 			flag = true;
 		}
 		else{
 			gettimeofday(&end, NULL);
-			time = (end.tv_sec - start_.tv_sec) + ((end.tv_usec - start_.tv_usec)/1000000.0);
+			time = (end.tv_sec - start.tv_sec) + ((end.tv_usec - start.tv_usec)/1000000.0);
 			fprintf(fp, "%.2lf,%.3f\n", time, (e_values_[2]/2155.0f));
 		}
 		fflush(fp);
@@ -559,10 +562,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	}
 
 	void LaneDetector::get_steer_coef(float vel){
-		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
+		if (vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
 			K1_ = K2_ = 0.0f;
 		}
-		else if(vel < 0.5f){
+		else if (vel < 0.5f){
 			K1_ = K2_ =  0.15f;	
 		}
 		else{
@@ -599,6 +602,14 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//trust_e1
 			e_values_[2] = ((a * pow(k, 2)) + (b * k) + c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
+
+			if (abs(a) > 0.0001f){
+				steer_flag_ = true;
+			}
+			else{
+				steer_flag_ = false;
+			}
+
 			//steer_error_log();
 		}
 	}

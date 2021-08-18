@@ -13,7 +13,6 @@
 #include <pthread.h>
 #include <thread>
 #include <chrono>
-#include <cmath>
 #include <boost/thread/thread.hpp>
 #include <vector>
 #include <sys/time.h>
@@ -67,6 +66,7 @@ class ScaleTruckController {
     float TargetVel_; // -1 ~ 1  - Twist msg linear.x
     float SafetyVel_;
     float ResultVel_;
+	float FVmaxVel_;
 
     //object
     int ObjSegments_;

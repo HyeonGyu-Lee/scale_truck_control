@@ -165,7 +165,7 @@ cd ~/catkin_ws/src
 >```
 >## 2.3 usb_cam
 >```
->git clone https://github.com/ros-drivers/usb_cam.git -y
+>git clone https://github.com/ros-drivers/usb_cam.git
 >```
 >## 2.4 ros_rplidar
 >```
@@ -195,6 +195,7 @@ cd ~/catkin_ws/src
 >--find_package(Boost REQUIRED python37)
 >++find_package(Boost REQUIRED python)
 >```
+>```
 >vim ~/catkin_ws/src/vision_opencv/cv_bridge/src/module.hpp
 >```
 >-fix the below
@@ -222,11 +223,11 @@ cd ~/catkin_ws/src
 >```
 >-add the below
 >```
->++source ~/catkin_ws/devel/setup.bashrc
+>++source ~/catkin_ws/devel/setup.bash
 >++alias cw='cd ~/catkin_ws'
 >++alias cs='cd ~/catkin_ws/src'
 >++alias cm='cd ~/catkin_ws && catkin_make'
->++alias cb='source ~/catkin_ws/devel/setup.bashrc'
+>++alias cb='source ~/catkin_ws/devel/setup.bash'
 >++alias sb='source ~/.bashrc'
 >```
 >```

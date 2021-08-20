@@ -177,7 +177,7 @@ cd ~/catkin_ws/src
 >```
 >## 2.6 laser_filters
 >```
->git clone https://github.com/ros-perception/laser_filters.git 
+>git clone -b kinetic-devel https://github.com/ros-perception/laser_filters.git 
 >```
 >## 2.7 vison_opencv (vision_opencv, image_geometry, cv_bridge)
 >```

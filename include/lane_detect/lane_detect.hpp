@@ -10,7 +10,9 @@
 #include <opencv2/cudafilters.hpp>
 #include <iostream>
 #include <cmath>
+#include <fstream>
 #include <ros/ros.h>
+#include <scale_truck_control/lane_coef.h>
 #include <time.h>
 
 using namespace cv;
@@ -23,11 +25,15 @@ public:
 	LaneDetector(ros::NodeHandle nh);
 	~LaneDetector(void);
 
+	//Timer
+	struct timeval start_, end_;
+
 	Mat center_coef_;
 	float display_img(Mat _frame, int _delay, bool _view);
 	void get_steer_coef(float vel);
 	float K1_, K2_;
 	bool steer_flag_;
+	scale_truck_control::lane_coef lane_coef_;
 
 private:
 	void LoadParams(void);

@@ -18,7 +18,6 @@ find_package(Boost REQUIRED python
 
 find_package(catkin REQUIRED
   COMPONENTS
-    cv_bridge
     roscpp 
     rospy 
     std_msgs
@@ -26,13 +25,15 @@ find_package(catkin REQUIRED
     sensor_msgs
     image_transport
     geometry_msgs
-    obstacle_detector
-    
+    cv_bridge
+    obstacle_detector 
 )
 
-#add_message_files(
-#  FILES
-#)
+add_message_files(
+  FILES
+  lane_coef.msg
+  lane.msg
+)
 
 generate_messages(
   DEPENDENCIES

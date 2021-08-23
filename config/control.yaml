@@ -18,7 +18,7 @@ params:
   truck_info: LV
   udp_group_addr: 239.255.255.250
   udp_group_port: 9307 
-  target_vel: 0.80
+  target_vel: 0.65
   safety_vel: 0.45
   fv_max_vel: 1.00
   lv_stop_dist: 0.5
@@ -53,7 +53,7 @@ LaneDetector:
   filter_param: 10
   steer_angle: 0.0
   eL_height: 0.2
-  e1_height: 1.4375
+  e1_height: 1.4694
   trust_height: 0.6667
   lp: 607.3 
   <!-- K1: 0.15 -->

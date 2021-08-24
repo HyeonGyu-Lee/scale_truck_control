@@ -53,6 +53,7 @@ class ScaleTruckController {
 
     ros::NodeHandle nodeHandle_;
     ros::Publisher ControlDataPublisher_;
+    ros::Publisher LanecoefPublisher_;
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
     ros::Subscriber velSubscriber_;

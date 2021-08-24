@@ -69,6 +69,8 @@ void ScaleTruckController::init() {
   int velQueueSize;
   std::string ControlDataTopicName;
   int ControlDataQueueSize;
+  std::string LanecoefTopicName;
+  int LanecoefQueueSize;
 
   nodeHandle_.param("subscribers/camera_reading/topic", imageTopicName, std::string("/usb_cam/image_raw"));
   nodeHandle_.param("subscribers/camera_reading/queue_size",imageQueueSize, 1);
@@ -78,11 +80,14 @@ void ScaleTruckController::init() {
   nodeHandle_.param("subscribers/velocity_reading/queue_size",velQueueSize, 100);
   nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("twist_msg"));
   nodeHandle_.param("publishers/control_data/queue_size", ControlDataQueueSize, 1);
+  nodeHandle_.param("publishers/lane_coef/topic", LanecoefTopicName, std::string("lane_msg"));
+  nodeHandle_.param("publishers/lane_coef/queue_size", LanecoefQueueSize, 10);
 
   imageSubscriber_ = nodeHandle_.subscribe(imageTopicName, imageQueueSize, &ScaleTruckController::imageCallback, this);
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
   velSubscriber_ = nodeHandle_.subscribe(velTopicName, velQueueSize, &ScaleTruckController::velCallback, this);
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
+  LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
  
   UDPsocket_.GROUP_ = ADDR_.c_str();
   UDPsocket_.PORT_ = PORT_;
@@ -134,6 +139,13 @@ void* ScaleTruckController::objectdetectInThread() {
     if(distance_ >= dist) {
       distance_ = dist;
       distAngle_ = angle;
+      if(dist < 1.25)
+      {
+        double height;
+        laneDetector_.distance_ = (int)(480*(1.0 - (dist)/1.));
+      }
+      else
+        laneDetector_.distance_ = 0;
     }
   }
 
@@ -220,6 +232,7 @@ void ScaleTruckController::spin() {
   }
   
   geometry_msgs::Twist msg;
+  scale_truck_control::lane_coef lane;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
   
@@ -239,13 +252,14 @@ void ScaleTruckController::spin() {
     msg.linear.x = ResultVel_;
     msg.linear.y = distance_;
     msg.linear.z = TargetDist_;
-     
+    lane = laneDetector_.lane_coef_;
+
     ControlDataPublisher_.publish(msg);
+    LanecoefPublisher_.publish(lane);
     if(!isNodeRunning()) {
       controlDone_ = true;
       ros::requestShutdown();
     } 
-    //std::this_thread::sleep_for(wait_image);
   }
 }
 

@@ -8,8 +8,11 @@ using namespace cv;
 namespace LaneDetect {
 
 LaneDetector::LaneDetector(ros::NodeHandle nh)
-  : nodeHandle_(nh) {
-    /******* Camera  calibration *******/	  
+  : nodeHandle_(nh) {  
+        /******* recording log *******/	  
+	gettimeofday(&start_, NULL);
+
+        /******* Camera  calibration *******/	  
 
 	Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
 	Mat dist_coeffs = Mat::zeros(1, 5, CV_64FC1);
@@ -33,6 +36,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
 	e_values_[3] = { 0, };	
+
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
@@ -45,6 +49,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/extra",f_extra, 0.0f);
 	nodeHandle_.param("ROI/extra_up",extra_up, 0);
 	nodeHandle_.param("ROI/extra_down",extra_down, 0);
+	nodeHandle_.param("ROI/distance",distance_, 0);
 
 	top_gap = width_ * t_gap; 
 	bot_gap = width_ * b_gap;
@@ -66,26 +71,28 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
 	warpCorners_[3] = Point2f(width_ - wide_extra_downside_, height_);
 
+	LoadParams();
 }
 
-	LaneDetector::~LaneDetector(void) {
-		clear_release();
-	}
+LaneDetector::~LaneDetector(void) {
+	clear_release();
+}
 
-    void LaneDetector::LoadParams(void){
-		nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
-		nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
-		nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
-		nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
-		nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
-		nodeHandle_.param("LaneDetector/eL_height",eL_height_, 1.0f);	
-		nodeHandle_.param("LaneDetector/e1_height",e1_height_, 1.0f);	
-		nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
-		nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
-		nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
-		nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
-		nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
-	}
+
+void LaneDetector::LoadParams(void) {
+	nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
+	nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
+	nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
+	nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
+	nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
+	nodeHandle_.param("LaneDetector/eL_height",eL_height_, 1.0f);	
+	nodeHandle_.param("LaneDetector/e1_height",e1_height_, 1.0f);	
+	nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
+	nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
+	nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
+	nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
+	nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
+}
 
 	Mat LaneDetector::warped_img(Mat _frame) {
 		Mat result, trans;
@@ -235,7 +242,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		int min_pix = 30 * width / 1280;
 
 		int window_width = margin * 2;	// 240
-		int window_height = height / n_windows;	// 71
+		int window_height = (height-distance_) / n_windows;	// 71
 
 		int offset = margin;
 		int range = 120 / 4;
@@ -289,6 +296,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				nZ_x = nonZero.at<Point>(index).x;
 
 				if ((nZ_y >= Ly_pos) && \
+					(nZ_y > (distance_)) && \
 					(nZ_y < (height - window_height * window)) && \
 					(nZ_x >= Lx_pos) && \
 					(nZ_x < (Lx_pos + window_width))) {
@@ -300,6 +308,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					good_left_inds.push_back(index);
 				}
 				if ((nZ_y >= (Ry_pos)) && \
+					(nZ_y > (distance_)) && \
 					(nZ_y < (height - window_height * window)) && \
 					(nZ_x >= Rx_pos) && \
 					(nZ_x < (Rx_pos + window_width))) {
@@ -622,10 +631,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		}
 	}
 
-	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
-		LoadParams();
-		
-		gettimeofday(&start_, NULL);
+	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {		
 		Mat new_frame, gray_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
 
 		resize(_frame, new_frame, Size(width_, height_));

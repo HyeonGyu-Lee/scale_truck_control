@@ -165,7 +165,7 @@ cd ~/catkin_ws/src
 >```
 >## 2.3 usb_cam
 >```
->git clone https://github.com/ros-drivers/usb_cam.git -y
+>git clone https://github.com/ros-drivers/usb_cam.git
 >```
 >## 2.4 ros_rplidar
 >```
@@ -177,7 +177,7 @@ cd ~/catkin_ws/src
 >```
 >## 2.6 laser_filters
 >```
->git clone https://github.com/ros-perception/laser_filters.git 
+>git clone -b kinetic-devel https://github.com/ros-perception/laser_filters.git 
 >```
 >## 2.7 vison_opencv (vision_opencv, image_geometry, cv_bridge)
 >```
@@ -194,6 +194,7 @@ cd ~/catkin_ws/src
 >```
 >--find_package(Boost REQUIRED python37)
 >++find_package(Boost REQUIRED python)
+>```
 >```
 >vim ~/catkin_ws/src/vision_opencv/cv_bridge/src/module.hpp
 >```
@@ -222,11 +223,11 @@ cd ~/catkin_ws/src
 >```
 >-add the below
 >```
->++source ~/catkin_ws/devel/setup.bashrc
+>++source ~/catkin_ws/devel/setup.bash
 >++alias cw='cd ~/catkin_ws'
 >++alias cs='cd ~/catkin_ws/src'
 >++alias cm='cd ~/catkin_ws && catkin_make'
->++alias cb='source ~/catkin_ws/devel/setup.bashrc'
+>++alias cb='source ~/catkin_ws/devel/setup.bash'
 >++alias sb='source ~/.bashrc'
 >```
 >```
@@ -243,13 +244,13 @@ cd ~/catkin_ws/src
 >- LV(Leading Vehicle) rosbag file download (3.57G)
 >```
 >curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1ATriInXrn-BYf4-K1rT65GYfE_tnerWV" > /dev/null
->curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" -o "2020-10-06-17-23-14.bag"
+>curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1ATriInXrn-BYf4-K1rT65GYfE_tnerWV" -o "LV-08-13.bag"
 >```
 >
 >- FV(Following Vehicle) rosbag file download (3.66G)
 >```
 >curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=1Uo-cWdeLFKnIperpsSOJ3AoVdohLcVgp" > /dev/null
->curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1J7T7r9jhOk1YPxwyEDwj0IbOieedz049" -o "2020-10-06-17-23-14.bag"
+>curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=1Uo-cWdeLFKnIperpsSOJ3AoVdohLcVgp" -o "FV-08-13.bag"
 >```
 >
 >## 4.2 Rosbag run

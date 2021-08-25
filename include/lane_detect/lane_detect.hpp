@@ -36,6 +36,8 @@ public:
 	scale_truck_control::lane_coef lane_coef_;
 
 private:
+	string TRUCK_INFO_;
+	bool info_ = true;
 	void LoadParams(void);
 	int arrMaxIdx(int hist[], int start, int end, int Max);
 	Mat polyfit(vector<int> x_val, vector<int> y_val);
@@ -70,8 +72,8 @@ private:
 	vector<int> right_x_prev_;
 	vector<int> right_y_prev_;
 	
-	int zero_[4];
-	int zero_cnt_[4];
+	vector<int> zero_;
+	vector<int> zero_cnt_;
 
 	Mat left_coef_;
 	Mat right_coef_;
@@ -81,7 +83,7 @@ private:
 	float center_position_;
 	float SteerAngle_;
 	float eL_height_, trust_height_, e1_height_, lp_;//, K1_, K2_;
-	float e_values_[3];
+	vector<float> e_values_;
 
 	/********** PID control ***********/
 	int prev_lane_, prev_pid_;

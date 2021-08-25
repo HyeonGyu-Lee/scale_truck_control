@@ -41,6 +41,9 @@ class ScaleTruckController {
 
     void spin();
   private:
+	struct timeval Start, End;
+	double Diff;
+
     bool readParameters();
 
     void init();

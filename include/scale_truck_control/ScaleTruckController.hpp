@@ -41,9 +41,6 @@ class ScaleTruckController {
 
     void spin();
   private:
-	struct timeval Start, End;
-	double Diff;
-
     bool readParameters();
 
     void init();
@@ -55,6 +52,7 @@ class ScaleTruckController {
 
     ros::NodeHandle nodeHandle_;
     ros::Publisher ControlDataPublisher_;
+    ros::Publisher LanecoefPublisher_;
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
     ros::Subscriber velSubscriber_;

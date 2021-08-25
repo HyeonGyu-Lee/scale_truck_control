@@ -13,6 +13,9 @@ publishers:
   control_data:
     topic: /twist_msg
     queue_size: 1
+  lane_coef:
+    topic: /lane_msg
+    queue_size: 10
 
 params:
   truck_info: LV
@@ -39,6 +42,7 @@ ROI:
   extra: 0.00
   extra_up: 140
   extra_down: 180
+  distance: 200
 
 LaneDetector:  
   sob_min_th: 175

@@ -28,11 +28,11 @@ public:
 	//Timer
 	struct timeval start_, end_;
 
-	Mat center_coef_;
 	float display_img(Mat _frame, int _delay, bool _view);
 	void get_steer_coef(float vel);
 	float K1_, K2_;
 	bool steer_flag_;
+	int distance_;
 	scale_truck_control::lane_coef lane_coef_;
 
 private:
@@ -77,7 +77,7 @@ private:
 
 	Mat left_coef_;
 	Mat right_coef_;
-	//Mat center_coef_;
+	Mat center_coef_;
 	float left_curve_radius_;
 	float right_curve_radius_;
 	float center_position_;

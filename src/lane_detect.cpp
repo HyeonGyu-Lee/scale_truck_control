@@ -8,8 +8,11 @@ using namespace cv;
 namespace LaneDetect {
 
 LaneDetector::LaneDetector(ros::NodeHandle nh)
-  : nodeHandle_(nh) {
-    /******* Camera  calibration *******/	  
+  : nodeHandle_(nh) {  
+        /******* recording log *******/	  
+	gettimeofday(&start_, NULL);
+
+        /******* Camera  calibration *******/	  
 
 	Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
 	Mat dist_coeffs = Mat::zeros(1, 5, CV_64FC1);
@@ -34,9 +37,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
+
 	e_values_.resize(3);
 	e_values_ = { 0, 0, 0 };
 	steer_flag_ = false;	
+
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
@@ -49,6 +54,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/extra",f_extra, 0.0f);
 	nodeHandle_.param("ROI/extra_up",extra_up, 0);
 	nodeHandle_.param("ROI/extra_down",extra_down, 0);
+	nodeHandle_.param("ROI/distance",distance_, 0);
 
 	top_gap = width_ * t_gap; 
 	bot_gap = width_ * b_gap;
@@ -73,11 +79,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	LoadParams();
 }
 
-	LaneDetector::~LaneDetector(void) {
-		clear_release();
-	}
+LaneDetector::~LaneDetector(void) {
+	clear_release();
+}
 
-    void LaneDetector::LoadParams(void){
+	void LaneDetector::LoadParams(void){
 		nodeHandle_.param("params/truck_info", TRUCK_INFO_, std::string("LV"));
 		nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
 		nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
@@ -245,7 +251,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 		int min_pix = 30 * width / 1280;
 
 		int window_width = margin * 2;	// 240
-		int window_height = height / n_windows;	// 71
+		int window_height = (height-distance_) / n_windows;	// 71
 
 		int offset = margin;
 		int range = 120 / 4;
@@ -299,6 +305,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				nZ_x = nonZero.at<Point>(index).x;
 
 				if ((nZ_y >= Ly_pos) && \
+					(nZ_y > (distance_)) && \
 					(nZ_y < (height - window_height * window)) && \
 					(nZ_x >= Lx_pos) && \
 					(nZ_x < (Lx_pos + window_width))) {
@@ -310,6 +317,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 					good_left_inds.push_back(index);
 				}
 				if ((nZ_y >= (Ry_pos)) && \
+					(nZ_y > (distance_)) && \
 					(nZ_y < (height - window_height * window)) && \
 					(nZ_x >= Rx_pos) && \
 					(nZ_x < (Rx_pos + window_width))) {
@@ -673,12 +681,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 				steer_flag_ = false;
 			}
 
-			steer_error_log();
+			//steer_error_log();
 		}
 	}
 
-	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
-
+	float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {		
 		Mat new_frame, gray_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
 
 		resize(_frame, new_frame, Size(width_, height_));

@@ -3,7 +3,7 @@
 namespace scale_truck_control{
 
 ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
-    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsocket_() {
+    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_() {
   if (!readParameters()) {
     ros::requestShutdown();
   }
@@ -25,7 +25,7 @@ ScaleTruckController::~ScaleTruckController() {
        
   ControlDataPublisher_.publish(msg);
   controlThread_.join();
-  udpsocketThread_.join();
+  udprecvThread_.join();
 
   ROS_INFO("[ScaleTruckController] Stop.");
 }
@@ -84,23 +84,16 @@ void ScaleTruckController::init() {
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
   LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
  
-  UDPsocket_.GROUP_ = ADDR_.c_str();
-  UDPsocket_.PORT_ = PORT_;
-  if(!Index_) // send
-  {
-    UDPsocket_.sendInit();
-    printf("\n SendInit() \n");
-  }
-  else // receive
-  {
-    UDPsocket_.recvInit();
-    printf("\n RecvInit() \n");
-  }
+  UDPsend_.GROUP_ = ADDR_.c_str();
+  UDPsend_.PORT_ = PORT_;
+  UDPsend_.sendInit();
+
+  UDPrecv_.GROUP_ = ADDR_.c_str();
+  UDPrecv_.PORT_ = PORT_;
+  UDPrecv_.recvInit();
 
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
-  const auto wait_udp = std::chrono::milliseconds(100);
-  std::this_thread::sleep_for(wait_udp);
-  udpsocketThread_ = std::thread(&ScaleTruckController::UDPsocketInThread, this);
+  udpsendThread_ = std::thread(&ScaleTruckController::UDPsendInThread, this);
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -167,42 +160,36 @@ void* ScaleTruckController::objectdetectInThread() {
   }
 }
 
-void* ScaleTruckController::UDPsocketInThread()
+void* ScaleTruckController::UDPsendInThread()
 {
-    udpData_.target_vel = 0;
-    const auto wait_udp = std::chrono::milliseconds(33);
-    std::this_thread::sleep_for(wait_udp);
+    udpData_.index = Index_;
+    udpData_.target_vel = ResultVel_;
+    udpData_.current_vel = CurVel_;
+    udpData_.target_dist = TargetDist_;
+    udpData_.current_dist = distance_;
 
-    while(!controlDone_)
-    {
-        if(!Index_) // send
-        {
-          udpData_.index = Index_;
-	  udpData_.target_vel = ResultVel_;
-          udpData_.current_vel = CurVel_;
-          udpData_.target_dist = TargetDist_;
-	  udpData_.current_dist = distance_;
-          std::this_thread::sleep_for(wait_udp);
-          UDPsocket_.sendData(udpData_);
+    UDPsend_.sendData(udpData_);
+}
+
+void* ScaleTruckController::UDPrecvInThread()
+{
+    while(controlDone_) {
+        struct UDPsock::UDP_DATA udpData;
+        UDPrecv_.recvData(&udpData);
+        //std::this_thread::sleep_for(wait_udp);
+    
+        if(udpData.index == (Index_ - 1)) {
+            udpData_ = udpData;
+            TargetVel_ = udpData.target_vel;
         }
-        else // receive
-        {
-          struct UDPsock::UDP_DATA udpData;
-          UDPsocket_.recvData(&udpData);
-          //std::this_thread::sleep_for(wait_udp);
-	  if(udpData.index == (Index_ - 1)) {
-              udpData_ = udpData;
-              TargetVel_ = udpData.target_vel;
-	  }
-	  if(udpData.index == 307) {
-              TargetVel_ = udpData.target_vel;
-	      TargetDist_ = udpData.target_dist;
-	  }
+        if(udpData.index == 307) {
+            TargetVel_ = udpData.target_vel;
+            TargetDist_ = udpData.target_dist;
         }
         if(!isNodeRunning()) {
           controlDone_ = true;
         }
-    } 
+    }
 }
 
 void ScaleTruckController::displayConsole() {
@@ -244,9 +231,11 @@ void ScaleTruckController::spin() {
   while(!controlDone_) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
+    udprecvThread_ = std::thread(&ScaleTruckController::UDPrecvInThread, this);
     
     lanedetect_thread.join();
     objectdetect_thread.join();
+    udprecvThread_.join();
 
     if(enableConsoleOutput_)
       displayConsole();

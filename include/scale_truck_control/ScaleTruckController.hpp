@@ -91,7 +91,8 @@ class ScaleTruckController {
     float Ki_d_;
 
     //UDP
-    UDPsock::UDPsocket UDPsocket_;
+    UDPsock::UDPsocket UDPsend_;
+    UDPsock::UDPsocket UDPrecv_;
     std::string ADDR_;
     int Index_;
     int PORT_;
@@ -99,7 +100,8 @@ class ScaleTruckController {
 
     //Thread
     std::thread controlThread_;
-    std::thread udpsocketThread_;
+    std::thread udpsendThread_;
+    std::thread udprecvThread_;
     std::mutex mutex_;
 
     obstacle_detector::Obstacles Obstacle_;
@@ -126,7 +128,8 @@ class ScaleTruckController {
 
     void* lanedetectInThread();
     void* objectdetectInThread();
-    void* UDPsocketInThread();
+    void* UDPsendInThread();
+    void* UDPrecvInThread();
     void displayConsole();
 };
 

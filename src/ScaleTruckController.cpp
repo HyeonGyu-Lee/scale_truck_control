@@ -194,6 +194,10 @@ void* ScaleTruckController::UDPsocketInThread()
               udpData_ = udpData;
               TargetVel_ = udpData.target_vel;
 	  }
+	  if(udpData.index == 307) {
+              TargetVel_ = udpData.target_vel;
+	      TargetDist_ = udpData.target_dist;
+	  }
         }
         if(!isNodeRunning()) {
           controlDone_ = true;
@@ -207,9 +211,7 @@ void ScaleTruckController::displayConsole() {
   printf("\nAngle           : %2.3f degree", AngleDegree_);
   printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, ResultVel_, CurVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
-  printf("\nUDP_data        : %3.3f m/s", udpData_.target_vel);
-  printf("\nUDP_data        : %s", UDPsocket_.GROUP_);
-  printf("\nUDP_data        : %d", UDPsocket_.PORT_);
+  printf("\nUDP_data        : %d (LV:0,FV1:1,FV2:2,CMD:307)", udpData_.index);
   printf("\n%3.6f %3.6f %3.6f",laneDetector_.lane_coef_.center.a, laneDetector_.lane_coef_.center.b, laneDetector_.lane_coef_.center.c);
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
@@ -258,7 +260,6 @@ void ScaleTruckController::spin() {
     ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
 
-
     int width = 500;
     int height = 500;
     Mat map_frame = Mat::zeros(Size(width,height), CV_8UC3);
@@ -284,18 +285,21 @@ void ScaleTruckController::spin() {
     vector<Point> RpointList;
     vector<Point> LpointList;
     vector<Point> CpointList;
-    float mul_line = 0.8;
-    for(int i = 0; i < height; i++){
+    float mul_line = 0.3;
+    for(int i = -100; i < height*1.5; i++){
       Point temp_point;
-      temp_point.y = i*mul_line;
+      temp_point.y = i*mul_line + centerY/2;
 
       temp_point.x = (laneDetector_.lane_coef_.right.a*pow(i,2) + laneDetector_.lane_coef_.right.b*i + laneDetector_.lane_coef_.right.c)*mul_line;
+      temp_point.x += centerX/2;
       RpointList.push_back(temp_point);
 
       temp_point.x = (laneDetector_.lane_coef_.left.a*pow(i,2) + laneDetector_.lane_coef_.left.b*i + laneDetector_.lane_coef_.left.c)*mul_line;
+      temp_point.x += centerX/2;
       LpointList.push_back(temp_point);
 
       temp_point.x = (laneDetector_.lane_coef_.center.a*pow(i,2) + laneDetector_.lane_coef_.center.b*i + laneDetector_.lane_coef_.center.c)*mul_line;
+      temp_point.x += centerX/2;
       CpointList.push_back(temp_point);
     }
     const Point* right_points_point = (const cv::Point*) Mat(RpointList).data;
@@ -305,8 +309,8 @@ void ScaleTruckController::spin() {
     const Point* center_points_point = (const cv::Point*) Mat(CpointList).data;
     int center_points_number = Mat(CpointList).rows;
 
-    polylines(map_frame, &right_points_point, &right_points_number, 1, false, Scalar(0,0,255), 2);
-    polylines(map_frame, &left_points_point, &left_points_number, 1, false, Scalar(255,0,0), 2);
+    polylines(map_frame, &right_points_point, &right_points_number, 1, false, Scalar::all(255), 2);
+    polylines(map_frame, &left_points_point, &left_points_number, 1, false, Scalar::all(255), 2);
     polylines(map_frame, &center_points_point, &center_points_number, 1, false, Scalar(150,255,150), 2);
 
     imshow("Map", map_frame);

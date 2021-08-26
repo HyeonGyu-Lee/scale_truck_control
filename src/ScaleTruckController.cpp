@@ -86,7 +86,7 @@ void ScaleTruckController::init() {
  
   UDPsocket_.GROUP_ = ADDR_.c_str();
   UDPsocket_.PORT_ = PORT_;
-  if(Index_) // send
+  if(!Index_) // send
   {
     UDPsocket_.sendInit();
     printf("\n SendInit() \n");
@@ -144,7 +144,7 @@ void* ScaleTruckController::objectdetectInThread() {
     }
   }
 
-  if(Index_){	// LV velocity
+  if(!Index_){	// LV velocity
 	  if(distance_ <= LVstopDist_) {
 	    ResultVel_ = 0.0f;
 	  } else if(distance_ <= SafetyDist_) {

@@ -25,9 +25,11 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 
 	last_Llane_base_ = 0;
 	last_Rlane_base_ = 0;
-
-	zero_[4] = { 0, };
-	zero_cnt_[4] = { 0, };
+	
+	zero_.resize(4);
+	zero_cnt_.resize(4);
+	zero_ = { 0, 0, 0, 0 };
+	zero_cnt_ = { 0, 0, 0, 0 };
 
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
@@ -35,7 +37,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
-	e_values_[3] = { 0, };	
+	e_values_.resize(3);
+	e_values_ = { 0, 0, 0};	
 
 	corners_.resize(4);
 	warpCorners_.resize(4);
@@ -340,7 +343,7 @@ void LaneDetector::LoadParams(void) {
 					zero_[0] += zero_cnt_[0] * Llane_current;
 					zero_[1] += Ly_pos + (window_height / 2);
 				}
-				if(zero_cnt_[0] > 100) zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;*/
+				if(zero_cnt_[0] > 10) zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;*/
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
@@ -374,7 +377,7 @@ void LaneDetector::LoadParams(void) {
 					zero_[2] += zero_cnt_[2] * Rlane_current;
 					zero_[3] += Ry_pos + (window_height / 2);
 				}
-				if(zero_cnt_[2] > 100) zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;*/
+				if(zero_cnt_[2] > 10) zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;*/
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
@@ -414,12 +417,12 @@ void LaneDetector::LoadParams(void) {
 			L_prev = Llane_current;
 			R_prev = Rlane_current;
 		}
-		/*
+		
 		left_x_prev_ = left_x_;
 		left_y_prev_ = left_y_;
 		right_x_prev_ = right_x_;
 		right_y_prev_ = right_y_;
-		*/
+		
 		if (left_x_.size() != 0) {
 			left_coef_ = polyfit(left_y_, left_x_);
 		}

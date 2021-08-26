@@ -1,6 +1,7 @@
 #include "sock_udp/sock_udp.hpp"
 
 namespace UDPsock{
+
 UDPsocket::UDPsocket()
 {
     fd_ = socket(AF_INET, SOCK_DGRAM, 0);
@@ -57,7 +58,7 @@ int UDPsocket::sendInit()
     addr_.sin_port = htons(PORT_);
 }
 
-int UDPsocket::recvData(float* Data)
+int UDPsocket::recvData(struct UDP_DATA* Data)
 {
     int addrlen = sizeof(addr_);
     int nbytes = recvfrom(fd_, Data, sizeof(float), 0, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
@@ -68,7 +69,7 @@ int UDPsocket::recvData(float* Data)
     }
 }
 
-int UDPsocket::sendData(float Data)
+int UDPsocket::sendData(struct UDP_DATA Data)
 {
     int nbytes = sendto(fd_, &Data, sizeof(float), 0, (struct sockaddr*) &addr_, sizeof(addr_));
     if (nbytes < 0)

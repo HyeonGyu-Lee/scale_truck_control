@@ -42,14 +42,9 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/target_dist", TargetDist_, 0.8f); // m
   nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
   nodeHandle_.param("params/udp_group_port", PORT_, 9307);
-  nodeHandle_.param("params/truck_info", TRUCK_INFO_, std::string("LV"));
+  nodeHandle_.param("params/truck_info", Index_, 0);
   nodeHandle_.param("params/Kp_d", Kp_d_, 2.0f);
   nodeHandle_.param("params/Ki_d", Ki_d_, 0.4f);
-
-  if(!TRUCK_INFO_.compare(std::string("LV")))
-    info_ = true;
-  else
-    info_ = false;
 
   return true;
 }
@@ -91,7 +86,7 @@ void ScaleTruckController::init() {
  
   UDPsocket_.GROUP_ = ADDR_.c_str();
   UDPsocket_.PORT_ = PORT_;
-  if(info_) // send
+  if(Index_) // send
   {
     UDPsocket_.sendInit();
     printf("\n SendInit() \n");
@@ -149,7 +144,7 @@ void* ScaleTruckController::objectdetectInThread() {
     }
   }
 
-  if(info_){	// LV velocity
+  if(Index_){	// LV velocity
 	  if(distance_ <= LVstopDist_) {
 	    ResultVel_ = 0.0f;
 	  } else if(distance_ <= SafetyDist_) {
@@ -174,25 +169,31 @@ void* ScaleTruckController::objectdetectInThread() {
 
 void* ScaleTruckController::UDPsocketInThread()
 {
-    udpData_ = 0;
+    udpData_.target_vel = 0;
     const auto wait_udp = std::chrono::milliseconds(33);
     std::this_thread::sleep_for(wait_udp);
 
     while(!controlDone_)
     {
-        if(info_) // send
+        if(!Index_) // send
         {
-          udpData_ = ResultVel_;
-          //std::this_thread::sleep_for(wait_udp);
+          udpData_.index = Index_;
+	  udpData_.target_vel = ResultVel_;
+          udpData_.current_vel = CurVel_;
+          udpData_.target_dist = TargetDist_;
+	  udpData_.current_dist = distance_;
+          std::this_thread::sleep_for(wait_udp);
           UDPsocket_.sendData(udpData_);
         }
         else // receive
         {
-          float udpData;
+          struct UDPsock::UDP_DATA udpData;
           UDPsocket_.recvData(&udpData);
           //std::this_thread::sleep_for(wait_udp);
-          udpData_ = udpData;
-          TargetVel_ = udpData;
+	  if(udpData.index == (Index_ - 1)) {
+              udpData_ = udpData;
+              TargetVel_ = udpData.target_vel;
+	  }
         }
         if(!isNodeRunning()) {
           controlDone_ = true;
@@ -206,7 +207,7 @@ void ScaleTruckController::displayConsole() {
   printf("\nAngle           : %2.3f degree", AngleDegree_);
   printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, ResultVel_, CurVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
-  printf("\nUDP_data        : %3.3f m/s", udpData_);
+  printf("\nUDP_data        : %3.3f m/s", udpData_.target_vel);
   printf("\nUDP_data        : %s", UDPsocket_.GROUP_);
   printf("\nUDP_data        : %d", UDPsocket_.PORT_);
   printf("\n%3.6f %3.6f %3.6f",laneDetector_.lane_coef_.center.a, laneDetector_.lane_coef_.center.b, laneDetector_.lane_coef_.center.c);
@@ -256,6 +257,62 @@ void ScaleTruckController::spin() {
 
     ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
+
+
+    int width = 500;
+    int height = 500;
+    Mat map_frame = Mat::zeros(Size(width,height), CV_8UC3);
+
+    int dist = 50;
+    for(int i=0;i<height;i+=dist)
+	line(map_frame, Point(0,i), Point(width,i),Scalar::all(100));
+
+    for(int i=0;i<width;i+=dist)
+	line(map_frame, Point(i,0), Point(i,height),Scalar::all(100));
+
+    int centerX = 400, centerY=250;
+    double mul = 20;
+
+    rectangle(map_frame, Rect(Point(centerY-10, centerX+26), Point(centerY+10, centerX)), Scalar(0,0,255), -1);
+    for(int i = 0; i < ObjCircles_; i++){
+      int Y = Obstacle_.circles[i].center.x*mul + centerX;
+      int X = Obstacle_.circles[i].center.y*mul + centerY;
+      circle(map_frame,Point(X,Y), 3, Scalar(50,250,50), -1);
+      putText(map_frame,to_string(i),Point(X,Y), 2, 1.2, Scalar::all(255));
+    }
+    
+    vector<Point> RpointList;
+    vector<Point> LpointList;
+    vector<Point> CpointList;
+    float mul_line = 0.8;
+    for(int i = 0; i < height; i++){
+      Point temp_point;
+      temp_point.y = i*mul_line;
+
+      temp_point.x = (laneDetector_.lane_coef_.right.a*pow(i,2) + laneDetector_.lane_coef_.right.b*i + laneDetector_.lane_coef_.right.c)*mul_line;
+      RpointList.push_back(temp_point);
+
+      temp_point.x = (laneDetector_.lane_coef_.left.a*pow(i,2) + laneDetector_.lane_coef_.left.b*i + laneDetector_.lane_coef_.left.c)*mul_line;
+      LpointList.push_back(temp_point);
+
+      temp_point.x = (laneDetector_.lane_coef_.center.a*pow(i,2) + laneDetector_.lane_coef_.center.b*i + laneDetector_.lane_coef_.center.c)*mul_line;
+      CpointList.push_back(temp_point);
+    }
+    const Point* right_points_point = (const cv::Point*) Mat(RpointList).data;
+    int right_points_number = Mat(RpointList).rows;
+    const Point* left_points_point = (const cv::Point*) Mat(LpointList).data;
+    int left_points_number = Mat(LpointList).rows;
+    const Point* center_points_point = (const cv::Point*) Mat(CpointList).data;
+    int center_points_number = Mat(CpointList).rows;
+
+    polylines(map_frame, &right_points_point, &right_points_number, 1, false, Scalar(0,0,255), 2);
+    polylines(map_frame, &left_points_point, &left_points_number, 1, false, Scalar(255,0,0), 2);
+    polylines(map_frame, &center_points_point, &center_points_number, 1, false, Scalar(150,255,150), 2);
+
+    imshow("Map", map_frame);
+
+    waitKey(1);
+
     if(!isNodeRunning()) {
       controlDone_ = true;
       ros::requestShutdown();

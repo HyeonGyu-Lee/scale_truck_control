@@ -333,8 +333,8 @@ void LaneDetector::LoadParams(void) {
 				_size = (unsigned int)(good_left_inds.size());
 				for (index = 0; index < _size; index++) {
 					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
-					//left_x_.insert(left_x_.end(), nonZero.at<Point>(good_left_inds.at(index)).x);
-					//left_y_.insert(left_y_.end(), nonZero.at<Point>(good_left_inds.at(index)).y);
+					left_x_.insert(left_x_.end(), nonZero.at<Point>(good_left_inds.at(index)).x);
+					left_y_.insert(left_y_.end(), nonZero.at<Point>(good_left_inds.at(index)).y);
 				}
 				Llane_current = Lsum / _size;
 				/*if(window == 0){
@@ -344,8 +344,9 @@ void LaneDetector::LoadParams(void) {
 					zero_[1] += Ly_pos + (window_height / 2);
 				}
 				if(zero_cnt_[0] > 10) zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;*/
-				left_x_.insert(left_x_.end(), Llane_current);
-				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
+				
+				//left_x_.insert(left_x_.end(), Llane_current);
+				//left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
 				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
 					flag = true;
@@ -367,8 +368,8 @@ void LaneDetector::LoadParams(void) {
 				_size = (unsigned int)(good_right_inds.size());
 				for (index = 0; index < _size; index++) {
 					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
-					//right_y_.insert(right_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
-					//right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
+					right_y_.insert(right_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
+					right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
 				}
 				Rlane_current = Rsum / _size;
 				/*if(window == 0){
@@ -378,8 +379,8 @@ void LaneDetector::LoadParams(void) {
 					zero_[3] += Ry_pos + (window_height / 2);
 				}
 				if(zero_cnt_[2] > 10) zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;*/
-				right_x_.insert(right_x_.end(), Rlane_current);
-				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
+				//right_x_.insert(right_x_.end(), Rlane_current);
+				//right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
 				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
 					flag = true;

@@ -26,11 +26,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	last_Llane_base_ = 0;
 	last_Rlane_base_ = 0;
 	
-	zero_.resize(4);
-	zero_cnt_.resize(4);
-	zero_ = { 0, 0, 0, 0 };
-	zero_cnt_ = { 0, 0, 0, 0 };
-
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 
@@ -276,8 +271,10 @@ void LaneDetector::LoadParams(void) {
 
 
 		for (int window = 0; window < n_windows; window++) {
-			int Ly_pos = height - (window + 1) * window_height - 1; // win_y_low , win_y_high = win_y_low - window_height
-			int Ry_pos = height - (window + 1) * window_height - 1;
+			int	Ly_pos = height - (window + 1) * window_height - 1; // win_y_low , win_y_high = win_y_low - window_height
+			int	Ry_pos = height - (window + 1) * window_height - 1;
+			int	Ly_top = height - window * window_height;
+			int	Ry_top = height - window * window_height;
 
 			int	Lx_pos = Llane_current - margin; // win_xleft_low, win_xleft_high = win_xleft_low + margin*2
 			int	Rx_pos = Rlane_current - margin; // win_xrignt_low, win_xright_high = win_xright_low + margin*2
@@ -294,13 +291,13 @@ void LaneDetector::LoadParams(void) {
 			good_left_inds.clear();
 			good_right_inds.clear();
 
-			for (unsigned int index = (nonZero.total() - 2); index > 1; index--) {
+			for (unsigned int index = (nonZero.total() - 1); index > 1; index--) {
 				nZ_y = nonZero.at<Point>(index).y;
 				nZ_x = nonZero.at<Point>(index).x;
 
 				if ((nZ_y >= Ly_pos) && \
 					(nZ_y > (distance_)) && \
-					(nZ_y < (height - window_height * window)) && \
+					(nZ_y < Ly_top) && \
 					(nZ_x >= Lx_pos) && \
 					(nZ_x < (Lx_pos + window_width))) {
 					if (_view) {
@@ -312,7 +309,7 @@ void LaneDetector::LoadParams(void) {
 				}
 				if ((nZ_y >= (Ry_pos)) && \
 					(nZ_y > (distance_)) && \
-					(nZ_y < (height - window_height * window)) && \
+					(nZ_y < Ry_top) && \
 					(nZ_x >= Rx_pos) && \
 					(nZ_x < (Rx_pos + window_width))) {
 					if (_view) {
@@ -327,75 +324,77 @@ void LaneDetector::LoadParams(void) {
 			int Lsum, Rsum;
 			Lsum = Rsum = 0;
 			unsigned int _size;
-			//bool flag = false;
+			vector<int> Llane_x;
+			vector<int> Llane_y;
+			vector<int> Rlane_x;
+			vector<int> Rlane_y;
 
 			if (good_left_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_left_inds.size());
-				for (index = 0; index < _size; index++) {
-					Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
-					left_x_.insert(left_x_.end(), nonZero.at<Point>(good_left_inds.at(index)).x);
-					left_y_.insert(left_y_.end(), nonZero.at<Point>(good_left_inds.at(index)).y);
+				for (int i = Ly_top-1; i >= Ly_pos ; i--)
+				{
+					int Ly_sum = 0;
+					int count = 0;
+					for (index = 0; index < _size; index++) {
+						int j = nonZero.at<Point>(good_left_inds.at(index)).y;
+						if(i == j)
+						{
+							Ly_sum += nonZero.at<Point>(good_left_inds.at(index)).x;
+							count++;
+							Lsum += nonZero.at<Point>(good_left_inds.at(index)).x;
+							//left_x_.insert(left_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
+							//left_y_.insert(left_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
+						}
+					}
+					if(count != 0)
+					{
+						left_x_.insert(left_x_.end(), Ly_sum/count);
+						left_y_.insert(left_y_.end(), i);
+						Llane_x.insert(Llane_x.end(), Ly_sum/count);
+						Llane_y.insert(Llane_y.end(), i);
+					} else {
+						Llane_x.insert(Llane_x.end(), -1);
+						Llane_y.insert(Llane_y.end(), i);
+					}
 				}
 				Llane_current = Lsum / _size;
-				/*if(window == 0){
-					zero_cnt_[0]++;
-					zero_cnt_[1] += zero_cnt_[0];
-					zero_[0] += zero_cnt_[0] * Llane_current;
-					zero_[1] += Ly_pos + (window_height / 2);
-				}
-				if(zero_cnt_[0] > 10) zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;*/
-				
 				//left_x_.insert(left_x_.end(), Llane_current);
 				//left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
-				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-					flag = true;
-					//left_x_.insert(left_x_.begin(), left_x_prev_.front());
-					//left_y_.insert(left_y_.begin(), left_y_prev_.front());
-					if(zero_cnt_[0] != 0){
-						left_x_.insert(left_x_.begin(), zero_[0]/zero_cnt_[1]);
-						left_y_.insert(left_y_.begin(), zero_[1]/zero_cnt_[0]);
-						zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;
-					}
-					else{
-						left_x_.insert(left_x_.begin(), left_x_prev_.front());
-						left_y_.insert(left_y_.begin(), left_y_prev_.front());
-					}
-				}*/
 				Llane_current += (L_gap);
 			}
 			if (good_right_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_right_inds.size());
-				for (index = 0; index < _size; index++) {
-					Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
-					right_y_.insert(right_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
-					right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
+				for (int i = Ry_top - 1 ; i >= Ry_pos ; i--)
+				{
+					int Ry_sum = 0;
+					int count = 0;
+					for (index = 0; index < _size; index++) {
+						int j = nonZero.at<Point>(good_right_inds.at(index)).y;
+						if(i == j)
+						{
+							Ry_sum += nonZero.at<Point>(good_right_inds.at(index)).x;
+							count++;
+							Rsum += nonZero.at<Point>(good_right_inds.at(index)).x;
+							//right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).x);
+							//right_y_.insert(right_y_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
+						}
+					}
+					if(count != 0)
+					{
+						right_x_.insert(right_x_.end(), Ry_sum/count);
+						right_y_.insert(right_y_.end(), i);
+						Rlane_x.insert(Rlane_x.end(), Ry_sum/count);
+						Rlane_y.insert(Rlane_y.end(), i);
+					} else {
+						Rlane_x.insert(Rlane_x.end(), -1);
+						Rlane_y.insert(Rlane_y.end(), i);
+					}
 				}
 				Rlane_current = Rsum / _size;
-				/*if(window == 0){
-					zero_cnt_[2]++;
-					zero_cnt_[3] += zero_cnt_[2];
-					zero_[2] += zero_cnt_[2] * Rlane_current;
-					zero_[3] += Ry_pos + (window_height / 2);
-				}
-				if(zero_cnt_[2] > 10) zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;*/
 				//right_x_.insert(right_x_.end(), Rlane_current);
 				//right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
-				/*if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-					flag = true;
-					//right_x_.insert(right_x_.begin(), right_x_prev_.front());
-					//right_y_.insert(right_y_.begin(), right_y_prev_.front());
-					if(zero_cnt_[2] != 0){
-						right_x_.insert(right_x_.begin(), zero_[2]/zero_cnt_[3]);
-						right_y_.insert(right_y_.begin(), zero_[3]/zero_cnt_[2]);
-						zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;
-					}
-					else{
-						right_x_.insert(right_x_.begin(), right_x_prev_.front());
-						right_y_.insert(right_y_.begin(), right_y_prev_.front());
-					}
-				}*/
 				Rlane_current += (R_gap);
 			}
 			if (window != 0) {	
@@ -406,14 +405,16 @@ void LaneDetector::LoadParams(void) {
 					L_gap = (Llane_current - L_prev);
 				}
 			}
-			/*if (flag == true){
-				center_x_.insert(center_x_.end(), (left_x_.front() + right_x_.front()) / 2);
-				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
-				flag = false;
-			}*/
 			if ((Lsum != 0) && (Rsum != 0)) {
-				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
-				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));	
+				for (int i = 0; i < Llane_x.size() ; i++)
+				{
+					if((Llane_x.at(i) != -1) && (Rlane_x.at(i) != -1)) {
+						center_x_.insert(center_x_.end(), (Llane_x.at(i)+Rlane_x.at(i)) / 2 );
+						center_y_.insert(center_y_.end(), Llane_y.at(i));
+					}
+				}
+				//center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
+				//center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));	
 			}
 			L_prev = Llane_current;
 			R_prev = Rlane_current;

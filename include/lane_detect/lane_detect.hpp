@@ -67,9 +67,6 @@ private:
 	vector<int> left_y_prev_;
 	vector<int> right_x_prev_;
 	vector<int> right_y_prev_;
-	
-	vector<int> zero_;
-	vector<int> zero_cnt_;
 
 	Mat left_coef_;
 	Mat right_coef_;

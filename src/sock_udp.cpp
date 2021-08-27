@@ -61,7 +61,7 @@ int UDPsocket::sendInit()
 int UDPsocket::recvData(struct UDP_DATA* Data)
 {
     int addrlen = sizeof(addr_);
-    int nbytes = recvfrom(fd_, Data, sizeof(float), 0, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
+    int nbytes = recvfrom(fd_, Data, sizeof(*Data), 0, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
     //int nbytes = recvfrom(fd_, Data, sizeof(float), MSG_DONTWAIT, (struct sockaddr *) &addr_, (socklen_t*)&addrlen);
     if (nbytes < 0) {
         //perror("recvfrom");
@@ -71,7 +71,7 @@ int UDPsocket::recvData(struct UDP_DATA* Data)
 
 int UDPsocket::sendData(struct UDP_DATA Data)
 {
-    int nbytes = sendto(fd_, &Data, sizeof(float), 0, (struct sockaddr*) &addr_, sizeof(addr_));
+    int nbytes = sendto(fd_, &Data, sizeof(Data), 0, (struct sockaddr*) &addr_, sizeof(addr_));
     if (nbytes < 0)
     {
         perror("sendto");

@@ -11,15 +11,14 @@
 
 namespace UDPsock{
 
-#pragma pack(1)
 struct UDP_DATA{
     int index;
+    int to;
     float target_vel;
     float current_vel;
     float target_dist;
     float current_dist;
 };
-#pragma pack(4)
 
 class UDPsocket {
 public:

@@ -583,15 +583,16 @@ void LaneDetector::LoadParams(void) {
 	}
 
 	void LaneDetector::get_steer_coef(float vel){
-		/*if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
+		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
 			K1_ = K2_ = 0.0f;
 		}
 		else if(vel < 0.5f){
-			K1_ = K2_ =  0.06f;	
+			K1_ = K2_ =  0.15f;	
 		}
 		else{
-			K1_ = K2_ = (3.7866f * pow(vel, 3)) + ((-8.0032f) * pow(vel, 2)) + (5.4267f * vel) - 1.1259f;
-		}*/
+			K1_ = ((-4.1551f) * pow(vel, 4)) + (14.7461f * pow(vel, 3)) + ((-19.0274f) * pow(vel, 2)) + (10.3868f * vel) - 1.8701f;
+			K2_ = ((-8.1168f) * pow(vel, 4)) + (27.6464f * pow(vel, 3)) + ((-34.1671f) * pow(vel, 2)) + (18.0079f * vel) - 3.2609f;
+		}
 		
 	}
 

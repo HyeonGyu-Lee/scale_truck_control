@@ -162,32 +162,35 @@ void* ScaleTruckController::objectdetectInThread() {
 
 void* ScaleTruckController::UDPsendInThread()
 {
-    udpData_.index = Index_;
-    udpData_.target_vel = ResultVel_;
-    udpData_.current_vel = CurVel_;
-    udpData_.target_dist = TargetDist_;
-    udpData_.current_dist = distance_;
+    struct UDPsock::UDP_DATA udpData;
+    
+    udpData.index = Index_;
+    udpData.to = 307;
+    udpData.target_vel = ResultVel_;
+    udpData.current_vel = CurVel_;
+    udpData.target_dist = TargetDist_;
+    udpData.current_dist = distance_;
 
-    UDPsend_.sendData(udpData_);
+    UDPsend_.sendData(udpData);
 }
 
 void* ScaleTruckController::UDPrecvInThread()
 {
-    while(controlDone_) {
-        struct UDPsock::UDP_DATA udpData;
-        UDPrecv_.recvData(&udpData);
-        //std::this_thread::sleep_for(wait_udp);
-    
-        if(udpData.index == (Index_ - 1)) {
-            udpData_ = udpData;
-            TargetVel_ = udpData.target_vel;
-        }
-        if(udpData.index == 307) {
-            TargetVel_ = udpData.target_vel;
-            TargetDist_ = udpData.target_dist;
-        }
-        if(!isNodeRunning()) {
-          controlDone_ = true;
+    struct UDPsock::UDP_DATA udpData;
+    UDPrecv_.recvData(&udpData);
+    //std::this_thread::sleep_for(wait_udp);
+   
+    if(udpData.index == (Index_ - 1)) {
+        TargetVel_ = udpData_.target_vel;
+    }
+    if(udpData.index == 307) {
+        if(udpData.to == Index_) {
+            udpData_.index = udpData.index;
+            udpData_.target_vel = udpData.target_vel;
+            udpData_.target_dist = udpData.target_dist;
+
+            TargetVel_ = udpData_.target_vel;
+            TargetDist_ = udpData_.target_dist;
         }
     }
 }
@@ -199,6 +202,9 @@ void ScaleTruckController::displayConsole() {
   printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, ResultVel_, CurVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
   printf("\nUDP_data        : %d (LV:0,FV1:1,FV2:2,CMD:307)", udpData_.index);
+  printf("\nUDP_target_vel  : %3.3lf", udpData_.target_vel);
+  printf("\nUDP_target_dist : %3.3lf", udpData_.target_dist);
+
   printf("\n%3.6f %3.6f %3.6f",laneDetector_.lane_coef_.center.a, laneDetector_.lane_coef_.center.b, laneDetector_.lane_coef_.center.c);
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {

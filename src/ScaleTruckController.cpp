@@ -93,7 +93,7 @@ void ScaleTruckController::init() {
   UDPrecv_.recvInit();
 
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
-  udpsendThread_ = std::thread(&ScaleTruckController::UDPsendInThread, this);
+  udprecvThread_ = std::thread(&ScaleTruckController::UDPrecvInThread, this);
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -163,7 +163,7 @@ void* ScaleTruckController::objectdetectInThread() {
 void* ScaleTruckController::UDPsendInThread()
 {
     struct UDPsock::UDP_DATA udpData;
-    
+   
     udpData.index = Index_;
     udpData.to = 307;
     udpData.target_vel = ResultVel_;
@@ -179,18 +179,19 @@ void* ScaleTruckController::UDPrecvInThread()
     struct UDPsock::UDP_DATA udpData;
     UDPrecv_.recvData(&udpData);
     //std::this_thread::sleep_for(wait_udp);
-   
-    if(udpData.index == (Index_ - 1)) {
-        TargetVel_ = udpData_.target_vel;
-    }
-    if(udpData.index == 307) {
-        if(udpData.to == Index_) {
-            udpData_.index = udpData.index;
-            udpData_.target_vel = udpData.target_vel;
-            udpData_.target_dist = udpData.target_dist;
-
+    while(!controlDone_) { 
+        if(udpData.index == (Index_ - 1)) {
             TargetVel_ = udpData_.target_vel;
-            TargetDist_ = udpData_.target_dist;
+        }
+        if(udpData.index == 307) {
+            if(udpData.to == Index_) {
+                udpData_.index = udpData.index;
+                udpData_.target_vel = udpData.target_vel;
+                udpData_.target_dist = udpData.target_dist;
+
+                TargetVel_ = udpData_.target_vel;
+                TargetDist_ = udpData_.target_dist;
+            }
         }
     }
 }
@@ -237,11 +238,11 @@ void ScaleTruckController::spin() {
   while(!controlDone_) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
-    udprecvThread_ = std::thread(&ScaleTruckController::UDPrecvInThread, this);
+    udpsendThread_ = std::thread(&ScaleTruckController::UDPsendInThread, this);
     
     lanedetect_thread.join();
     objectdetect_thread.join();
-    udprecvThread_.join();
+    udpsendThread_.join();
 
     if(enableConsoleOutput_)
       displayConsole();

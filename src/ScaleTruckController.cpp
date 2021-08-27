@@ -119,12 +119,11 @@ void* ScaleTruckController::objectdetectInThread() {
 
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
-  distance_ = 10.f;
   
   for(int i = 0; i < ObjCircles_; i++){
     dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
     angle = atanf(Obstacle_.circles[i].center.y/Obstacle_.circles[i].center.x)*(180.0f/M_PI);
-    if(distance_ >= dist) {
+    if(10.f >= dist) {
       distance_ = dist;
       distAngle_ = angle;
       if(dist < 1.25)
@@ -134,6 +133,8 @@ void* ScaleTruckController::objectdetectInThread() {
       }
       else
         laneDetector_.distance_ = 0;
+    } else {
+      distance_ = 10.f;
     }
   }
 
@@ -177,9 +178,9 @@ void* ScaleTruckController::UDPsendInThread()
 void* ScaleTruckController::UDPrecvInThread()
 {
     struct UDPsock::UDP_DATA udpData;
-    UDPrecv_.recvData(&udpData);
     //std::this_thread::sleep_for(wait_udp);
     while(!controlDone_) { 
+        UDPrecv_.recvData(&udpData);
         if(udpData.index == (Index_ - 1)) {
             TargetVel_ = udpData_.target_vel;
         }
@@ -255,63 +256,6 @@ void ScaleTruckController::spin() {
 
     ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
-
-    int width = 500;
-    int height = 500;
-    Mat map_frame = Mat::zeros(Size(width,height), CV_8UC3);
-
-    int dist = 50;
-    for(int i=0;i<height;i+=dist)
-	line(map_frame, Point(0,i), Point(width,i),Scalar::all(100));
-
-    for(int i=0;i<width;i+=dist)
-	line(map_frame, Point(i,0), Point(i,height),Scalar::all(100));
-
-    int centerX = 400, centerY=250;
-    double mul = 20;
-
-    rectangle(map_frame, Rect(Point(centerY-10, centerX+26), Point(centerY+10, centerX)), Scalar(0,0,255), -1);
-    for(int i = 0; i < ObjCircles_; i++){
-      int Y = Obstacle_.circles[i].center.x*mul + centerX;
-      int X = Obstacle_.circles[i].center.y*mul + centerY;
-      circle(map_frame,Point(X,Y), 3, Scalar(50,250,50), -1);
-      putText(map_frame,to_string(i),Point(X,Y), 2, 1.2, Scalar::all(255));
-    }
-    
-    vector<Point> RpointList;
-    vector<Point> LpointList;
-    vector<Point> CpointList;
-    float mul_line = 0.3;
-    for(int i = -100; i < height*1.5; i++){
-      Point temp_point;
-      temp_point.y = i*mul_line + centerY/2;
-
-      temp_point.x = (laneDetector_.lane_coef_.right.a*pow(i,2) + laneDetector_.lane_coef_.right.b*i + laneDetector_.lane_coef_.right.c)*mul_line;
-      temp_point.x += centerX/2;
-      RpointList.push_back(temp_point);
-
-      temp_point.x = (laneDetector_.lane_coef_.left.a*pow(i,2) + laneDetector_.lane_coef_.left.b*i + laneDetector_.lane_coef_.left.c)*mul_line;
-      temp_point.x += centerX/2;
-      LpointList.push_back(temp_point);
-
-      temp_point.x = (laneDetector_.lane_coef_.center.a*pow(i,2) + laneDetector_.lane_coef_.center.b*i + laneDetector_.lane_coef_.center.c)*mul_line;
-      temp_point.x += centerX/2;
-      CpointList.push_back(temp_point);
-    }
-    const Point* right_points_point = (const cv::Point*) Mat(RpointList).data;
-    int right_points_number = Mat(RpointList).rows;
-    const Point* left_points_point = (const cv::Point*) Mat(LpointList).data;
-    int left_points_number = Mat(LpointList).rows;
-    const Point* center_points_point = (const cv::Point*) Mat(CpointList).data;
-    int center_points_number = Mat(CpointList).rows;
-
-    polylines(map_frame, &right_points_point, &right_points_number, 1, false, Scalar::all(255), 2);
-    polylines(map_frame, &left_points_point, &left_points_number, 1, false, Scalar::all(255), 2);
-    polylines(map_frame, &center_points_point, &center_points_number, 1, false, Scalar(150,255,150), 2);
-
-    imshow("Map", map_frame);
-
-    waitKey(1);
 
     if(!isNodeRunning()) {
       controlDone_ = true;

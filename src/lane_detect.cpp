@@ -1,6 +1,6 @@
 #include "lane_detect/lane_detect.hpp"
 
-#define PATH "/home/jetson/catkin_ws/logfiles/"
+#define PATH "/home/avees/catkin_ws/logfiles/"
 
 using namespace std;
 using namespace cv;
@@ -9,10 +9,10 @@ namespace LaneDetect {
 
 LaneDetector::LaneDetector(ros::NodeHandle nh)
   : nodeHandle_(nh) {  
-        /******* recording log *******/	  
+    /******* recording log *******/	  
 	gettimeofday(&start_, NULL);
 
-        /******* Camera  calibration *******/	  
+    /******* Camera  calibration *******/	  
 
 	Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
 	Mat dist_coeffs = Mat::zeros(1, 5, CV_64FC1);
@@ -26,11 +26,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	last_Llane_base_ = 0;
 	last_Rlane_base_ = 0;
 
-	zero_.resize(4);
-	zero_cnt_.resize(4);
-	zero_ = { 0, 0, 0, 0 };
-	zero_cnt_ = { 0, 0, 0, 0};
-
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 
@@ -39,7 +34,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	center_position_ = width_/2;
 
 	e_values_.resize(3);
-	e_values_ = { 0, 0, 0 };
+	//e_values_ = { 0, 0, 0 };
 	steer_flag_ = false;	
 
 	corners_.resize(4);
@@ -84,7 +79,6 @@ LaneDetector::~LaneDetector(void) {
 }
 
 	void LaneDetector::LoadParams(void){
-		nodeHandle_.param("params/truck_info", TRUCK_INFO_, std::string("LV"));
 		nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
 		nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
 		nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
@@ -97,10 +91,6 @@ LaneDetector::~LaneDetector(void) {
 		//nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
 		//nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
 		nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
-		if(!TRUCK_INFO_.compare(std::string("LV")))
-			info_ = true;
-		else
-			info_ = false;
 	}
 
 	Mat LaneDetector::warped_img(Mat _frame) {
@@ -333,7 +323,6 @@ LaneDetector::~LaneDetector(void) {
 			int Lsum, Rsum;
 			Lsum = Rsum = 0;
 			unsigned int _size;
-			bool flag = false;
 
 			if (good_left_inds.size() > (size_t)min_pix) {
 				_size = (unsigned int)(good_left_inds.size());
@@ -343,48 +332,9 @@ LaneDetector::~LaneDetector(void) {
 					//left_y_.insert(left_y_.end(), nonZero.at<Point>(good_left_inds.at(index)).y);
 				}
 				Llane_current = Lsum / _size;
-				if (window == 0){
-					zero_cnt_[0]++;
-					zero_cnt_[1] += zero_cnt_[0];
-					zero_[0] += zero_cnt_[0] * Llane_current;
-					zero_[1] += Ly_pos + (window_height / 2);
-				}
-				if(zero_cnt_[0] > 10) zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;
 				left_x_.insert(left_x_.end(), Llane_current);
 				left_y_.insert(left_y_.end(), Ly_pos + (window_height / 2));
 			} else{
-				if (info_){	//LV
-					if (window == 0 && steer_flag_){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-						flag = true;
-						//left_x_.insert(left_x_.begin(), left_x_prev_.front());
-						//left_y_.insert(left_y_.begin(), left_y_prev_.front());
-						if(zero_cnt_[0] != 0){
-							left_x_.insert(left_x_.begin(), zero_[0]/zero_cnt_[1]);
-							left_y_.insert(left_y_.begin(), zero_[1]/zero_cnt_[0]);
-							zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;
-						}
-						else{
-							left_x_.insert(left_x_.begin(), left_x_prev_.front());
-							left_y_.insert(left_y_.begin(), left_y_prev_.front());
-						}
-					}
-				}
-				else{	//FV
-					if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-						flag = true;
-						//left_x_.insert(left_x_.begin(), left_x_prev_.front());
-						//left_y_.insert(left_y_.begin(), left_y_prev_.front());
-						if(zero_cnt_[0] != 0){
-							left_x_.insert(left_x_.begin(), zero_[0]/zero_cnt_[1]);
-							left_y_.insert(left_y_.begin(), zero_[1]/zero_cnt_[0]);
-							zero_[0] = zero_[1] = zero_cnt_[0] = zero_cnt_[1] = 0;
-						}
-						else{
-							left_x_.insert(left_x_.begin(), left_x_prev_.front());
-							left_y_.insert(left_y_.begin(), left_y_prev_.front());
-						}
-					}
-				}
 				Llane_current += (L_gap);
 			}
 			if (good_right_inds.size() > (size_t)min_pix) {
@@ -395,48 +345,9 @@ LaneDetector::~LaneDetector(void) {
 					//right_x_.insert(right_x_.end(), nonZero.at<Point>(good_right_inds.at(index)).y);
 				}
 				Rlane_current = Rsum / _size;
-				if (window == 0){
-					zero_cnt_[2]++;
-					zero_cnt_[3] += zero_cnt_[2];
-					zero_[2] += zero_cnt_[2] * Rlane_current;
-					zero_[3] += Ry_pos + (window_height / 2);
-				}
-				if(zero_cnt_[2] > 10) zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;
 				right_x_.insert(right_x_.end(), Rlane_current);
 				right_y_.insert(right_y_.end(), Ry_pos + (window_height / 2));
 			} else{
-				if (info_){	//LV
-					if (window == 0 && steer_flag_){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-						flag = true;
-						//right_x_.insert(right_x_.begin(), right_x_prev_.front());
-						//right_y_.insert(right_y_.begin(), right_y_prev_.front());
-						if(zero_cnt_[2] != 0){
-							right_x_.insert(right_x_.begin(), zero_[2]/zero_cnt_[3]);
-							right_y_.insert(right_y_.begin(), zero_[3]/zero_cnt_[2]);
-							zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;
-						}
-						else{
-							right_x_.insert(right_x_.begin(), right_x_prev_.front());
-							right_y_.insert(right_y_.begin(), right_y_prev_.front());
-						}
-					}
-				}
-				else{	//FV
-					if (window == 0){	// Gets the prev-value when the number of lane pixel in first window is lower than min_pix
-						flag = true;
-						//right_x_.insert(right_x_.begin(), right_x_prev_.front());
-						//right_y_.insert(right_y_.begin(), right_y_prev_.front());
-						if(zero_cnt_[2] != 0){
-							right_x_.insert(right_x_.begin(), zero_[2]/zero_cnt_[3]);
-							right_y_.insert(right_y_.begin(), zero_[3]/zero_cnt_[2]);
-							zero_[2] = zero_[3] = zero_cnt_[2] = zero_cnt_[3] = 0;
-						}
-						else{
-							right_x_.insert(right_x_.begin(), right_x_prev_.front());
-							right_y_.insert(right_y_.begin(), right_y_prev_.front());
-						}
-					}
-				}
 				Rlane_current += (R_gap);
 			}
 			if (window != 0) {	
@@ -447,11 +358,6 @@ LaneDetector::~LaneDetector(void) {
 					L_gap = (Llane_current - L_prev);
 				}
 			}
-			if (flag == true){
-				center_x_.insert(center_x_.end(), (left_x_.front() + right_x_.front()) / 2);
-				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));
-				flag = false;
-			}
 			if ((Lsum != 0) && (Rsum != 0)) {
 				center_x_.insert(center_x_.end(), (Llane_current + Rlane_current) / 2);
 				center_y_.insert(center_y_.end(), Ly_pos + (window_height / 2));	
@@ -459,12 +365,7 @@ LaneDetector::~LaneDetector(void) {
 			L_prev = Llane_current;
 			R_prev = Rlane_current;
 		}
-		
-		left_x_prev_ = left_x_;
-		left_y_prev_ = left_y_;
-		right_x_prev_ = right_x_;
-		right_y_prev_ = right_y_;
-		
+
 		if (left_x_.size() != 0) {
 			left_coef_ = polyfit(left_y_, left_x_);
 		}

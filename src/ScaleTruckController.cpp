@@ -116,26 +116,26 @@ void* ScaleTruckController::lanedetectInThread() {
 
 void* ScaleTruckController::objectdetectInThread() {
   float dist, angle; 
-
+  float dist_tmp, angle_tmp;
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
-  
+   
+  dist_tmp = 10.f; 
   for(int i = 0; i < ObjCircles_; i++){
     dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
     angle = atanf(Obstacle_.circles[i].center.y/Obstacle_.circles[i].center.x)*(180.0f/M_PI);
-    if(10.f >= dist) {
-      distance_ = dist;
-      distAngle_ = angle;
-      if(dist < 1.25)
-      {
-        double height;
-        laneDetector_.distance_ = (int)(480*(1.0 - (dist)/1.));
-      }
-      else
-        laneDetector_.distance_ = 0;
-    } else {
-      distance_ = 10.f;
+    if(dist_tmp >= dist) {
+      dist_tmp = dist;
+      angle_tmp = angle;
     }
+  }
+  distance_ = dist_tmp;
+  distAngle_ = angle_tmp;
+  if(dist_tmp < 1.25) {
+    double height;
+    laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
+  } else {
+    laneDetector_.distance_ = 0;
   }
 
   if(!Index_){	// LV velocity

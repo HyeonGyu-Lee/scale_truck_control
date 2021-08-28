@@ -16,6 +16,7 @@
 #include <boost/thread/thread.hpp>
 #include <vector>
 #include <sys/time.h>
+#include <string>
 
 //ROS
 #include <geometry_msgs/Twist.h>
@@ -32,6 +33,12 @@
 #include "sock_udp/sock_udp.hpp"
 
 namespace scale_truck_control {
+
+enum Trucks{
+  LV,
+  FV1,
+  FV2
+};
 
 class ScaleTruckController {
   public:
@@ -84,16 +91,17 @@ class ScaleTruckController {
     float Ki_d_;
 
     //UDP
-    UDPsock::UDPsocket UDPsocket_;
+    UDPsock::UDPsocket UDPsend_;
+    UDPsock::UDPsocket UDPrecv_;
     std::string ADDR_;
-    std::string TRUCK_INFO_;
-    bool info_ = true;
+    int Index_;
     int PORT_;
-    float udpData_;
+    struct UDPsock::UDP_DATA udpData_;
 
     //Thread
     std::thread controlThread_;
-    std::thread udpsocketThread_;
+    std::thread udpsendThread_;
+    std::thread udprecvThread_;
     std::mutex mutex_;
 
     obstacle_detector::Obstacles Obstacle_;
@@ -120,7 +128,8 @@ class ScaleTruckController {
 
     void* lanedetectInThread();
     void* objectdetectInThread();
-    void* UDPsocketInThread();
+    void* UDPsendInThread();
+    void* UDPrecvInThread();
     void displayConsole();
 };
 

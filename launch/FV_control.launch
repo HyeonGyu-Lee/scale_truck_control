@@ -1,5 +1,0 @@
-<launch>
-  <rosparam command="load" file="$(find scale_truck_control)/params/FV_gains.yaml" />
-  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" />
-  <node name="scale_truck_control" pkg="scale_truck_control" type="FV_node" output="screen" />
-</launch>

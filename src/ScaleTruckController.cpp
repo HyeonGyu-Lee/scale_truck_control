@@ -3,7 +3,7 @@
 namespace scale_truck_control{
 
 ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
-    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsocket_() {
+    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_() {
   if (!readParameters()) {
     ros::requestShutdown();
   }
@@ -25,7 +25,7 @@ ScaleTruckController::~ScaleTruckController() {
        
   ControlDataPublisher_.publish(msg);
   controlThread_.join();
-  udpsocketThread_.join();
+  udprecvThread_.join();
 
   ROS_INFO("[ScaleTruckController] Stop.");
 }
@@ -43,14 +43,9 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/target_dist", TargetDist_, 0.8f); // m
   nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
   nodeHandle_.param("params/udp_group_port", PORT_, 9307);
-  nodeHandle_.param("params/truck_info", TRUCK_INFO_, std::string("LV"));
+  nodeHandle_.param("params/truck_info", Index_, 0);
   nodeHandle_.param("params/Kp_d", Kp_d_, 2.0f);
   nodeHandle_.param("params/Ki_d", Ki_d_, 0.4f);
-
-  if(!TRUCK_INFO_.compare(std::string("LV")))
-    info_ = true;
-  else
-    info_ = false;
 
   return true;
 }
@@ -88,23 +83,16 @@ void ScaleTruckController::init() {
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
   LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
  
-  UDPsocket_.GROUP_ = ADDR_.c_str();
-  UDPsocket_.PORT_ = PORT_;
-  if(info_) // send
-  {
-    UDPsocket_.sendInit();
-    printf("\n SendInit() \n");
-  }
-  else // receive
-  {
-    UDPsocket_.recvInit();
-    printf("\n RecvInit() \n");
-  }
+  UDPsend_.GROUP_ = ADDR_.c_str();
+  UDPsend_.PORT_ = PORT_;
+  UDPsend_.sendInit();
+
+  UDPrecv_.GROUP_ = ADDR_.c_str();
+  UDPrecv_.PORT_ = PORT_;
+  UDPrecv_.recvInit();
 
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
-  const auto wait_udp = std::chrono::milliseconds(100);
-  std::this_thread::sleep_for(wait_udp);
-  udpsocketThread_ = std::thread(&ScaleTruckController::UDPsocketInThread, this);
+  udprecvThread_ = std::thread(&ScaleTruckController::UDPrecvInThread, this);
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -127,29 +115,30 @@ void* ScaleTruckController::lanedetectInThread() {
 
 void* ScaleTruckController::objectdetectInThread() {
   float dist, angle; 
-
+  float dist_tmp, angle_tmp;
   ObjSegments_ = Obstacle_.segments.size();
   ObjCircles_ = Obstacle_.circles.size();
-  distance_ = 10.f;
-  
+   
+  dist_tmp = 10.f; 
   for(int i = 0; i < ObjCircles_; i++){
     dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
     angle = atanf(Obstacle_.circles[i].center.y/Obstacle_.circles[i].center.x)*(180.0f/M_PI);
-    if(distance_ >= dist) {
-      distance_ = dist;
-      distAngle_ = angle;
-      if(dist < 1.25)
-      {
-        double height;
-        laneDetector_.distance_ = (int)(480*(1.0 - (dist)/1.));
-      }
-      else
-        laneDetector_.distance_ = 0;
+    if(dist_tmp >= dist) {
+      dist_tmp = dist;
+      angle_tmp = angle;
     }
   }
+  distance_ = dist_tmp;
+  distAngle_ = angle_tmp;
+  if(dist_tmp < 1.25) {
+    double height;
+    laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
+  } else {
+    laneDetector_.distance_ = 0;
+  }
 
-  if(info_){	// LV velocity
-	  if (distance_ <= LVstopDist_){
+  if(!Index_){	// LV velocity
+	  if(distance_ <= LVstopDist_) {
 	    ResultVel_ = 0.0f;
 	  }
 	  else if (distance_ <= SafetyDist_){
@@ -179,31 +168,40 @@ void* ScaleTruckController::objectdetectInThread() {
   }
 }
 
-void* ScaleTruckController::UDPsocketInThread()
+void* ScaleTruckController::UDPsendInThread()
 {
-    udpData_ = 0;
-    const auto wait_udp = std::chrono::milliseconds(33);
-    std::this_thread::sleep_for(wait_udp);
-    while(!controlDone_)
-    {
-        if(info_) // send
-        {
-          udpData_ = ResultVel_;
-          //std::this_thread::sleep_for(wait_udp);
-          UDPsocket_.sendData(udpData_);
+    struct UDPsock::UDP_DATA udpData;
+   
+    udpData.index = Index_;
+    udpData.to = 307;
+    udpData.target_vel = ResultVel_;
+    udpData.current_vel = CurVel_;
+    udpData.target_dist = TargetDist_;
+    udpData.current_dist = distance_;
+
+    UDPsend_.sendData(udpData);
+}
+
+void* ScaleTruckController::UDPrecvInThread()
+{
+    struct UDPsock::UDP_DATA udpData;
+    //std::this_thread::sleep_for(wait_udp);
+    while(!controlDone_) { 
+        UDPrecv_.recvData(&udpData);
+        if(udpData.index == (Index_ - 1)) {
+            TargetVel_ = udpData_.target_vel;
         }
-        else // receive
-        {
-          float udpData;
-          UDPsocket_.recvData(&udpData);
-          //std::this_thread::sleep_for(wait_udp);
-          udpData_ = udpData;
-          TargetVel_ = udpData;
+        if(udpData.index == 307) {
+            if(udpData.to == Index_) {
+                udpData_.index = udpData.index;
+                udpData_.target_vel = udpData.target_vel;
+                udpData_.target_dist = udpData.target_dist;
+
+                TargetVel_ = udpData_.target_vel;
+                TargetDist_ = udpData_.target_dist;
+            }
         }
-        if(!isNodeRunning()) {
-          controlDone_ = true;
-        }
-    } 
+    }
 }
 
 void ScaleTruckController::displayConsole() {
@@ -214,9 +212,10 @@ void ScaleTruckController::displayConsole() {
   printf("\nRefer Vel       : %3.3f m/s", ResultVel_);
   printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, CurVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
-  printf("\nUDP_data        : %3.3f m/s", udpData_);
-  printf("\nUDP_data        : %s", UDPsocket_.GROUP_);
-  printf("\nUDP_data        : %d", UDPsocket_.PORT_);
+  printf("\nUDP_data        : %d (LV:0,FV1:1,FV2:2,CMD:307)", udpData_.index);
+  printf("\nUDP_target_vel  : %3.3lf", udpData_.target_vel);
+  printf("\nUDP_target_dist : %3.3lf", udpData_.target_dist);
+  printf("\n%3.6f %3.6f %3.6f",laneDetector_.lane_coef_.center.a, laneDetector_.lane_coef_.center.b, laneDetector_.lane_coef_.center.c);
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);
@@ -248,9 +247,11 @@ void ScaleTruckController::spin() {
   while(!controlDone_) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
+    udpsendThread_ = std::thread(&ScaleTruckController::UDPsendInThread, this);
     
     lanedetect_thread.join();
     objectdetect_thread.join();
+    udpsendThread_.join();
 
     if(enableConsoleOutput_)
       displayConsole();
@@ -263,6 +264,7 @@ void ScaleTruckController::spin() {
 
     ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
+
     if(!isNodeRunning()) {
       controlDone_ = true;
       ros::requestShutdown();

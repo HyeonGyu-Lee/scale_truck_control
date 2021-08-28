@@ -10,14 +10,24 @@
 #include <stdlib.h>
 
 namespace UDPsock{
+
+struct UDP_DATA{
+    int index;
+    int to;
+    float target_vel;
+    float current_vel;
+    float target_dist;
+    float current_dist;
+};
+
 class UDPsocket {
 public:
     UDPsocket();
     ~UDPsocket();
     int recvInit();
     int sendInit();
-    int recvData(float* Data);
-    int sendData(float Data);
+    int recvData(struct UDP_DATA*);
+    int sendData(struct UDP_DATA);
     const char* GROUP_;
     int PORT_;
 

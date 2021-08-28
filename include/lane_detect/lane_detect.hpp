@@ -73,6 +73,7 @@ private:
 	float center_position_;
 	float SteerAngle_;
 	float eL_height_, trust_height_, e1_height_, lp_;//, K1_, K2_;
+	//float center_height_, trust_height_, lp_, K1_, K2_;
 	vector<float> e_values_;
 
 	/********** PID control ***********/

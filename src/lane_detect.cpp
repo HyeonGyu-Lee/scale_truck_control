@@ -579,10 +579,7 @@ LaneDetector::~LaneDetector(void) {
 	}
 
 	void LaneDetector::get_steer_coef(float vel){
-		if (vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
-			K1_ = K2_ = 0.0f;
-		}
-		else if (vel < 0.65f){
+		if (vel < 0.65f){
 			K1_ = K2_ =  0.15f;	
 		}
 		else{

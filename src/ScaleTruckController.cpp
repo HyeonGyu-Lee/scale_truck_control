@@ -194,6 +194,7 @@ void* ScaleTruckController::UDPrecvInThread()
     while(!controlDone_) { 
         UDPrecv_.recvData(&udpData);
         if(udpData.index == (Index_ - 1)) {
+            udpData_.target_vel = udpData.target_vel;
             TargetVel_ = udpData_.target_vel;
         }
         if(udpData.index == 307) {
@@ -201,6 +202,7 @@ void* ScaleTruckController::UDPrecvInThread()
                 udpData_.index = udpData.index;
                 udpData_.target_vel = udpData.target_vel;
                 udpData_.target_dist = udpData.target_dist;
+		
 
                 TargetVel_ = udpData_.target_vel;
                 TargetDist_ = udpData_.target_dist;

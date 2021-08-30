@@ -5,11 +5,13 @@
   <arg name="image" default="/usb_cam/image_raw" />
 
   <!-- ROS parameter files -->
-  <arg name="ros_param_file"             default="$(find scale_truck_control)/config/FV1.yaml"/>
+  <arg name="ros_param_file"             default="$(find scale_truck_control)/config/config.yaml"/>
+  <arg name="vehicle_param_file"             default="$(find scale_truck_control)/config/FV1.yaml"/>
   <arg name="lidar_param_file"             default="$(find scale_truck_control)/config/laser_filter.yaml"/>
 
   <!-- Load parameters -->
   <rosparam command="load" ns="scale_truck_control" file="$(arg ros_param_file)"/>
+  <rosparam command="load" ns="scale_truck_control" file="$(arg vehicle_param_file)"/>
 
   <!-- Start usb_cam -->
   <node pkg="usb_cam" type="usb_cam_node" name="usb_cam" >

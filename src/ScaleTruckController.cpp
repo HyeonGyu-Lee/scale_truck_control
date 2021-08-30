@@ -171,13 +171,22 @@ void* ScaleTruckController::objectdetectInThread() {
 void* ScaleTruckController::UDPsendInThread()
 {
     struct UDPsock::UDP_DATA udpData;
-   
+
     udpData.index = Index_;
     udpData.to = 307;
     udpData.target_vel = ResultVel_;
     udpData.current_vel = CurVel_;
     udpData.target_dist = TargetDist_;
     udpData.current_dist = distance_;
+    udpData.coef[0].a = laneDetector_.lane_coef_.left.a;
+    udpData.coef[0].b = laneDetector_.lane_coef_.left.b;
+    udpData.coef[0].c = laneDetector_.lane_coef_.left.c;
+    udpData.coef[1].a = laneDetector_.lane_coef_.right.a;
+    udpData.coef[1].b = laneDetector_.lane_coef_.right.b;
+    udpData.coef[1].c = laneDetector_.lane_coef_.right.c;
+    udpData.coef[2].a = laneDetector_.lane_coef_.center.a;
+    udpData.coef[2].b = laneDetector_.lane_coef_.center.b;
+    udpData.coef[2].c = laneDetector_.lane_coef_.center.c;
 
     UDPsend_.sendData(udpData);
 }
@@ -189,6 +198,7 @@ void* ScaleTruckController::UDPrecvInThread()
     while(!controlDone_) { 
         UDPrecv_.recvData(&udpData);
         if(udpData.index == (Index_ - 1)) {
+            udpData_.target_vel = udpData.target_vel;
             TargetVel_ = udpData_.target_vel;
         }
         if(udpData.index == 307) {
@@ -196,6 +206,7 @@ void* ScaleTruckController::UDPrecvInThread()
                 udpData_.index = udpData.index;
                 udpData_.target_vel = udpData.target_vel;
                 udpData_.target_dist = udpData.target_dist;
+		
 
                 TargetVel_ = udpData_.target_vel;
                 TargetDist_ = udpData_.target_dist;
@@ -215,7 +226,6 @@ void ScaleTruckController::displayConsole() {
   printf("\nUDP_data        : %d (LV:0,FV1:1,FV2:2,CMD:307)", udpData_.index);
   printf("\nUDP_target_vel  : %3.3lf", udpData_.target_vel);
   printf("\nUDP_target_dist : %3.3lf", udpData_.target_dist);
-  printf("\n%3.6f %3.6f %3.6f",laneDetector_.lane_coef_.center.a, laneDetector_.lane_coef_.center.b, laneDetector_.lane_coef_.center.c);
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);

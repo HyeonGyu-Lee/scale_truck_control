@@ -11,6 +11,12 @@
 
 namespace UDPsock{
 
+struct lane_coef{
+    float a;
+    float b;
+    float c;
+};
+
 struct UDP_DATA{
     int index;
     int to;
@@ -18,6 +24,7 @@ struct UDP_DATA{
     float current_vel;
     float target_dist;
     float current_dist;
+    struct lane_coef coef[3];
 };
 
 class UDPsocket {

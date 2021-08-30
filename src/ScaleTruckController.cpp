@@ -156,7 +156,10 @@ void* ScaleTruckController::objectdetectInThread() {
 	  	P_err = Kp_d_ * dist_err;
 	  	I_err = Ki_d_ * dist_err * 0.1f;
 	  	ResultVel_ = P_err + I_err + TargetVel_;
-	  	if (ResultVel_ > 0.8f) ResultVel_ = 0.8f;	// Max velocity
+		if (ResultVel_ > 1.2)
+			ResultVel_ = 1.2; // Max velocity 
+		else if (ResultVel_ > TargetVel_*1.5)
+			ResultVel_ = TargetVel_*1.5;	// Max velocity
 	  }
   }
 }
@@ -164,13 +167,22 @@ void* ScaleTruckController::objectdetectInThread() {
 void* ScaleTruckController::UDPsendInThread()
 {
     struct UDPsock::UDP_DATA udpData;
-   
+
     udpData.index = Index_;
     udpData.to = 307;
     udpData.target_vel = ResultVel_;
     udpData.current_vel = CurVel_;
     udpData.target_dist = TargetDist_;
     udpData.current_dist = distance_;
+    udpData.coef[0].a = laneDetector_.lane_coef_.left.a;
+    udpData.coef[0].b = laneDetector_.lane_coef_.left.b;
+    udpData.coef[0].c = laneDetector_.lane_coef_.left.c;
+    udpData.coef[1].a = laneDetector_.lane_coef_.right.a;
+    udpData.coef[1].b = laneDetector_.lane_coef_.right.b;
+    udpData.coef[1].c = laneDetector_.lane_coef_.right.c;
+    udpData.coef[2].a = laneDetector_.lane_coef_.center.a;
+    udpData.coef[2].b = laneDetector_.lane_coef_.center.b;
+    udpData.coef[2].c = laneDetector_.lane_coef_.center.c;
 
     UDPsend_.sendData(udpData);
 }
@@ -207,7 +219,6 @@ void ScaleTruckController::displayConsole() {
   printf("\nUDP_target_vel  : %3.3lf", udpData_.target_vel);
   printf("\nUDP_target_dist : %3.3lf", udpData_.target_dist);
 
-  printf("\n%3.6f %3.6f %3.6f",laneDetector_.lane_coef_.center.a, laneDetector_.lane_coef_.center.b, laneDetector_.lane_coef_.center.c);
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);

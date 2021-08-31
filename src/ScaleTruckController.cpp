@@ -132,7 +132,8 @@ void* ScaleTruckController::objectdetectInThread() {
   distAngle_ = angle_tmp;
   if(dist_tmp < 1.25) {
     double height;
-    laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
+    //laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
+    laneDetector_.distance_ = (int)((1.24 - dist_tmp)*490.0);
   } else {
     laneDetector_.distance_ = 0;
   }

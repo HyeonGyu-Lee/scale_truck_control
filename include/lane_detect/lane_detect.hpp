@@ -31,8 +31,8 @@ public:
 	float display_img(Mat _frame, int _delay, bool _view);
 	void get_steer_coef(float vel);
 	float K1_, K2_;
-	bool steer_flag_;
-	int distance_;
+	bool steer_flag_ = false;
+	int distance_ = 0;
 	scale_truck_control::lane_coef lane_coef_;
 
 private:

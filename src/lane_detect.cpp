@@ -232,15 +232,15 @@ LaneDetector::~LaneDetector(void) {
 		
 		cvtColor(frame, result, COLOR_GRAY2BGR);
 
-		int mid_point = width / 2; // 640
-		int quarter_point = mid_point / 2; // 320
+		int mid_point = width / 2; // 320
+		int quarter_point = mid_point / 2; // 160
 		int n_windows = 9;
 		int margin = 120 * width / 1280;
 		int min_pix = 30 * width / 1280;
 
-		int window_width = margin * 2;	// 240
-		int window_height = (height-distance_) / n_windows;	// 71
-
+		int window_width = margin * 2;	// 120
+		int window_height = (height != distance_) ? ((height-distance_) / n_windows) : (height / n_windows);	// defalut = 53
+		//int window_height = (height-distance_) / n_windows;	// defalut = 53
 		int offset = margin;
 		int range = 120 / 4;
 		//int Lstart = quarter_point - offset; // 320 - 120
@@ -571,7 +571,7 @@ LaneDetector::~LaneDetector(void) {
 			writeFile.open(file, fstream::out | fstream::app);
 			gettimeofday(&end_, NULL);
 			time = (end_.tv_sec - start_.tv_sec) + ((end_.tv_usec - start_.tv_usec)/1000000.0);
-			data = (e_values_[1]/3657.14f);
+			data = (e_values_[2]/831.17f);
 			writeFile << time << ", " << data << endl;
 		}
 

@@ -9,6 +9,7 @@
 #include <opencv2/cudawarping.hpp>
 #include <opencv2/cudafilters.hpp>
 #include <iostream>
+#include <cmath>
 #include <fstream>
 #include <ros/ros.h>
 #include <scale_truck_control/lane_coef.h>
@@ -30,7 +31,8 @@ public:
 	float display_img(Mat _frame, int _delay, bool _view);
 	void get_steer_coef(float vel);
 	float K1_, K2_;
-	int distance_;
+	bool steer_flag_ = false;
+	int distance_ = 0;
 	scale_truck_control::lane_coef lane_coef_;
 
 private:
@@ -62,11 +64,6 @@ private:
 	vector<int> right_y_;
 	vector<int> center_x_;
 	vector<int> center_y_;
-
-	vector<int> left_x_prev_;
-	vector<int> left_y_prev_;
-	vector<int> right_x_prev_;
-	vector<int> right_y_prev_;
 
 	Mat left_coef_;
 	Mat right_coef_;

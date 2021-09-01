@@ -187,6 +187,7 @@ cd ~/catkin_ws/src
 # 3. Install module & Environment setup
 - melodic is ros-version (18.04 LTS)
 >## 3.1 cv_bridge Setup
+>- 3.1.1
 >```
 >vim ~/catkin_ws/src/vision_opencv/cv_bridge/CMakelist.txt
 >```
@@ -195,6 +196,7 @@ cd ~/catkin_ws/src
 >--find_package(Boost REQUIRED python37)
 >++find_package(Boost REQUIRED python)
 >```
+>- 3.1.2
 >```
 >vim ~/catkin_ws/src/vision_opencv/cv_bridge/src/module.hpp
 >```

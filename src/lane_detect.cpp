@@ -1,6 +1,6 @@
 #include "lane_detect/lane_detect.hpp"
 
-#define PATH "/home/jetson/catkin_ws/logfiles/"
+#define PATH "/home/avees/catkin_ws/logfiles/"
 
 using namespace std;
 using namespace cv;
@@ -9,10 +9,10 @@ namespace LaneDetect {
 
 LaneDetector::LaneDetector(ros::NodeHandle nh)
   : nodeHandle_(nh) {  
-        /******* recording log *******/	  
+    /******* recording log *******/	  
 	gettimeofday(&start_, NULL);
 
-        /******* Camera  calibration *******/	  
+    /******* Camera  calibration *******/	  
 
 	Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
 	Mat dist_coeffs = Mat::zeros(1, 5, CV_64FC1);
@@ -25,15 +25,15 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 
 	last_Llane_base_ = 0;
 	last_Rlane_base_ = 0;
-	
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);
 	center_position_ = width_/2;
+
 	e_values_.resize(3);
-	e_values_ = { 0, 0, 0};	
+	steer_flag_ = false;	
 
 	corners_.resize(4);
 	warpCorners_.resize(4);
@@ -76,21 +76,20 @@ LaneDetector::~LaneDetector(void) {
 	clear_release();
 }
 
-
-void LaneDetector::LoadParams(void) {
-	nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
-	nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
-	nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
-	nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
-	nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
-	nodeHandle_.param("LaneDetector/eL_height",eL_height_, 1.0f);	
-	nodeHandle_.param("LaneDetector/e1_height",e1_height_, 1.0f);	
-	nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
-	nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
-	nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
-	nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
-	nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
-}
+	void LaneDetector::LoadParams(void){
+		nodeHandle_.param("LaneDetector/pid_params/Kp",Kp_, 1.0);
+		nodeHandle_.param("LaneDetector/pid_params/Ki",Ki_, 0.00001);
+		nodeHandle_.param("LaneDetector/pid_params/Kd",Kd_, 0.0025);
+		nodeHandle_.param("LaneDetector/pid_params/dt",dt_, 0.1);
+		nodeHandle_.param("LaneDetector/filter_param",filter_, 5);
+		nodeHandle_.param("LaneDetector/eL_height",eL_height_, 1.0f);	
+		nodeHandle_.param("LaneDetector/e1_height",e1_height_, 1.0f);	
+		nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
+		nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
+		//nodeHandle_.param("LaneDetector/K1",K1_, 0.06f);	
+		//nodeHandle_.param("LaneDetector/K2",K2_, 0.06f);	
+		nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
+	}
 
 	Mat LaneDetector::warped_img(Mat _frame) {
 		Mat result, trans;
@@ -233,15 +232,15 @@ void LaneDetector::LoadParams(void) {
 		
 		cvtColor(frame, result, COLOR_GRAY2BGR);
 
-		int mid_point = width / 2; // 640
-		int quarter_point = mid_point / 2; // 320
+		int mid_point = width / 2; // 320
+		int quarter_point = mid_point / 2; // 160
 		int n_windows = 9;
 		int margin = 120 * width / 1280;
 		int min_pix = 30 * width / 1280;
 
-		int window_width = margin * 2;	// 240
-		int window_height = (height-distance_) / n_windows;	// 71
-
+		int window_width = margin * 2;	// 120
+		int window_height = (height != distance_) ? ((height-distance_) / n_windows) : (height / n_windows);	// defalut = 53
+		//int window_height = (height-distance_) / n_windows;	// defalut = 53
 		int offset = margin;
 		int range = 120 / 4;
 		//int Lstart = quarter_point - offset; // 320 - 120
@@ -419,12 +418,7 @@ void LaneDetector::LoadParams(void) {
 			L_prev = Llane_current;
 			R_prev = Rlane_current;
 		}
-		
-		left_x_prev_ = left_x_;
-		left_y_prev_ = left_y_;
-		right_x_prev_ = right_x_;
-		right_y_prev_ = right_y_;
-		
+
 		if (left_x_.size() != 0) {
 			left_coef_ = polyfit(left_y_, left_x_);
 		}
@@ -577,7 +571,7 @@ void LaneDetector::LoadParams(void) {
 			writeFile.open(file, fstream::out | fstream::app);
 			gettimeofday(&end_, NULL);
 			time = (end_.tv_sec - start_.tv_sec) + ((end_.tv_usec - start_.tv_usec)/1000000.0);
-			data = (e_values_[2]/2155.0f);
+			data = (e_values_[2]/831.17f);
 			writeFile << time << ", " << data << endl;
 		}
 
@@ -585,10 +579,7 @@ void LaneDetector::LoadParams(void) {
 	}
 
 	void LaneDetector::get_steer_coef(float vel){
-		if(vel <= 0.01f){	//if current vel == 0, steer angle = 0 degree
-			K1_ = K2_ = 0.0f;
-		}
-		else if(vel < 0.5f){
+		if (vel < 0.65f){
 			K1_ = K2_ =  0.15f;	
 		}
 		else{
@@ -633,7 +624,15 @@ void LaneDetector::LoadParams(void) {
 			e_values_[1] = e_values_[0] - (lp_ * (l2 / l1));	//trust_e1
 			e_values_[2] = ((lane_coef_.center.a * pow(k, 2)) + (lane_coef_.center.b * k) + lane_coef_.center.c) - car_position;	//e1
 			SteerAngle_ = ((-1.0f * K1_) * e_values_[1]) + ((-1.0f * K2_) * e_values_[0]);
-			steer_error_log();
+
+			if (abs(lane_coef_.center.a) > 0.0001f){
+				steer_flag_ = true;
+			}
+			else{
+				steer_flag_ = false;
+			}
+
+			//steer_error_log();
 		}
 	}
 
@@ -659,7 +658,7 @@ void LaneDetector::LoadParams(void) {
 		cuda::cvtColor(gpu_blur_frame, gpu_gray_frame, COLOR_BGR2GRAY);
 		cuda::threshold(gpu_gray_frame, gpu_binary_frame, 128, 255, THRESH_BINARY);
 		gpu_binary_frame.download(gray_frame);
-
+		
 		sliding_frame = detect_lines_sliding_window(gray_frame, _view);
 		resized_frame = draw_lane(sliding_frame, new_frame, _view);
 		calc_curv_rad_and_center_dist(resized_frame, _view);
@@ -698,7 +697,6 @@ void LaneDetector::LoadParams(void) {
 
 			waitKey(_delay);
 		}
-
 
 		return SteerAngle_;
 	}

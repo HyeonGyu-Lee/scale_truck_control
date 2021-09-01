@@ -36,6 +36,7 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
   nodeHandle_.param("params/target_vel", TargetVel_, 0.5f); // m/s
   nodeHandle_.param("params/safety_vel", SafetyVel_, 0.3f); // m/s
+  nodeHandle_.param("params/fv_max_vel", FVmaxVel_, 0.8f); // m/s
   nodeHandle_.param("params/lv_stop_dist", LVstopDist_, 0.5f); // m
   nodeHandle_.param("params/fv_stop_dist", FVstopDist_, 0.5f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.5f); // m
@@ -50,11 +51,9 @@ bool ScaleTruckController::readParameters() {
 }
 
 void ScaleTruckController::init() {
-  ROS_INFO("[ScaleTruckController] init()");
+  ROS_INFO("[ScaleTruckController] init()");  
   
-  struct timeval start;
-  gettimeofday(&start, NULL);
-  laneDetector_.start_ = start;
+  gettimeofday(&laneDetector_.start_, NULL);
 
   std::string imageTopicName;
   int imageQueueSize;
@@ -133,7 +132,8 @@ void* ScaleTruckController::objectdetectInThread() {
   distAngle_ = angle_tmp;
   if(dist_tmp < 1.25) {
     double height;
-    laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
+    //laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
+    laneDetector_.distance_ = (int)((1.24 - dist_tmp)*490.0);
   } else {
     laneDetector_.distance_ = 0;
   }
@@ -141,14 +141,22 @@ void* ScaleTruckController::objectdetectInThread() {
   if(!Index_){	// LV velocity
 	  if(distance_ <= LVstopDist_) {
 	    ResultVel_ = 0.0f;
-	  } else if(distance_ <= SafetyDist_) {
-	    ResultVel_ = (TargetVel_-SafetyVel_)*((distance_-LVstopDist_)/(SafetyDist_-LVstopDist_))+SafetyVel_;
-	  } else
-	    ResultVel_ = TargetVel_;
+	  }
+	  else if (distance_ <= SafetyDist_){
+	    ResultVel_ = (ResultVel_-SafetyVel_)*((distance_-LVstopDist_)/(SafetyDist_-LVstopDist_))+SafetyVel_;
+	  }
+	  else{
+			if (!laneDetector_.steer_flag_){	// straight paths
+		    	ResultVel_ = TargetVel_;
+			}
+			else {	// curved paths
+				ResultVel_ = 0.65f;
+			}
+	  }
   }
   else{		// FV velocity
 	  float dist_err, P_err, I_err;
-	  if((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){	// Emergency
+	  if ((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){	// Emergency
 		ResultVel_ = 0.0f;
 	  }
 	  else {
@@ -156,10 +164,7 @@ void* ScaleTruckController::objectdetectInThread() {
 	  	P_err = Kp_d_ * dist_err;
 	  	I_err = Ki_d_ * dist_err * 0.1f;
 	  	ResultVel_ = P_err + I_err + TargetVel_;
-		if (ResultVel_ > 1.2)
-			ResultVel_ = 1.2; // Max velocity 
-		else if (ResultVel_ > TargetVel_*1.5)
-			ResultVel_ = TargetVel_*1.5;	// Max velocity
+	  	if (ResultVel_ > FVmaxVel_) ResultVel_ = FVmaxVel_;
 	  }
   }
 }
@@ -213,15 +218,16 @@ void* ScaleTruckController::UDPrecvInThread()
 }
 
 void ScaleTruckController::displayConsole() {
+
   printf("\033[2J");
   printf("\033[1;1H");
   printf("\nAngle           : %2.3f degree", AngleDegree_);
-  printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, ResultVel_, CurVel_);
+  printf("\nRefer Vel       : %3.3f m/s", ResultVel_);
+  printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, CurVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
   printf("\nUDP_data        : %d (LV:0,FV1:1,FV2:2,CMD:307)", udpData_.index);
   printf("\nUDP_target_vel  : %3.3lf", udpData_.target_vel);
   printf("\nUDP_target_dist : %3.3lf", udpData_.target_dist);
-
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);

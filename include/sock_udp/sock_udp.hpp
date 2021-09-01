@@ -24,6 +24,7 @@ struct UDP_DATA{
     float current_vel;
     float target_dist;
     float current_dist;
+    float current_angle;
     struct lane_coef coef[3];
 };
 

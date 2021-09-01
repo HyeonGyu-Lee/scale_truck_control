@@ -170,10 +170,11 @@ void* ScaleTruckController::UDPsendInThread()
 
     udpData.index = Index_;
     udpData.to = 307;
-    udpData.target_vel = ResultVel_;
+    udpData.target_vel = TargetVel_;
     udpData.current_vel = CurVel_;
     udpData.target_dist = TargetDist_;
     udpData.current_dist = distance_;
+    udpData.current_angle = distAngle_;
     udpData.coef[0].a = laneDetector_.lane_coef_.left.a;
     udpData.coef[0].b = laneDetector_.lane_coef_.left.b;
     udpData.coef[0].c = laneDetector_.lane_coef_.left.c;
@@ -194,7 +195,7 @@ void* ScaleTruckController::UDPrecvInThread()
     while(!controlDone_) { 
         UDPrecv_.recvData(&udpData);
         if(udpData.index == (Index_ - 1)) {
-            udpData_.target_vel = udpData.target_vel;
+            udpData_.target_vel = udpData.current_vel;
             TargetVel_ = udpData_.target_vel;
         }
         if(udpData.index == 307) {

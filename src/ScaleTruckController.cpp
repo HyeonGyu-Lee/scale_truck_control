@@ -143,7 +143,13 @@ void* ScaleTruckController::objectdetectInThread() {
 	    ResultVel_ = 0.0f;
 	  }
 	  else if (distance_ <= SafetyDist_){
-	    ResultVel_ = (ResultVel_-SafetyVel_)*((distance_-LVstopDist_)/(SafetyDist_-LVstopDist_))+SafetyVel_;
+	    float TmpVel_ = (ResultVel_-SafetyVel_)*((distance_-LVstopDist_)/(SafetyDist_-LVstopDist_))+SafetyVel_;
+		if (TargetVel_ < TmpVel_){
+			ResultVel_ = TargetVel_;
+		}
+		else{
+			ResultVel_ = TmpVel_;
+		}
 	  }
 	  else{
 			if (!laneDetector_.steer_flag_ || TargetVel_ < 0.65f){	// straight paths or low-vel curved paths

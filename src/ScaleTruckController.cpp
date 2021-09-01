@@ -170,6 +170,10 @@ void* ScaleTruckController::objectdetectInThread() {
 	  	P_err = Kp_d_ * dist_err;
 	  	I_err = Ki_d_ * dist_err * 0.1f;
 	  	ResultVel_ = P_err + I_err + TargetVel_;
+		if(ResultVel_ > TargetVel_)
+		{
+			ResultVel_ = TargetVel_ * 1.2;
+		}
 	  	if (ResultVel_ > FVmaxVel_) ResultVel_ = FVmaxVel_;
 	  }
   }
@@ -206,7 +210,7 @@ void* ScaleTruckController::UDPrecvInThread()
     while(!controlDone_) { 
         UDPrecv_.recvData(&udpData);
         if(udpData.index == (Index_ - 1)) {
-            udpData_.target_vel = udpData.current_vel;
+            udpData_.target_vel = udpData.target_vel; //udpData.current_vel;
             TargetVel_ = udpData_.target_vel;
         }
         if(udpData.index == 307) {
@@ -214,7 +218,6 @@ void* ScaleTruckController::UDPrecvInThread()
                 udpData_.index = udpData.index;
                 udpData_.target_vel = udpData.target_vel;
                 udpData_.target_dist = udpData.target_dist;
-		
 
                 TargetVel_ = udpData_.target_vel;
                 TargetDist_ = udpData_.target_dist;

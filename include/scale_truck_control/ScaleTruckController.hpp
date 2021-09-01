@@ -74,7 +74,7 @@ class ScaleTruckController {
     float TargetVel_; // -1 ~ 1  - Twist msg linear.x
     float SafetyVel_;
     float ResultVel_;
-	float FVmaxVel_;
+    float FVmaxVel_;
 
     //object
     int ObjSegments_;

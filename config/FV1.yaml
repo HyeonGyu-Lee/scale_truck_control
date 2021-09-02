@@ -10,5 +10,5 @@ params:
   safety_dist: 1.5
   target_dist: 0.8
   angle_degree: 0.0
-  Kp_d: 2.0
+  Kp_d: 1.2
   Ki_d: 0.2

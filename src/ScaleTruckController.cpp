@@ -131,7 +131,7 @@ void* ScaleTruckController::objectdetectInThread() {
   }
   distance_ = dist_tmp;
   distAngle_ = angle_tmp;
-  if(dist_tmp < 1.25) {
+  if(dist_tmp < 1.24 && dist_tmp > 0.30) {
     double height;
     //laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
     laneDetector_.distance_ = (int)((1.24 - dist_tmp)*490.0);
@@ -152,14 +152,15 @@ void* ScaleTruckController::objectdetectInThread() {
 			ResultVel_ = TmpVel_;
 		}
 	  }
-	  /*else{
-			if (!laneDetector_.steer_flag_ || TargetVel_ < 0.65f){	// straight paths or low-vel curved paths
+	  else{
+		ResultVel_ = TargetVel_;
+			/*if (!laneDetector_.steer_flag_ || TargetVel_ < 0.65f){	// straight paths or low-vel curved paths
 		    	ResultVel_ = TargetVel_;
 			}
 			else {	// curved paths
 				ResultVel_ = 0.65f;
-			}
-	  }*/
+			}*/
+	  }
   }
   else{		// FV velocity
 	  float dist_err, P_err, I_err;
@@ -171,10 +172,8 @@ void* ScaleTruckController::objectdetectInThread() {
 	  	P_err = Kp_d_ * dist_err;
 	  	I_err = Ki_d_ * dist_err * 0.1f;
 	  	ResultVel_ = P_err + I_err + TargetVel_;
-		if(ResultVel_ > TargetVel_)
-		{
-			ResultVel_ = TargetVel_ * 1.2;
-		}
+		if (ResultVel_ > TargetVel_*2)
+			ResultVel_ = TargetVel_*2;
 	  	if (ResultVel_ > FVmaxVel_) ResultVel_ = FVmaxVel_;
 	  }
   }
@@ -186,11 +185,15 @@ void* ScaleTruckController::UDPsendInThread()
 
     udpData.index = Index_;
     udpData.to = 307;
-    udpData.target_vel = TargetVel_;
+    if(distance_ <= LVstopDist_)
+      udpData.target_vel = 0;
+    else
+      udpData.target_vel = TargetVel_;
     udpData.current_vel = CurVel_;
     udpData.target_dist = TargetDist_;
     udpData.current_dist = distance_;
     udpData.current_angle = distAngle_;
+    udpData.roi_dist = laneDetector_.distance_;
     udpData.coef[0].a = laneDetector_.lane_coef_.left.a;
     udpData.coef[0].b = laneDetector_.lane_coef_.left.b;
     udpData.coef[0].c = laneDetector_.lane_coef_.left.c;
@@ -217,7 +220,8 @@ void* ScaleTruckController::UDPrecvInThread()
         if(udpData.index == 307) {
             if(udpData.to == Index_) {
                 udpData_.index = udpData.index;
-                udpData_.target_vel = udpData.target_vel;
+                //udpData_.target_vel = udpData.target_vel;
+                udpData_.target_vel = udpData.current_vel;
                 udpData_.target_dist = udpData.target_dist;
 
                 TargetVel_ = udpData_.target_vel;

@@ -121,7 +121,8 @@ void* ScaleTruckController::objectdetectInThread() {
    
   dist_tmp = 10.f; 
   for(int i = 0; i < ObjCircles_; i++){
-    dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
+    //dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
+    dist = -Obstacle_.circles[i].center.x - Obstacle_.circles[i].true_radius;
     angle = atanf(Obstacle_.circles[i].center.y/Obstacle_.circles[i].center.x)*(180.0f/M_PI);
     if(dist_tmp >= dist) {
       dist_tmp = dist;

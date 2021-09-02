@@ -3,7 +3,7 @@ subscribers:
     topic: /usb_cam/image_raw
     queue_size: 1
   obstacle_reading:
-    topic: /raw_obstacles
+    topic: /tracked_obstacles
     queue_size: 100
   velocity_reading:
     topic: /vel_msg

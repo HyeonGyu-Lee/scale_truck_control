@@ -152,14 +152,14 @@ void* ScaleTruckController::objectdetectInThread() {
 			ResultVel_ = TmpVel_;
 		}
 	  }
-	  else{
+	  /*else{
 			if (!laneDetector_.steer_flag_ || TargetVel_ < 0.65f){	// straight paths or low-vel curved paths
 		    	ResultVel_ = TargetVel_;
 			}
 			else {	// curved paths
 				ResultVel_ = 0.65f;
 			}
-	  }
+	  }*/
   }
   else{		// FV velocity
 	  float dist_err, P_err, I_err;

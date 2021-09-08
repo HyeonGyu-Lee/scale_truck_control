@@ -75,36 +75,38 @@ float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
 std_msgs::Float32 vel_msg_;
 sensor_msgs::Imu imu_msg_;
-float setSPEED(float tar_vel, float cur_vel) {
-  static float output, err, prev_err, P_err, I_err, D_err;
-  static float prev_u_k, prev_u;//, A_err;
+float setSPEED(float tar_vel, float cur_vel) { 
+  //static float output, err, prev_err, P_err, I_err, D_err;
+  //static float prev_u_k, prev_u;//, A_err;
   float u, u_k;
   vel_msg_.data = cur_vel;
   if(tar_vel <= 0 ) {
     output = ZERO_PWM;
-    I_err = 0;
-    //A_err = 0;
+    //I_err = 0;
+    ////A_err = 0;
   } else {
-    err = tar_vel - cur_vel;
-    P_err = Kp_ * err;
-    I_err += Ki_ * err * dt_;
-    D_err = (Kd_ * ((err - prev_err) / dt_ ));
+    //err = tar_vel - cur_vel;
+    //P_err = Kp_ * err;
+    //I_err += Ki_ * err * dt_;
+    //D_err = (Kd_ * ((err - prev_err) / dt_ ));
     //A_err += Ka_ * ((prev_u_k - prev_u) / dt_);
-    u = P_err + I_err + D_err + tar_vel*Kf_;
-    
-    /* sat(u(k))  saturation start */
-    if(u > 2.0122) u_k = 2.0122;
+    //u = P_err + I_err + D_err + tar_vel*Kf_;
+    u = tar_vel;
+
+    // sat(u(k))  saturation start 
+    if(u > 1.2) u_k = 1.2;
     else if(u <= 0) u_k = 0;
     else u_k = u;
     
-    /* inverse function */
+    // inverse function 
     output = (-8.152e-02 + sqrt(pow(-8.152e-02,2)-4*(-2.0975e-05)*(-76.87-u_k)))/(2*(-2.0975e-05));
     //output = tx_throttle_;
+	
   }
- /*output command*/
-  prev_err = err;
-  prev_u_k = u_k;
-  prev_u = u;
+  // output command
+  //prev_err = err;
+  //prev_u_k = u_k;
+  //prev_u = u;
   throttle_.writeMicroseconds(output);
   return output;
 }

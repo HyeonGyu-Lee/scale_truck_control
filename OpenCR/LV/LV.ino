@@ -69,7 +69,7 @@ void rosTwistCallback(const geometry_msgs::Twist& msg) {
 float Kp_ = 0.8; // 2.0; //0.8;
 float Ki_ = 2.0; // 0.4; //10.0;
 float Kd_ = 0.0; //0.05;
-float Ka_ = 0.8;
+float Ka_ = 0.05;
 float Kf_ = 0.5;	// feed forward const.
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
@@ -85,18 +85,18 @@ float setSPEED(float tar_vel, float cur_vel) {
   if(tar_vel <= 0 ) {
     output = ZERO_PWM;
     I_err = 0;
-    //A_err = 0;
+    A_err = 0;
   } else {
     err = tar_vel - cur_vel;
     P_err = Kp_ * err;
     I_err += Ki_ * err * dt_;
-    D_err = (Kd_ * ((err - prev_err) / dt_ ));
-    //A_err += Ka_ * ((prev_u_k - prev_u) / dt_);
+    //D_err = (Kd_ * ((err - prev_err) / dt_ ));
+    A_err += Ka_ * ((prev_u_k - prev_u));
     
-    u = P_err + I_err + D_err + tar_vel*Kf_;
+    u = P_err + I_err + A_err + tar_vel*Kf_;
     
     /* sat(u(k))  saturation start */
-    if(u > 2) u_k = 2;
+    if(u > 1.2) u_k = 1.2;
     else if(u <= 0) u_k = 0;
     else u_k = u;
     

@@ -75,6 +75,7 @@ class ScaleTruckController {
     float SafetyVel_;
     float ResultVel_;
     float FVmaxVel_;
+	float uVel_;
 
     //object
     int ObjSegments_;
@@ -88,7 +89,7 @@ class ScaleTruckController {
 
     //Interval Control
     float Kp_d_;
-    float Ki_d_;
+    float Kd_d_;
 
     //UDP
     UDPsock::UDPsocket UDPsend_;

@@ -37,6 +37,7 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/target_vel", TargetVel_, 0.5f); // m/s
   nodeHandle_.param("params/safety_vel", SafetyVel_, 0.3f); // m/s
   nodeHandle_.param("params/fv_max_vel", FVmaxVel_, 0.8f); // m/s
+  nodeHandle_.param("params/u_vel", uVel_, 0.0f); // m/s
   nodeHandle_.param("params/lv_stop_dist", LVstopDist_, 0.5f); // m
   nodeHandle_.param("params/fv_stop_dist", FVstopDist_, 0.5f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.5f); // m
@@ -45,7 +46,7 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/udp_group_port", PORT_, 9307);
   nodeHandle_.param("params/truck_info", Index_, 0);
   nodeHandle_.param("params/Kp_d", Kp_d_, 2.0f);
-  nodeHandle_.param("params/Ki_d", Ki_d_, 0.4f);
+  nodeHandle_.param("params/Kd_d", Kd_d_, 0.4f);
 
   return true;
 }
@@ -181,27 +182,22 @@ void* ScaleTruckController::objectdetectInThread() {
 	  }
 	  else{
 		ResultVel_ = TargetVel_;
-			/*if (!laneDetector_.steer_flag_ || TargetVel_ < 0.65f){	// straight paths or low-vel curved paths
-		    	ResultVel_ = TargetVel_;
-			}
-			else {	// curved paths
-				ResultVel_ = 0.65f;
-			}*/
 	  }
   }
   else{		// FV velocity
-	  float dist_err, P_err;
-	  static float I_err = 0;
-	  if ((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){	// Emergency
+	  float dist_err, P_err, D_err = 0;
+	  static float dt = 0.1f;
+	  static float prev_dist_err = 0;
+	  if ((distance_ <= FVstopDist_) || (uVel_ <= 0.1f)){	// Emergency
 		ResultVel_ = 0.0f;
-		I_err = 0;
 	  }
 	  else {
 	  	dist_err = distance_ - TargetDist_;
 	  	P_err = Kp_d_ * dist_err;
-	  	I_err = Ki_d_ * dist_err * 0.1f;
-	  	ResultVel_ = P_err + I_err + TargetVel_;
+	  	D_err = Kd_d_ * (dist_err - prev_dist_err) / dt;
+	  	ResultVel_ = P_err + D_err + uVel_;
 	  	if (ResultVel_ > FVmaxVel_) ResultVel_ = FVmaxVel_;
+		prev_dist_err = dist_err;
 	  }
   }
 }

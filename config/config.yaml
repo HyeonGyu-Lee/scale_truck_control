@@ -42,13 +42,13 @@ LaneDetector:
   filter_param: 10
   steer_angle: 0.0
   eL_height: 0.2
-  e1_height: 1.4375
+  e1_height: 1.2563
   trust_height: 0.6667
-  lp: 607.3 
+  lp: 609.3 
   #K1: 0.08
   #K2: 0.11
 
 image_view:
-  enable_opencv: true
+  enable_opencv: false
   wait_key_delay: 1
   enable_console_output: false

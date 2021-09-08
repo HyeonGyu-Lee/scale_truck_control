@@ -49,7 +49,6 @@ LaneDetector:
   #K2: 0.11
 
 image_view:
-  enable_opencv: false
+  enable_opencv: true
   wait_key_delay: 1
   enable_console_output: false
-

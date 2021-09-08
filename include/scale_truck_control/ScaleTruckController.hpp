@@ -108,7 +108,7 @@ class ScaleTruckController {
     boost::shared_mutex mutexObjectCallback_;
 
     std_msgs::Header imageHeader_;
-    cv::Mat camImageCopy_;
+    cv::Mat camImageCopy_, camImageTmp_;
     boost::shared_mutex mutexImageCallback_;
 
     float CurVel_;

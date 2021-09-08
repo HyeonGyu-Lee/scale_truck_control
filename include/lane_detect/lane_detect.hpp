@@ -34,6 +34,7 @@ public:
 	bool steer_flag_ = false;
 	int distance_ = 0;
 	scale_truck_control::lane_coef lane_coef_;
+	Mat frame_;
 
 private:
 	void LoadParams(void);

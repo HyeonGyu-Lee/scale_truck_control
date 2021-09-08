@@ -682,15 +682,15 @@ LaneDetector::~LaneDetector(void) {
 			line(new_frame, corners_[1], corners_[0], Scalar(0, 0, 255), 5);
 			
 			if(!new_frame.empty()) {
-				resize(new_frame, new_frame, Size(640, 360));
+				//resize(new_frame, new_frame, Size(640, 360));
 				imshow("Window1", new_frame);
 			}
 			if(!sliding_frame.empty()) {
-				resize(sliding_frame, sliding_frame, Size(640, 360));
+				//resize(sliding_frame, sliding_frame, Size(640, 360));
 				imshow("Window2", sliding_frame);
 			}
 			if(!resized_frame.empty()){
-				resize(resized_frame, resized_frame, Size(640, 360));
+				//resize(resized_frame, resized_frame, Size(640, 360));
 				imshow("Window3", resized_frame);
 			}
 

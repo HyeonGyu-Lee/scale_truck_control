@@ -93,6 +93,9 @@ void ScaleTruckController::init() {
 
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
   udprecvThread_ = std::thread(&ScaleTruckController::UDPrecvInThread, this);
+
+  distance_ = 10.f;
+  distAngle_ = 0;
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -106,11 +109,31 @@ bool ScaleTruckController::isNodeRunning(void){
 }
 
 void* ScaleTruckController::lanedetectInThread() {
-  Mat camImageTmp = camImageCopy_.clone();
+  Mat dst;
+  std::vector<Mat>channels;
+  int count = 0;
+  static int cnt = 3;
+  if((!camImageTmp_.empty()) && (cnt != 0))
+  {
+    bitwise_xor(camImageCopy_,camImageTmp_, dst);
+    split(dst, channels);
+    for(int ch = 0; ch<dst.channels();ch++) {
+      count += countNonZero(channels[ch]);
+    }
+    if(count == 0)
+      cnt -= 1;
+    else 
+      cnt = 3;
+    printf("%d / %d\n", cnt, count);
+  }
   float AngleDegree;
+  camImageTmp_ = camImageCopy_.clone();
   laneDetector_.get_steer_coef(ResultVel_);
-  AngleDegree = laneDetector_.display_img(camImageTmp, waitKeyDelay_, viewImage_);
-  AngleDegree_ = AngleDegree;
+  AngleDegree = laneDetector_.display_img(camImageTmp_, waitKeyDelay_, viewImage_);
+  if(cnt == 0)
+    AngleDegree_ = distAngle_;
+  else
+    AngleDegree_ = AngleDegree;
 }
 
 void* ScaleTruckController::objectdetectInThread() {
@@ -120,7 +143,8 @@ void* ScaleTruckController::objectdetectInThread() {
   ObjCircles_ = Obstacle_.circles.size();
    
   dist_tmp = 10.f; 
-  for(int i = 0; i < ObjCircles_; i++){
+  for(int i = 0; i < ObjCircles_; i++)
+  {
     //dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
     dist = -Obstacle_.circles[i].center.x - Obstacle_.circles[i].true_radius;
     angle = atanf(Obstacle_.circles[i].center.y/Obstacle_.circles[i].center.x)*(180.0f/M_PI);
@@ -129,9 +153,13 @@ void* ScaleTruckController::objectdetectInThread() {
       angle_tmp = angle;
     }
   }
-  distance_ = dist_tmp;
-  distAngle_ = angle_tmp;
-  if(dist_tmp < 1.24 && dist_tmp > 0.30) {
+  if(ObjCircles_ != 0)
+  {
+    distance_ = dist_tmp;
+    distAngle_ = angle_tmp;
+  }
+  if(dist_tmp < 1.24 && dist_tmp > 0.30)
+  {
     double height;
     //laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
     laneDetector_.distance_ = (int)((1.24 - dist_tmp)*490.0);
@@ -172,8 +200,7 @@ void* ScaleTruckController::objectdetectInThread() {
 	  	P_err = Kp_d_ * dist_err;
 	  	I_err = Ki_d_ * dist_err * 0.1f;
 	  	ResultVel_ = P_err + I_err + TargetVel_;
-		if (ResultVel_ > TargetVel_*2)
-			ResultVel_ = TargetVel_*2;
+                if (ResultVel_ > (TargetVel_*2)) ResultVel_ = TargetVel_*2;
 	  	if (ResultVel_ > FVmaxVel_) ResultVel_ = FVmaxVel_;
 	  }
   }
@@ -220,8 +247,8 @@ void* ScaleTruckController::UDPrecvInThread()
         if(udpData.index == 307) {
             if(udpData.to == Index_) {
                 udpData_.index = udpData.index;
-                //udpData_.target_vel = udpData.target_vel;
-                udpData_.target_vel = udpData.current_vel;
+                udpData_.target_vel = udpData.target_vel;
+                //udpData_.target_vel = udpData.current_vel;
                 udpData_.target_dist = udpData.target_dist;
 
                 TargetVel_ = udpData_.target_vel;

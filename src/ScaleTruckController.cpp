@@ -112,8 +112,8 @@ void* ScaleTruckController::lanedetectInThread() {
   Mat dst;
   std::vector<Mat>channels;
   int count = 0;
-  static int cnt = 3;
-  if((!camImageTmp_.empty()) && (cnt != 0))
+  static int cnt = 20;
+  if((!camImageTmp_.empty()) && (cnt != 0) && (TargetVel_ != 0))
   {
     bitwise_xor(camImageCopy_,camImageTmp_, dst);
     split(dst, channels);
@@ -123,8 +123,7 @@ void* ScaleTruckController::lanedetectInThread() {
     if(count == 0)
       cnt -= 1;
     else 
-      cnt = 3;
-    printf("%d / %d\n", cnt, count);
+      cnt = 20;
   }
   float AngleDegree;
   camImageTmp_ = camImageCopy_.clone();
@@ -202,7 +201,6 @@ void* ScaleTruckController::objectdetectInThread() {
 	  	P_err = Kp_d_ * dist_err;
 	  	I_err = Ki_d_ * dist_err * 0.1f;
 	  	ResultVel_ = P_err + I_err + TargetVel_;
-                if (ResultVel_ > (TargetVel_*2)) ResultVel_ = TargetVel_*2;
 	  	if (ResultVel_ > FVmaxVel_) ResultVel_ = FVmaxVel_;
 	  }
   }

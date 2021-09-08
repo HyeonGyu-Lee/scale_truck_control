@@ -191,9 +191,11 @@ void* ScaleTruckController::objectdetectInThread() {
 	  }
   }
   else{		// FV velocity
-	  float dist_err, P_err, I_err;
+	  float dist_err, P_err;
+	  static float I_err = 0;
 	  if ((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){	// Emergency
 		ResultVel_ = 0.0f;
+		I_err = 0;
 	  }
 	  else {
 	  	dist_err = distance_ - TargetDist_;

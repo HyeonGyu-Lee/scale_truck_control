@@ -55,6 +55,7 @@ class ScaleTruckController {
     void imageCallback(const sensor_msgs::ImageConstPtr &msg);
     void objectCallback(const obstacle_detector::Obstacles &msg);
     void velCallback(const std_msgs::Float32 &msg);
+    void uvelCallback(const std_msgs::Float32 &msg);
     bool publishControlMsg(const geometry_msgs::Twist msg);
 
     ros::NodeHandle nodeHandle_;
@@ -63,6 +64,7 @@ class ScaleTruckController {
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
     ros::Subscriber velSubscriber_;
+    ros::Subscriber uvelSubscriber_;
 	
     //image
     LaneDetect::LaneDetector laneDetector_;
@@ -114,6 +116,9 @@ class ScaleTruckController {
 
     float CurVel_;
     boost::shared_mutex mutexVelCallback_;
+
+    float UVel_;
+    boost::shared_mutex mutexUVelCallback_;
 
     bool imageStatus_ = false;
     boost::shared_mutex mutexImageStatus_;

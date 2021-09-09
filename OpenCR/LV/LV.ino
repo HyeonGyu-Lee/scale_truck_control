@@ -69,11 +69,12 @@ void rosTwistCallback(const geometry_msgs::Twist& msg) {
 float Kp_ = 0.8; // 2.0; //0.8;
 float Ki_ = 2.0; // 0.4; //10.0;
 float Kd_ = 0.0; //0.05;
-float Ka_ = 0.05;
+float Ka_ = 0.01;
 float Kf_ = 0.5;	// feed forward const.
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
 std_msgs::Float32 vel_msg_;
+std_msgs::Float32 uvel_msg_;
 sensor_msgs::Imu imu_msg_;
 float setSPEED(float tar_vel, float cur_vel) {
   static float output, err, prev_err, P_err, I_err, D_err;
@@ -99,7 +100,8 @@ float setSPEED(float tar_vel, float cur_vel) {
     if(u > 1.2) u_k = 1.2;
     else if(u <= 0) u_k = 0;
     else u_k = u;
-    
+
+    uvel_msg_.data = u_k;
     /* inverse function */
     output = (-4.8278e-02+sqrt(pow(-4.8278e-02, 2)-4*(-1.1446e-05)*(-47.94-u_k)))/(2*(-1.1446e-05));
     //output = tx_throttle_;
@@ -242,6 +244,7 @@ ros::NodeHandle nh_;
 ros::Subscriber<geometry_msgs::Twist> rosSubMsg("/twist_msg", &rosTwistCallback);
 ros::Publisher rosPubVel("/vel_msg", &vel_msg_);
 ros::Publisher rosPubImu("/imu_msg", &imu_msg_);
+ros::Publisher rosPubImu("/uvel_msg", &uvel_msg_);
 /*
    Arduino setup()
 */
@@ -323,6 +326,7 @@ void loop() {
   if ((currentTime - prevTime) >= (ANGLE_TIME / 1000)) {
     rosPubVel.publish(&vel_msg_);
     rosPubImu.publish(&imu_msg_);
+    rosPubUVel.publish(&uvel_msg_);
     prevTime = currentTime;
   }
 }

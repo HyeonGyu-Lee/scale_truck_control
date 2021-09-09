@@ -12,4 +12,4 @@ params:
   target_dist: 0.8
   angle_degree: 0.0
   Kp_d: 2.0
-  Kd_d: 0.2
+  Kd_d: 0.4

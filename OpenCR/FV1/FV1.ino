@@ -66,18 +66,20 @@ void rosTwistCallback(const geometry_msgs::Twist& msg) {
 /*
    SPEED to RPM
 */
-float Kp_ = 0.8; // 2.0; //0.8;
+float Kp_ = 2.0; // 2.0; //0.8;
 float Ki_ = 2.0; // 0.4; //10.0;
-float Kd_ = 0.0; //0.05;
-float Ka_ = 0.8;
+float Kd_ = 0.4; //0.05;
+float Ka_ = 0.01;
 float Kf_ = 0.5;  // feed forward const.
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
 std_msgs::Float32 vel_msg_;
+std_msgs::Float32 uvel_msg_;
 sensor_msgs::Imu imu_msg_;
 float setSPEED(float tar_vel, float cur_vel) { 
   //static float output, err, prev_err, P_err, I_err, D_err;
   //static float prev_u_k, prev_u;//, A_err;
+  static float output, dist_err, prev_dist_err, P_dist_err, D_dist_err;
   float u, u_k;
   vel_msg_.data = cur_vel;
   if(tar_vel <= 0 ) {
@@ -91,12 +93,18 @@ float setSPEED(float tar_vel, float cur_vel) {
     //D_err = (Kd_ * ((err - prev_err) / dt_ ));
     //A_err += Ka_ * ((prev_u_k - prev_u) / dt_);
     //u = P_err + I_err + D_err + tar_vel*Kf_;
-    u = tar_vel;
+
+    dist_err = tx_dist_ - tx_tdist_;    
+    P_dist_err = Kp_ * dist_err;
+    D_dist_err = (Kd_ * ((dist_err - prev_dist_err) / dt_ )); 
+    u = P_dist_err + D_dist_err + tar_vel;
 
     // sat(u(k))  saturation start 
     if(u > 1.2) u_k = 1.2;
     else if(u <= 0) u_k = 0;
     else u_k = u;
+
+    uvel_msg_.data = u_k;
     
     // inverse function 
     output = (-8.152e-02 + sqrt(pow(-8.152e-02,2)-4*(-2.0975e-05)*(-76.87-u_k)))/(2*(-2.0975e-05));
@@ -107,6 +115,7 @@ float setSPEED(float tar_vel, float cur_vel) {
   //prev_err = err;
   //prev_u_k = u_k;
   //prev_u = u;
+  prev_dist_err = dist_err;
   throttle_.writeMicroseconds(output);
   return output;
 }
@@ -241,6 +250,7 @@ ros::NodeHandle nh_;
 ros::Subscriber<geometry_msgs::Twist> rosSubMsg("/twist_msg", &rosTwistCallback);
 ros::Publisher rosPubVel("/vel_msg", &vel_msg_);
 ros::Publisher rosPubImu("/imu_msg", &imu_msg_);
+ros::Publisher rosPubUVel("/uvel_msg", &uvel_msg_);
 /*
    Arduino setup()
 */
@@ -249,6 +259,7 @@ void setup() {
   nh_.subscribe(rosSubMsg);
   nh_.advertise(rosPubVel);
   nh_.advertise(rosPubImu);
+  nh_.advertise(rosPubUVel);
   throttle_.attach(THROTTLE_PIN);
   steer_.attach(STEER_PIN);
   pinMode(EN_PINA, INPUT);
@@ -322,6 +333,7 @@ void loop() {
   if ((currentTime - prevTime) >= (ANGLE_TIME / 1000)) {
     rosPubVel.publish(&vel_msg_);
     rosPubImu.publish(&imu_msg_);
+    rosPubUVel.publish(&uvel_msg_);
     prevTime = currentTime;
   }
 }

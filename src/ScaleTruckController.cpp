@@ -73,9 +73,9 @@ void ScaleTruckController::init() {
   nodeHandle_.param("subscribers/camera_reading/queue_size",imageQueueSize, 1);
   nodeHandle_.param("subscribers/obstacle_reading/topic", objectTopicName, std::string("/raw_obstacles"));
   nodeHandle_.param("subscribers/obstacle_reading/queue_size",objectQueueSize, 100);
-  nodeHandle_.param("subscribers/velocity_reading/topic", velTopicName, std::string("/raw_obstacles"));
+  nodeHandle_.param("subscribers/velocity_reading/topic", velTopicName, std::string("/vel_msg"));
   nodeHandle_.param("subscribers/velocity_reading/queue_size",velQueueSize, 100);
-  nodeHandle_.param("subscribers/uvelocity_reading/topic", uvelTopicName, std::string("/raw_obstacles"));
+  nodeHandle_.param("subscribers/uvelocity_reading/topic", uvelTopicName, std::string("/uvel_msg"));
   nodeHandle_.param("subscribers/uvelocity_reading/queue_size",uvelQueueSize, 100);
   nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("twist_msg"));
   nodeHandle_.param("publishers/control_data/queue_size", ControlDataQueueSize, 1);
@@ -115,10 +115,10 @@ bool ScaleTruckController::isNodeRunning(void){
 }
 
 void* ScaleTruckController::lanedetectInThread() {
-  Mat dst;
+  static int cnt = 20;
+  /*Mat dst;
   std::vector<Mat>channels;
   int count = 0;
-  static int cnt = 20;
   if((!camImageTmp_.empty()) && (cnt != 0) && (TargetVel_ != 0))
   {
     bitwise_xor(camImageCopy_,camImageTmp_, dst);
@@ -130,13 +130,13 @@ void* ScaleTruckController::lanedetectInThread() {
       cnt -= 1;
     else 
       cnt = 20;
-  }
+  }*/
   float AngleDegree;
   camImageTmp_ = camImageCopy_.clone();
   laneDetector_.get_steer_coef(ResultVel_);
   AngleDegree = laneDetector_.display_img(camImageTmp_, waitKeyDelay_, viewImage_);
   if(cnt == 0)
-    AngleDegree_ = distAngle_;
+    AngleDegree_ = -distAngle_;
   else
     AngleDegree_ = AngleDegree;
 }
@@ -190,19 +190,8 @@ void* ScaleTruckController::objectdetectInThread() {
 	  }
   }
   else{		// FV velocity
-	  float dist_err, P_err, D_err = 0;
-	  static float dt = 0.1f;
-	  static float prev_dist_err = 0;
 	  if ((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){	// Emergency
 		ResultVel_ = 0.0f;
-	  }
-	  else {
-	  	dist_err = distance_ - TargetDist_;
-	  	P_err = Kp_d_ * dist_err;
-	  	D_err = Kd_d_ * (dist_err - prev_dist_err) / dt;
-	  	ResultVel_ = P_err + D_err + TargetVel_;
-	  	if (ResultVel_ > FVmaxVel_) ResultVel_ = FVmaxVel_;
-		prev_dist_err = dist_err;
 	  }
   }
 }

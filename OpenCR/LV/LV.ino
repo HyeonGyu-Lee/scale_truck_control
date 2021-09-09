@@ -253,6 +253,7 @@ void setup() {
   nh_.subscribe(rosSubMsg);
   nh_.advertise(rosPubVel);
   nh_.advertise(rosPubImu);
+  nh_.advertise(rosPubUVel);
   throttle_.attach(THROTTLE_PIN);
   steer_.attach(STEER_PIN);
   pinMode(EN_PINA, INPUT);

@@ -239,7 +239,7 @@ LaneDetector::~LaneDetector(void) {
 		int min_pix = 30 * width / 1280;
 
 		int window_width = margin * 2;	// 120
-		int window_height = (height != distance_) ? ((height-distance_) / n_windows) : (height / n_windows);	// defalut = 53
+		int window_height = (height > distance_) ? ((height-distance_) / n_windows) : (height / n_windows);	// defalut = 53
 		//int window_height = (height-distance_) / n_windows;	// defalut = 53
 		int offset = margin;
 		int range = 120 / 4;

@@ -17,11 +17,12 @@ ScaleTruckController::~ScaleTruckController() {
     isNodeRunning_ = false;
   }
 
-  geometry_msgs::Twist msg;
-  msg.angular.z = 0;
-  msg.linear.x = 0;
-  msg.linear.y = distance_;
-  msg.linear.z = TargetDist_;
+  scale_truck_control::ctl msg;
+  msg.index = Index_;
+  msg.steer_angle = 0;
+  msg.send_vel = 0;
+  msg.cur_dist = distance_;
+  msg.ref_dist = TargetDist_;
        
   ControlDataPublisher_.publish(msg);
   controlThread_.join();
@@ -37,7 +38,7 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/target_vel", TargetVel_, 0.5f); // m/s
   nodeHandle_.param("params/safety_vel", SafetyVel_, 0.3f); // m/s
   nodeHandle_.param("params/fv_max_vel", FVmaxVel_, 0.8f); // m/s
-  nodeHandle_.param("params/u_vel", uVel_, 0.0f); // m/s
+  nodeHandle_.param("params/ref_vel", RefVel_, 0.0f); // m/s
   nodeHandle_.param("params/lv_stop_dist", LVstopDist_, 0.5f); // m
   nodeHandle_.param("params/fv_stop_dist", FVstopDist_, 0.5f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.5f); // m
@@ -62,8 +63,6 @@ void ScaleTruckController::init() {
   int objectQueueSize; 
   std::string velTopicName;
   int velQueueSize;
-  std::string uvelTopicName;
-  int uvelQueueSize;
   std::string ControlDataTopicName;
   int ControlDataQueueSize;
   std::string LanecoefTopicName;
@@ -75,9 +74,7 @@ void ScaleTruckController::init() {
   nodeHandle_.param("subscribers/obstacle_reading/queue_size",objectQueueSize, 100);
   nodeHandle_.param("subscribers/velocity_reading/topic", velTopicName, std::string("/vel_msg"));
   nodeHandle_.param("subscribers/velocity_reading/queue_size",velQueueSize, 100);
-  nodeHandle_.param("subscribers/uvelocity_reading/topic", uvelTopicName, std::string("/uvel_msg"));
-  nodeHandle_.param("subscribers/uvelocity_reading/queue_size",uvelQueueSize, 100);
-  nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("twist_msg"));
+  nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("ctl_msg"));
   nodeHandle_.param("publishers/control_data/queue_size", ControlDataQueueSize, 1);
   nodeHandle_.param("publishers/lane_coef/topic", LanecoefTopicName, std::string("lane_msg"));
   nodeHandle_.param("publishers/lane_coef/queue_size", LanecoefQueueSize, 10);
@@ -85,7 +82,6 @@ void ScaleTruckController::init() {
   imageSubscriber_ = nodeHandle_.subscribe(imageTopicName, imageQueueSize, &ScaleTruckController::imageCallback, this);
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
   velSubscriber_ = nodeHandle_.subscribe(velTopicName, velQueueSize, &ScaleTruckController::velCallback, this);
-  uvelSubscriber_ = nodeHandle_.subscribe(uvelTopicName, uvelQueueSize, &ScaleTruckController::uvelCallback, this);
   ControlDataPublisher_ = nodeHandle_.advertise<geometry_msgs::Twist>(ControlDataTopicName, ControlDataQueueSize);
   LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
  
@@ -192,6 +188,8 @@ void* ScaleTruckController::objectdetectInThread() {
   else{		// FV velocity
 	  if ((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){	// Emergency
 		ResultVel_ = 0.0f;
+	  } else {
+		ResultVel_ = TargetVel_;
 	  }
   }
 }
@@ -205,7 +203,7 @@ void* ScaleTruckController::UDPsendInThread()
     if(distance_ <= LVstopDist_)
       udpData.target_vel = 0;
     else
-      udpData.target_vel = UVel_;
+      udpData.target_vel = RefVel_;
     udpData.current_vel = CurVel_;
     udpData.target_dist = TargetDist_;
     udpData.current_dist = distance_;
@@ -238,7 +236,6 @@ void* ScaleTruckController::UDPrecvInThread()
             if(udpData.to == Index_) {
                 udpData_.index = udpData.index;
                 udpData_.target_vel = udpData.target_vel;
-                //udpData_.target_vel = udpData.current_vel;
                 udpData_.target_dist = udpData.target_dist;
 
                 TargetVel_ = udpData_.target_vel;
@@ -253,7 +250,8 @@ void ScaleTruckController::displayConsole() {
   printf("\033[2J");
   printf("\033[1;1H");
   printf("\nAngle           : %2.3f degree", AngleDegree_);
-  printf("\nRefer Vel       : %3.3f m/s", ResultVel_);
+  printf("\nRefer Vel       : %3.3f m/s", RefVel_);
+  printf("\nSend Vel       : %3.3f m/s", ResultVel_);
   printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, CurVel_);
   printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
   printf("\nUDP_data        : %d (LV:0,FV1:1,FV2:2,CMD:307)", udpData_.index);
@@ -280,7 +278,7 @@ void ScaleTruckController::spin() {
     std::this_thread::sleep_for(wait_duration);
   }
   
-  geometry_msgs::Twist msg;
+  scale_truck_control::ctl msg;
   scale_truck_control::lane_coef lane;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
@@ -298,11 +296,12 @@ void ScaleTruckController::spin() {
 
     if(enableConsoleOutput_)
       displayConsole();
-	
-    msg.angular.z = AngleDegree_;
-    msg.linear.x = ResultVel_;
-    msg.linear.y = distance_;
-    msg.linear.z = TargetDist_;
+
+    msg.index = Index_;    
+    msg.steer_angle = AngleDegree_;
+    msg.send_vel = ResultVel_;
+    msg.cur_dist = distance_;
+    msg.ref_dist = TargetDist_;
     lane = laneDetector_.lane_coef_;
 
     ControlDataPublisher_.publish(msg);
@@ -343,17 +342,11 @@ void ScaleTruckController::imageCallback(const sensor_msgs::ImageConstPtr &msg) 
   }
 }
 
-void ScaleTruckController::velCallback(const std_msgs::Float32 &msg) {
+void ScaleTruckController::velCallback(const scale_truck_control::vel &msg) {
   {
     boost::unique_lock<boost::shared_mutex> lockVelCallback(mutexVelCallback_);
-    CurVel_ = msg.data;
-  }
-}
-
-void ScaleTruckController::uvelCallback(const std_msgs::Float32 &msg) {
-  {
-    boost::unique_lock<boost::shared_mutex> lockVelCallback(mutexUVelCallback_);
-    UVel_ = msg.data;
+    CurVel_ = msg.cur_vel;
+    RefVel_ = msg.ref_vel;
   }
 }
 

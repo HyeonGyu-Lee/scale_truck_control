@@ -33,6 +33,8 @@ add_message_files(
   FILES
   lane_coef.msg
   lane.msg
+  ctl.msg
+  vel.msg
 )
 
 generate_messages(

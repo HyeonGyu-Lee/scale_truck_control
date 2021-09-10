@@ -8,13 +8,10 @@ subscribers:
   velocity_reading:
     topic: /vel_msg
     queue_size: 100
-  uvelocity_reading:
-    topic: /uvel_msg
-    queue_size: 100
 
 publishers:
   control_data:
-    topic: /twist_msg
+    topic: /ctl_msg
     queue_size: 1
   lane_coef:
     topic: /lane_msg
@@ -52,6 +49,6 @@ LaneDetector:
   #K2: 0.11
 
 image_view:
-  enable_opencv: true
+  enable_opencv: false
   wait_key_delay: 1
-  enable_console_output: true
+  enable_console_output: false

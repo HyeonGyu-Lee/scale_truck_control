@@ -7,6 +7,8 @@
 #include <sensor_msgs/Imu.h>
 #include <SD.h>
 #include <IMU.h>
+#include <ctl.h>
+#include <vel.h>
 
 // Period
 #define BAUD_RATE     (57600)
@@ -38,6 +40,7 @@
 cIMU  IMU;
 Servo throttle_;
 Servo steer_;
+int Index_;
 float raw_throttle_;
 float tx_throttle_;
 float tx_steer_;
@@ -57,64 +60,76 @@ HardwareTimer Timer3(TIMER_CH3); // Angle
 /*
    ros Subscribe Callback Function
 */
-void rosTwistCallback(const geometry_msgs::Twist& msg) {
-  tx_throttle_ = msg.linear.x;
-  tx_tdist_ = msg.linear.z;
-  tx_dist_ = msg.linear.y;
-  tx_steer_ = msg.angular.z;  // float64
+void rosCtlCallback(const scale_truck_control::ctl& msg) {
+  Index_ = msg.index;
+  tx_throttle_ = msg.send_vel;
+  tx_tdist_ = msg.ref_dist;
+  tx_dist_ = msg.cur_dist;
+  tx_steer_ = msg.steer_angle;  // float32
 }
 /*
    SPEED to RPM
 */
-float Kp_ = 2.0; // 2.0; //0.8;
+float Kp_dist_ = 1.0; // 2.0; //0.8;
+float Kd_dist_ = 0.05; //0.05;
+float Kp_ = 0.8; // 2.0; //0.8;
 float Ki_ = 2.0; // 0.4; //10.0;
-float Kd_ = 0.4; //0.05;
 float Ka_ = 0.01;
-float Kf_ = 0.5;  // feed forward const.
+float Kf_ = 1.0;  // feed forward const.
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
-std_msgs::Float32 vel_msg_;
-std_msgs::Float32 uvel_msg_;
+scale_truck_control::vel vel_msg_;
 sensor_msgs::Imu imu_msg_;
 float setSPEED(float tar_vel, float cur_vel) { 
-  //static float output, err, prev_err, P_err, I_err, D_err;
-  //static float prev_u_k, prev_u;//, A_err;
-  static float output, dist_err, prev_dist_err, P_dist_err, D_dist_err;
+  static float output, err, P_err, I_err;
+  static float prev_u_k, prev_u, A_err;
+  static float dist_err, prev_dist_err, P_dist_err, D_dist_err;
   float u, u_k;
-  vel_msg_.data = cur_vel;
+  float u_dist, u_dist_k;
+  float ref_vel;
+  vel_msg_.cur_vel = cur_vel;
   if(tar_vel <= 0 ) {
     output = ZERO_PWM;
-    //I_err = 0;
-    ////A_err = 0;
+    I_err = 0;
+    A_err = 0;
+    vel_msg_.ref_vel = 0;
   } else {
-    //err = tar_vel - cur_vel;
-    //P_err = Kp_ * err;
-    //I_err += Ki_ * err * dt_;
-    //D_err = (Kd_ * ((err - prev_err) / dt_ ));
-    //A_err += Ka_ * ((prev_u_k - prev_u) / dt_);
-    //u = P_err + I_err + D_err + tar_vel*Kf_;
+    if(Index_!=0) {
+      dist_err = tx_dist_ - tx_tdist_;    
+      P_dist_err = Kp_dist_ * dist_err;
+      D_dist_err = (Kd_dist_ * ((dist_err - prev_dist_err) / dt_ )); 
+      u_dist = P_dist_err + D_dist_err + tar_vel;
+  
+      // sat(u(k))  saturation start 
+      if(u_dist > 1.2) u_dist_k = 1.2;
+      else if(u_dist <= 0) u_dist_k = 0;
+      else u_dist_k = u_dist;
+      
+      ref_vel = u_dist_k;
+    } else {
+      ref_vel = tar_vel;
+    }
+    
+    vel_msg_.ref_vel = ref_vel;
+    
+    err = ref_vel - cur_vel;
+    P_err = Kp_ * err;
+    I_err += Ki_ * err * dt_;
+    A_err += Ka_ * ((prev_u_k - prev_u) / dt_);
+    u = P_err + I_err + A_err + ref_vel * Kf_;
 
-    dist_err = tx_dist_ - tx_tdist_;    
-    P_dist_err = Kp_ * dist_err;
-    D_dist_err = (Kd_ * ((dist_err - prev_dist_err) / dt_ )); 
-    u = P_dist_err + D_dist_err + tar_vel;
-
-    // sat(u(k))  saturation start 
-    if(u > 1.2) u_k = 1.2;
+    if(u > 2.0) u_k = 2.0;
     else if(u <= 0) u_k = 0;
     else u_k = u;
 
-    uvel_msg_.data = u_k;
-    
     // inverse function 
     output = (-4.3253e-02 + sqrt(pow(4.3253e-02,2)-4*(-1.0444e-05)*(-42.3682-u_k)))/(2*(-1.0444e-05));
     //output = tx_throttle_;
-	
+  
   }
   // output command
-  //prev_err = err;
-  //prev_u_k = u_k;
-  //prev_u = u;
+  prev_u_k = u_k;
+  prev_u = u;
   prev_dist_err = dist_err;
   throttle_.writeMicroseconds(output);
   return output;
@@ -221,8 +236,6 @@ void CheckEN() {
   logfile_.print(",");
   logfile_.print(Ki_);
   logfile_.print(",");
-  logfile_.print(Kd_);
-  logfile_.print(",");
   logfile_.print(tx_dist_);
   logfile_.print(",");
   logfile_.print(target_ANGLE);
@@ -247,10 +260,9 @@ void CountT() {
    ros variable
 */
 ros::NodeHandle nh_;
-ros::Subscriber<geometry_msgs::Twist> rosSubMsg("/twist_msg", &rosTwistCallback);
+ros::Subscriber<scale_truck_control::ctl> rosSubMsg("/ctl_msg", &rosCtlCallback);
 ros::Publisher rosPubVel("/vel_msg", &vel_msg_);
 ros::Publisher rosPubImu("/imu_msg", &imu_msg_);
-ros::Publisher rosPubUVel("/uvel_msg", &uvel_msg_);
 /*
    Arduino setup()
 */
@@ -259,7 +271,6 @@ void setup() {
   nh_.subscribe(rosSubMsg);
   nh_.advertise(rosPubVel);
   nh_.advertise(rosPubImu);
-  nh_.advertise(rosPubUVel);
   throttle_.attach(THROTTLE_PIN);
   steer_.attach(STEER_PIN);
   pinMode(EN_PINA, INPUT);
@@ -333,7 +344,6 @@ void loop() {
   if ((currentTime - prevTime) >= (ANGLE_TIME / 1000)) {
     rosPubVel.publish(&vel_msg_);
     rosPubImu.publish(&imu_msg_);
-    rosPubUVel.publish(&uvel_msg_);
     prevTime = currentTime;
   }
 }

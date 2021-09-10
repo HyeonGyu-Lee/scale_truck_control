@@ -32,6 +32,10 @@
 #include "lane_detect/lane_detect.hpp"
 #include "sock_udp/sock_udp.hpp"
 
+//custom msgs
+#include <scale_truck_control/ctl.h>
+#include <scale_truck_control/vel.h>
+
 namespace scale_truck_control {
 
 enum Trucks{
@@ -54,9 +58,8 @@ class ScaleTruckController {
 
     void imageCallback(const sensor_msgs::ImageConstPtr &msg);
     void objectCallback(const obstacle_detector::Obstacles &msg);
-    void velCallback(const std_msgs::Float32 &msg);
-    void uvelCallback(const std_msgs::Float32 &msg);
-    bool publishControlMsg(const geometry_msgs::Twist msg);
+    void velCallback(const scale_truck_control::vel &msg);
+    bool publishControlMsg(const scale_truck_control::ctl msg);
 
     ros::NodeHandle nodeHandle_;
     ros::Publisher ControlDataPublisher_;
@@ -64,7 +67,6 @@ class ScaleTruckController {
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
     ros::Subscriber velSubscriber_;
-    ros::Subscriber uvelSubscriber_;
 	
     //image
     LaneDetect::LaneDetector laneDetector_;
@@ -77,7 +79,6 @@ class ScaleTruckController {
     float SafetyVel_;
     float ResultVel_;
     float FVmaxVel_;
-	float uVel_;
 
     //object
     int ObjSegments_;
@@ -115,10 +116,8 @@ class ScaleTruckController {
     boost::shared_mutex mutexImageCallback_;
 
     float CurVel_;
+    float RefVel_;
     boost::shared_mutex mutexVelCallback_;
-
-    float UVel_;
-    boost::shared_mutex mutexUVelCallback_;
 
     bool imageStatus_ = false;
     boost::shared_mutex mutexImageStatus_;

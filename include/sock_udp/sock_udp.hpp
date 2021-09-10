@@ -21,6 +21,7 @@ struct lane_coef{
 struct UDP_DATA{
     int index;
     int to;
+    int sync;
     float target_vel;
     float current_vel;
     float target_dist;

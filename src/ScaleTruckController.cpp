@@ -237,7 +237,9 @@ void* ScaleTruckController::UDPrecvInThread()
                 udpData_.index = udpData.index;
                 udpData_.target_vel = udpData.target_vel;
                 udpData_.target_dist = udpData.target_dist;
-
+                udpData_.sync = udpData.sync;
+                
+		sync_flag_ = udpData_.sync;
                 TargetVel_ = udpData_.target_vel;
                 TargetDist_ = udpData_.target_dist;
             }
@@ -302,8 +304,8 @@ void ScaleTruckController::spin() {
     msg.send_vel = ResultVel_;
     msg.cur_dist = distance_;
     msg.ref_dist = TargetDist_;
+    msg.sync = sync_flag_;
     lane = laneDetector_.lane_coef_;
-
     ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
 

@@ -74,6 +74,7 @@ class ScaleTruckController {
     int waitKeyDelay_;
     bool enableConsoleOutput_;
     int sync_flag_;
+    int cam_failure_;
 
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
     float TargetVel_; // -1 ~ 1  - Twist msg linear.x

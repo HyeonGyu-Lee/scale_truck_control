@@ -98,6 +98,7 @@ void ScaleTruckController::init() {
 
   distance_ = 10.f;
   distAngle_ = 0;
+  cam_failure_ = false;
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -112,7 +113,7 @@ bool ScaleTruckController::isNodeRunning(void){
 
 void* ScaleTruckController::lanedetectInThread() {
   static int cnt = 20;
-  /*Mat dst;
+  Mat dst;
   std::vector<Mat>channels;
   int count = 0;
   if((!camImageTmp_.empty()) && (cnt != 0) && (TargetVel_ != 0))
@@ -126,7 +127,7 @@ void* ScaleTruckController::lanedetectInThread() {
       cnt -= 1;
     else 
       cnt = 20;
-  }*/
+  }
   float AngleDegree;
   camImageTmp_ = camImageCopy_.clone();
   laneDetector_.get_steer_coef(CurVel_);
@@ -230,6 +231,7 @@ void* ScaleTruckController::UDPrecvInThread()
         if(udpData.index == (Index_ - 1)) {
             udpData_.target_vel = udpData.target_vel; //udpData.current_vel;
             TargetVel_ = udpData_.target_vel;
+            TargetDist_ = udpData_.target_dist;
         }
         if(udpData.index == 307) {
             if(udpData.to == Index_) {
@@ -237,8 +239,10 @@ void* ScaleTruckController::UDPrecvInThread()
                 udpData_.target_vel = udpData.target_vel;
                 udpData_.target_dist = udpData.target_dist;
                 udpData_.sync = udpData.sync;
+		udpData_.cf = udpData.cf;
                 
 		sync_flag_ = udpData_.sync;
+		cam_failure_ = udpData_.cf;
                 TargetVel_ = udpData_.target_vel;
                 TargetDist_ = udpData_.target_dist;
             }
@@ -304,6 +308,7 @@ void ScaleTruckController::spin() {
     msg.cur_dist = distance_;
     msg.ref_dist = TargetDist_;
     msg.sync = sync_flag_;
+    msg.cf = cam_failure_;
     lane = laneDetector_.lane_coef_;
     ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
@@ -330,7 +335,7 @@ void ScaleTruckController::imageCallback(const sensor_msgs::ImageConstPtr &msg) 
     ROS_ERROR("cv_bridge exception : %s", e.what());
   }
 
-  if(cam_image) {
+  if(cam_image && !cam_failure_) {
     {
       boost::unique_lock<boost::shared_mutex> lockImageCallback(mutexImageCallback_);
       imageHeader_ = msg->header;

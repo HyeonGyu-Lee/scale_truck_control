@@ -12,12 +12,28 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
     /******* recording log *******/	  
 	gettimeofday(&start_, NULL);
 
-    /******* Camera  calibration *******/	  
+    /******* Camera  calibration *******/
+	double matrix[9], dist_coef[5];
+	nodeHandle_.param("Calibration/matrix/1",matrix[0], 3.2918100682757097e+02);
+	nodeHandle_.param("Calibration/matrix/2",matrix[1], 0.);
+	nodeHandle_.param("Calibration/matrix/3",matrix[2], 320.);
+	nodeHandle_.param("Calibration/matrix/4",matrix[3], 0.);
+	nodeHandle_.param("Calibration/matrix/5",matrix[4], 3.2918100682757097e+02);
+	nodeHandle_.param("Calibration/matrix/6",matrix[5], 240.);
+	nodeHandle_.param("Calibration/matrix/7",matrix[6], 0.);
+	nodeHandle_.param("Calibration/matrix/8",matrix[7], 0.);
+	nodeHandle_.param("Calibration/matrix/9",matrix[8], 1.);
+
+	nodeHandle_.param("Calibration/dist_coef/1",dist_coef[0], -3.2566540239089398e-01);
+	nodeHandle_.param("Calibration/dist_coef/2",dist_coef[1], 1.1504807178349362e-01);
+	nodeHandle_.param("Calibration/dist_coef/3",dist_coef[2], 0.);
+	nodeHandle_.param("Calibration/dist_coef/4",dist_coef[3], 0.);
+	nodeHandle_.param("Calibration/dist_coef/5",dist_coef[4], -2.1908791800876997e-02);
 
 	Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
 	Mat dist_coeffs = Mat::zeros(1, 5, CV_64FC1);
-	camera_matrix = (Mat1d(3, 3) << 3.2918100682757097e+02, 0., 320., 0., 3.2918100682757097e+02, 240., 0., 0., 1.);
-	dist_coeffs = (Mat1d(1, 5) << -3.2566540239089398e-01, 1.1504807178349362e-01, 0., 0., -2.1908791800876997e-02);
+	camera_matrix = (Mat1d(3, 3) << matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5], matrix[6], matrix[7], matrix[8]);
+	dist_coeffs = (Mat1d(1, 5) << dist_coef[0], dist_coef[1], dist_coef[2], dist_coef[3], dist_coef[4]);
 	initUndistortRectifyMap(camera_matrix, dist_coeffs, Mat(), camera_matrix, Size(640, 480), CV_32FC1, map1_, map2_);
 
 	/********** PID control ***********/

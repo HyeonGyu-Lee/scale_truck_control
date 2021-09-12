@@ -89,6 +89,7 @@ private:
 	int sobel_min_th_, sobel_max_th_;
 	int hls_min_th_, hls_max_th_;
 	int width_, height_;
+	bool option_; // dynamic ROI
 	double diff_;
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;

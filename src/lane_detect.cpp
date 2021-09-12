@@ -47,8 +47,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/extra",f_extra, 0.0f);
 	nodeHandle_.param("ROI/extra_up",extra_up, 0);
 	nodeHandle_.param("ROI/extra_down",extra_down, 0);
-	nodeHandle_.param("ROI/distance",distance_, 0);
-
+	nodeHandle_.param("ROI/dynamic_roi",option_, true);
+	distance_ = 0;
 	top_gap = width_ * t_gap; 
 	bot_gap = width_ * b_gap;
 	top_height = height_ * t_height;
@@ -239,8 +239,15 @@ LaneDetector::~LaneDetector(void) {
 		int min_pix = 30 * width / 1280;
 
 		int window_width = margin * 2;	// 120
-		int window_height = (height > distance_) ? ((height-distance_) / n_windows) : (height / n_windows);	// defalut = 53
-		//int window_height = (height-distance_) / n_windows;	// defalut = 53
+		int window_height;
+		int distance;
+		if (option_) {
+			window_height = (height > distance_) ? ((height-distance_) / n_windows) : (height / n_windows);	// defalut = 53
+			distance = distance_;
+		} else {
+			distance = 0;
+		        window_height = height / n_windows;
+		}
 		int offset = margin;
 		int range = 120 / 4;
 		//int Lstart = quarter_point - offset; // 320 - 120
@@ -293,9 +300,8 @@ LaneDetector::~LaneDetector(void) {
 			for (unsigned int index = (nonZero.total() - 1); index > 1; index--) {
 				nZ_y = nonZero.at<Point>(index).y;
 				nZ_x = nonZero.at<Point>(index).x;
-
 				if ((nZ_y >= Ly_pos) && \
-					(nZ_y > (distance_)) && \
+					(nZ_y > (distance)) && \
 					(nZ_y < Ly_top) && \
 					(nZ_x >= Lx_pos) && \
 					(nZ_x < (Lx_pos + window_width))) {
@@ -306,8 +312,9 @@ LaneDetector::~LaneDetector(void) {
 					}
 					good_left_inds.push_back(index);
 				}
+				
 				if ((nZ_y >= (Ry_pos)) && \
-					(nZ_y > (distance_)) && \
+					(nZ_y > (distance)) && \
 					(nZ_y < Ry_top) && \
 					(nZ_x >= Rx_pos) && \
 					(nZ_x < (Rx_pos + window_width))) {
@@ -580,7 +587,7 @@ LaneDetector::~LaneDetector(void) {
 
 	void LaneDetector::get_steer_coef(float vel){
 		if (vel < 0.65f){
-			K1_ = K2_ =  0.15f;	
+			K1_ = K2_ =  0.15f;
 		}
 		else{
 			K1_ = ((-4.1551f) * pow(vel, 4)) + (14.7461f * pow(vel, 3)) + ((-19.0274f) * pow(vel, 2)) + (10.3868f * vel) - 1.8701f;

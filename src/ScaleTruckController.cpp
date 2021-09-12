@@ -129,7 +129,7 @@ void* ScaleTruckController::lanedetectInThread() {
   }*/
   float AngleDegree;
   camImageTmp_ = camImageCopy_.clone();
-  laneDetector_.get_steer_coef(ResultVel_);
+  laneDetector_.get_steer_coef(CurVel_);
   AngleDegree = laneDetector_.display_img(camImageTmp_, waitKeyDelay_, viewImage_);
   if(cnt == 0)
     AngleDegree_ = -distAngle_;
@@ -167,7 +167,6 @@ void* ScaleTruckController::objectdetectInThread() {
   } else {
     laneDetector_.distance_ = 0;
   }
-
   if(!Index_){	// LV velocity
 	  if(distance_ <= LVstopDist_) {
 	    ResultVel_ = 0.0f;

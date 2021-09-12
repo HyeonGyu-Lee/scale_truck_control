@@ -27,7 +27,7 @@ ROI:
   extra: 0.00
   extra_up: 140
   extra_down: 180
-  dynamic_roi: false
+  dynamic_roi: true
 
 LaneDetector:  
   sob_min_th: 175
@@ -49,6 +49,6 @@ LaneDetector:
   #K2: 0.11
 
 image_view:
-  enable_opencv: true
+  enable_opencv: false
   wait_key_delay: 1
-  enable_console_output: true
+  enable_console_output: false

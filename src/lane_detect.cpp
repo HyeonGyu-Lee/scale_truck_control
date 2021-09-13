@@ -54,13 +54,14 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	corners_.resize(4);
 	warpCorners_.resize(4);
 
-	float t_gap, b_gap, t_height, b_height, f_extra;
+	float t_gap, b_gap, t_height, b_height, f_extra, b_extra;
 	int top_gap, bot_gap, top_height, bot_height, extra, extra_up, extra_down;
 	nodeHandle_.param("ROI/top_gap",t_gap, 0.336f);
 	nodeHandle_.param("ROI/bot_gap",b_gap, 0.078f);
 	nodeHandle_.param("ROI/top_height",t_height, 0.903f);
 	nodeHandle_.param("ROI/bot_height",b_height, 0.528f);
-	nodeHandle_.param("ROI/extra",f_extra, 0.0f);
+	nodeHandle_.param("ROI/extra_f",f_extra, 0.0f);
+	nodeHandle_.param("ROI/extra_b",b_extra, 0.0f);
 	nodeHandle_.param("ROI/extra_up",extra_up, 0);
 	nodeHandle_.param("ROI/extra_down",extra_down, 0);
 	nodeHandle_.param("ROI/dynamic_roi",option_, true);
@@ -71,10 +72,10 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	bot_height = height_ * b_height;
 
 	/* ROI corner points  */
-	corners_[0] = Point2f(top_gap, bot_height);
-	corners_[1] = Point2f(width_ - top_gap, bot_height);
-	corners_[2] = Point2f(bot_gap, top_height);
-	corners_[3] = Point2f(width_ - bot_gap, top_height);
+	corners_[0] = Point2f(top_gap+f_extra, bot_height);
+	corners_[1] = Point2f((width_ - top_gap)+f_extra, bot_height);
+	corners_[2] = Point2f(bot_gap+b_extra, top_height);
+	corners_[3] = Point2f((width_ - bot_gap)+b_extra, top_height);
 	
 	wide_extra_upside_ = extra_up;
 	wide_extra_downside_ = extra_down;

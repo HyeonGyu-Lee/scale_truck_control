@@ -31,3 +31,16 @@ Calibration:
     3:0.
     4:0. 
     5:-0.037408338000060472
+
+ROI:
+  width: 640
+  height: 480
+  top_gap: 0.413
+  bot_gap: 0.185
+  top_height: 0.99
+  bot_height: 0.485
+  extra_f: 8.00
+  extra_b: 8.00
+  extra_up: 140
+  extra_down: 180
+

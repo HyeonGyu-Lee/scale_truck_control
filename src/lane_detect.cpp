@@ -686,7 +686,7 @@ LaneDetector::~LaneDetector(void) {
 		filters = cv::cuda::createGaussianFilter(gpu_warped_frame.type(), gpu_blur_frame.type(), cv::Size(5,5), 0, 0, cv::BORDER_DEFAULT);
 		filters->apply(gpu_warped_frame, gpu_blur_frame);
 		cuda::cvtColor(gpu_blur_frame, gpu_gray_frame, COLOR_BGR2GRAY);
-		cuda::threshold(gpu_gray_frame, gpu_binary_frame, 128, 255, THRESH_BINARY);
+		cuda::threshold(gpu_gray_frame, gpu_binary_frame, 128, 255, THRESH_BINARY);//128
 		gpu_binary_frame.download(gray_frame);
 		
 		sliding_frame = detect_lines_sliding_window(gray_frame, _view);
@@ -703,7 +703,7 @@ LaneDetector::~LaneDetector(void) {
 			moveWindow("Window3", 1280, 0);
 
 			string TEXT = "ROI";
-			Point2f T_pos(corners_[0]);
+			Point2f T_pos(Point2f(270, _frame.rows-10));
 			putText(new_frame, TEXT, T_pos, FONT_HERSHEY_DUPLEX, 2, Scalar(0, 0, 255), 5, 8);
 
 			line(new_frame, corners_[0], corners_[2], Scalar(0, 0, 255), 5);

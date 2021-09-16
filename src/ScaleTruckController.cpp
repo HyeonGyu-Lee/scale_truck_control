@@ -112,7 +112,7 @@ bool ScaleTruckController::isNodeRunning(void){
 }
 
 void* ScaleTruckController::lanedetectInThread() {
-  static int cnt = 20;
+  static int cnt = 10;
   Mat dst;
   std::vector<Mat>channels;
   int count = 0;
@@ -123,10 +123,10 @@ void* ScaleTruckController::lanedetectInThread() {
     for(int ch = 0; ch<dst.channels();ch++) {
       count += countNonZero(channels[ch]);
     }
-    if(count == 0)
+    if(count == 0 && cam_failure_ == 1)
       cnt -= 1;
     else 
-      cnt = 20;
+      cnt = 10;
   }
   float AngleDegree;
   camImageTmp_ = camImageCopy_.clone();

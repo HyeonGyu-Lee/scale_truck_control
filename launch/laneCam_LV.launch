@@ -6,7 +6,7 @@
 
   <!-- ROS parameter files -->
   <arg name="ros_param_file"             default="$(find scale_truck_control)/config/config.yaml"/>
-  <arg name="vehicle_param_file"             default="$(find scale_truck_control)/config/FV2.yaml"/>
+  <arg name="vehicle_param_file"             default="$(find scale_truck_control)/config/LV.yaml"/>
   <arg name="lidar_param_file"             default="$(find scale_truck_control)/config/laser_filter.yaml"/>
 
   <!-- Load parameters -->
@@ -21,6 +21,16 @@
     <param name="pixel_format" value="yuyv" />
     <param name="camera_frame_id" value="usb_cam" />
     <param name="io_method" value="mmap" />
+  </node>
+
+  <node name="lane_cam" pkg="usb_cam" type="usb_cam_node" >
+    <param name="video_device" value="/dev/video2" />
+    <param name="image_width" value="640" />
+    <param name="image_height" value="360" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <remap from="/usb_cam/" to="/lane_cam/"/>
   </node>
 
   <!-- Start rplidar_ros -->

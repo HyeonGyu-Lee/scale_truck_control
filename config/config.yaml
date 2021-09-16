@@ -18,7 +18,7 @@ publishers:
     queue_size: 10
   
 ROI:
-  dynamic_roi: false
+  dynamic_roi: true
 
 LaneDetector:  
   sob_min_th: 175
@@ -40,6 +40,6 @@ LaneDetector:
   #K2: 0.11
 
 image_view:
-  enable_opencv: true
+  enable_opencv: false
   wait_key_delay: 1
-  enable_console_output: true
+  enable_console_output: false

@@ -200,7 +200,7 @@ void* ScaleTruckController::UDPsendInThread()
 
     udpData.index = Index_;
     udpData.to = 307;
-    if(distance_ <= LVstopDist_)
+    if(distance_ <= LVstopDist_ || TargetVel_ >= 2.0)
       udpData.target_vel = 0;
     else
       udpData.target_vel = RefVel_;

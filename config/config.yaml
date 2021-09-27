@@ -19,6 +19,7 @@ publishers:
   
 ROI:
   dynamic_roi: true
+  threshold: 170
 
 LaneDetector:  
   sob_min_th: 175

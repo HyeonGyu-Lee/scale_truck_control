@@ -90,6 +90,7 @@ private:
 	int hls_min_th_, hls_max_th_;
 	int width_, height_;
 	bool option_; // dynamic ROI
+	int threshold_;
 	double diff_;
 	/********** PID control ***********/
 	int clicker_, throttle_, filter_;

@@ -160,7 +160,7 @@ void* ScaleTruckController::objectdetectInThread() {
     distance_ = dist_tmp;
     distAngle_ = angle_tmp;
   }
-  if(dist_tmp < 1.24 && dist_tmp > 0.30)
+  if(dist_tmp < 1.24 && dist_tmp > 0.30) // 1.26 ~ 0.28
   {
     double height;
     //laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
@@ -200,10 +200,11 @@ void* ScaleTruckController::UDPsendInThread()
 
     udpData.index = Index_;
     udpData.to = 307;
-    if(distance_ <= LVstopDist_)
+    if(distance_ <= LVstopDist_ || TargetVel_ >= 2.0)
       udpData.target_vel = 0;
-    else
+    else {
       udpData.target_vel = RefVel_;
+    }
     udpData.current_vel = CurVel_;
     udpData.target_dist = TargetDist_;
     udpData.current_dist = distance_;

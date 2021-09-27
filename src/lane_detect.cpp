@@ -65,6 +65,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	nodeHandle_.param("ROI/extra_up",extra_up, 0);
 	nodeHandle_.param("ROI/extra_down",extra_down, 0);
 	nodeHandle_.param("ROI/dynamic_roi",option_, true);
+	nodeHandle_.param("ROI/threshold",threshold_, 128);
 	distance_ = 0;
 	top_gap = width_ * t_gap; 
 	bot_gap = width_ * b_gap;
@@ -259,7 +260,7 @@ LaneDetector::~LaneDetector(void) {
 		int window_height;
 		int distance;
 		if (option_) {
-			window_height = (height > distance_) ? ((height-distance_) / n_windows) : (height / n_windows);	// defalut = 53
+			window_height = (height >= distance_) ? ((height-distance_) / n_windows) : (height / n_windows);	// defalut = 53
 			distance = distance_;
 		} else {
 			distance = 0;
@@ -686,7 +687,7 @@ LaneDetector::~LaneDetector(void) {
 		filters = cv::cuda::createGaussianFilter(gpu_warped_frame.type(), gpu_blur_frame.type(), cv::Size(5,5), 0, 0, cv::BORDER_DEFAULT);
 		filters->apply(gpu_warped_frame, gpu_blur_frame);
 		cuda::cvtColor(gpu_blur_frame, gpu_gray_frame, COLOR_BGR2GRAY);
-		cuda::threshold(gpu_gray_frame, gpu_binary_frame, 128, 255, THRESH_BINARY);//128
+		cuda::threshold(gpu_gray_frame, gpu_binary_frame, threshold_, 255, THRESH_BINARY);//128
 		gpu_binary_frame.download(gray_frame);
 		
 		sliding_frame = detect_lines_sliding_window(gray_frame, _view);
@@ -702,15 +703,36 @@ LaneDetector::~LaneDetector(void) {
 			namedWindow("Window3");
 			moveWindow("Window3", 1280, 0);
 
+			float roi_gap = 0;
+			float distance = 0;
+			vector<Point2f> roi_corners;
+			roi_corners.resize(4);
+			roi_corners = corners_;
+
+			if (option_) {
+				distance = distance_;
+			        roi_gap = (480.f > distance) ? (distance / (480.0f)) : (1.f);
+				roi_gap = powf(roi_gap,2.2);
+				roi_corners.at(0).x = corners_[0].x - roi_gap * (corners_[0].x - corners_[2].x);
+				roi_corners.at(0).y = corners_[0].y + roi_gap * (corners_[2].y - corners_[0].y);
+				roi_corners.at(1).x = corners_[1].x + roi_gap * (corners_[3].x - corners_[1].x);
+				roi_corners.at(1).y = corners_[1].y + roi_gap * (corners_[3].y - corners_[1].y);
+			}
+  			
 			string TEXT = "ROI";
-			Point2f T_pos(Point2f(270, _frame.rows-10));
+			Point2f T_pos(Point2f(270, _frame.rows-120));
 			putText(new_frame, TEXT, T_pos, FONT_HERSHEY_DUPLEX, 2, Scalar(0, 0, 255), 5, 8);
 
-			line(new_frame, corners_[0], corners_[2], Scalar(0, 0, 255), 5);
-			line(new_frame, corners_[2], corners_[3], Scalar(0, 0, 255), 5);
-			line(new_frame, corners_[3], corners_[1], Scalar(0, 0, 255), 5);
-			line(new_frame, corners_[1], corners_[0], Scalar(0, 0, 255), 5);
-			
+			line(new_frame, corners_[0], corners_[2], Scalar(0, 255, 0), 5);
+			line(new_frame, corners_[2], corners_[3], Scalar(0, 255, 0), 5);
+			line(new_frame, corners_[3], corners_[1], Scalar(0, 255, 0), 5);
+			line(new_frame, corners_[1], corners_[0], Scalar(0, 255, 0), 5);
+
+			line(new_frame, roi_corners[0], roi_corners[2], Scalar(0, 0, 255), 5);
+			line(new_frame, roi_corners[2], roi_corners[3], Scalar(0, 0, 255), 5);
+			line(new_frame, roi_corners[3], roi_corners[1], Scalar(0, 0, 255), 5);
+			line(new_frame, roi_corners[1], roi_corners[0], Scalar(0, 0, 255), 5);
+				
 			if(!new_frame.empty()) {
 				//resize(new_frame, new_frame, Size(640, 360));
 				imshow("Window1", new_frame);

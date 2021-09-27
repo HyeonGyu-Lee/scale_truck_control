@@ -545,6 +545,7 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 		/* Dynamic ROI */
 		/***************/
 
+		Point temp_roi_point;
 		Point temp_droi_point;
 		vector<Point2f> droi_point_f;
 		vector<Point2f> warped_droi_point;
@@ -574,10 +575,10 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 			
 			droi_points.push_back(temp_droi_point);
 			
-			temp_droi_point.x = (int)corners_[roi_num[i]].x;
-			temp_droi_point.y = (int)corners_[roi_num[i]].y;
+			temp_roi_point.x = (int)corners_[roi_num[i]].x;
+			temp_roi_point.y = (int)corners_[roi_num[i]].y;
 			
-			roi_points.push_back(temp_droi_point);
+			roi_points.push_back(temp_roi_point);
 		}
 
 		const Point* roi_points_point = (const cv::Point*) Mat(roi_points).data;

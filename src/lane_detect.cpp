@@ -552,15 +552,15 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 		vector<Point> droi_points;
 		
 		temp_droi_point.y = (int)height_;
-		temp_droi_point.x = 0
+		temp_droi_point.x = 0;
 		droi_point_f.push_back(temp_droi_point);
-		temp_droi_point.x = (int)width;
+		temp_droi_point.x = (int)width_;
 		droi_point_f.push_back(temp_droi_point);
 		
-		temp_droi_point.y = 0;
-		temp_droi_point.x = (int)width;
+		temp_droi_point.y = distance_;
+		temp_droi_point.x = (int)width_;
 		droi_point_f.push_back(temp_droi_point);
-		temp_droi_point.x = 0
+		temp_droi_point.x = 0;
 		droi_point_f.push_back(temp_droi_point);
 		
 		perspectiveTransform(droi_point_f, warped_droi_point, trans);
@@ -570,10 +570,13 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 			temp_droi_point.x = (int)warped_droi_point[i].x;
 			temp_droi_point.y = (int)warped_droi_point[i].y;
 			
-			droi_points.push_back(temp_droi);
+			droi_points.push_back(temp_droi_point);
+			
+			temp_droi_point.x = (int)corners_[i].x;
+			temp_droi_point.y = (int)corners_[i].y;
+			
+			roi_points.push_back(temp_droi_point);
 		}
-		
-		roi_points.push_back(corners_);
 
 		const Point* roi_points_point = (const cv::Point*) Mat(roi_points).data;
 		int roi_points_number = Mat(roi_points).rows;

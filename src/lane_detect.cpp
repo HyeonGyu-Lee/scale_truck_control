@@ -45,8 +45,8 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
 	center_coef_ = Mat::zeros(3, 1, CV_32F);
 
-	nodeHandle_.param("ROI/width", width_, 1280);
-	nodeHandle_.param("ROI/height", height_, 720);
+	nodeHandle_.param("ROI/width", width_, 640);
+	nodeHandle_.param("ROI/height", height_, 480);
 	center_position_ = width_/2;
 
 	e_values_.resize(3);
@@ -532,7 +532,7 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 		int right_points_number = Mat(right_points).rows;
 		const Point* center_points_point = (const cv::Point*) Mat(center_points).data;
 		int center_points_number = Mat(center_points).rows;
-
+		
 		polylines(new_frame, &left_points_point, &left_points_number, 1, false, Scalar(255, 100, 100), 5);
 		polylines(new_frame, &right_points_point, &right_points_number, 1, false, Scalar(100, 100, 255), 5);
 		polylines(new_frame, &center_points_point, &center_points_number, 1, false, Scalar(100, 255, 100), 5);
@@ -541,6 +541,52 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 		right_point.clear();
 		center_point.clear();
 
+		/***************/
+		/* Dynamic ROI */
+		/***************/
+
+		Point temp_droi_point;
+		vector<Point2f> droi_point_f;
+		vector<Point2f> warped_droi_point;
+		vector<Point> roi_points;
+		vector<Point> droi_points;
+		
+		temp_droi_point.y = (int)height_;
+		temp_droi_point.x = 0
+		droi_point_f.push_back(temp_droi_point);
+		temp_droi_point.x = (int)width;
+		droi_point_f.push_back(temp_droi_point);
+		
+		temp_droi_point.y = 0;
+		temp_droi_point.x = (int)width;
+		droi_point_f.push_back(temp_droi_point);
+		temp_droi_point.x = 0
+		droi_point_f.push_back(temp_droi_point);
+		
+		perspectiveTransform(droi_point_f, warped_droi_point, trans);
+		
+		
+		for (int i = 0; i < 4; i++) {
+			temp_droi_point.x = (int)warped_droi_point[i].x;
+			temp_droi_point.y = (int)warped_droi_point[i].y;
+			
+			droi_points.push_back(temp_droi);
+		}
+		
+		roi_points.push_back(corners_);
+
+		const Point* roi_points_point = (const cv::Point*) Mat(roi_points).data;
+		int roi_points_number = Mat(roi_points).rows;
+		const Point* droi_points_point = (const cv::Point*) Mat(droi_points).data;
+		int droi_points_number = Mat(droi_points).rows;
+
+		polylines(_frame, &roi_points_point, &roi_points_number, 1, false, Scalar(0, 255, 0), 5);
+		polylines(_frame, &droi_points_point, &droi_points_number, 1, false, Scalar(0, 0, 255), 5);
+
+		string TEXT = "ROI";
+		Point2f T_pos(Point2f(270, _frame.rows-120));
+		putText(_frame, TEXT, T_pos, FONT_HERSHEY_DUPLEX, 2, Scalar(0, 0, 255), 5, 8);
+		
 		return new_frame;
 	}
 	return _frame;
@@ -680,36 +726,6 @@ float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {
 		moveWindow("Window2", 640, 0);
 		namedWindow("Window3");
 		moveWindow("Window3", 1280, 0);
-
-		float roi_gap = 0;
-		float distance = 0;
-		vector<Point2f> roi_corners;
-		roi_corners.resize(4);
-		roi_corners = corners_;
-
-		if (option_) {
-			distance = distance_;
-				roi_gap = (480.f > distance) ? (distance / (480.0f)) : (1.f);
-			roi_gap = powf(roi_gap,2.2);
-			roi_corners.at(0).x = corners_[0].x - roi_gap * (corners_[0].x - corners_[2].x);
-			roi_corners.at(0).y = corners_[0].y + roi_gap * (corners_[2].y - corners_[0].y);
-			roi_corners.at(1).x = corners_[1].x + roi_gap * (corners_[3].x - corners_[1].x);
-			roi_corners.at(1).y = corners_[1].y + roi_gap * (corners_[3].y - corners_[1].y);
-		}
-		
-		string TEXT = "ROI";
-		Point2f T_pos(Point2f(270, _frame.rows-120));
-		putText(new_frame, TEXT, T_pos, FONT_HERSHEY_DUPLEX, 2, Scalar(0, 0, 255), 5, 8);
-
-		line(new_frame, corners_[0], corners_[2], Scalar(0, 255, 0), 5);
-		line(new_frame, corners_[2], corners_[3], Scalar(0, 255, 0), 5);
-		line(new_frame, corners_[3], corners_[1], Scalar(0, 255, 0), 5);
-		line(new_frame, corners_[1], corners_[0], Scalar(0, 255, 0), 5);
-
-		line(new_frame, roi_corners[0], roi_corners[2], Scalar(0, 0, 255), 5);
-		line(new_frame, roi_corners[2], roi_corners[3], Scalar(0, 0, 255), 5);
-		line(new_frame, roi_corners[3], roi_corners[1], Scalar(0, 0, 255), 5);
-		line(new_frame, roi_corners[1], roi_corners[0], Scalar(0, 0, 255), 5);
 			
 		if(!new_frame.empty()) {
 			resize(new_frame, new_frame, Size(640, 480));

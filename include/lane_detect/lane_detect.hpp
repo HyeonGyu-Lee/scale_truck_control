@@ -31,7 +31,6 @@ public:
 	float display_img(Mat _frame, int _delay, bool _view);
 	void get_steer_coef(float vel);
 	float K1_, K2_;
-	bool steer_flag_ = false;
 	int distance_ = 0;
 	scale_truck_control::lane_coef lane_coef_;
 	Mat frame_;
@@ -43,10 +42,10 @@ private:
 	Mat warped_back_img(Mat _frame);
 	Mat warped_img(Mat _frame);
 	Mat detect_lines_sliding_window(Mat _frame, bool _view);
-	Mat draw_lane(Mat _sliding_frame, Mat _frame, bool _view);
+	Mat draw_lane(Mat _sliding_frame, Mat _frame);
+	void calc_curv_rad_and_center_dist();
 	void clear_release();
 	void steer_error_log();
-	void calc_curv_rad_and_center_dist(Mat _frame, bool _view);
 
 	ros::NodeHandle nodeHandle_;
 
@@ -86,16 +85,10 @@ private:
 	vector<Point2f> warpCorners_;
 	float wide_extra_upside_, wide_extra_downside_;
 
-	int sobel_min_th_, sobel_max_th_;
-	int hls_min_th_, hls_max_th_;
 	int width_, height_;
 	bool option_; // dynamic ROI
 	int threshold_;
 	double diff_;
-	/********** PID control ***********/
-	int clicker_, throttle_, filter_;
-	double Kp_, Ki_, Kd_, dt_;
-
 };
 
 }

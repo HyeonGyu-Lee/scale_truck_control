@@ -23,7 +23,7 @@ ScaleTruckController::~ScaleTruckController() {
   msg.send_vel = 0;
   msg.cur_dist = distance_;
   msg.ref_dist = TargetDist_;
-       
+
   ControlDataPublisher_.publish(msg);
   controlThread_.join();
   udprecvThread_.join();
@@ -32,22 +32,35 @@ ScaleTruckController::~ScaleTruckController() {
 }
 
 bool ScaleTruckController::readParameters() {
+  /***************/
+  /* View Option */
+  /***************/
   nodeHandle_.param("image_view/enable_opencv", viewImage_, true);
   nodeHandle_.param("image_view/wait_key_delay", waitKeyDelay_, 3);
   nodeHandle_.param("image_view/enable_console_output", enableConsoleOutput_, true);
+  
+  /*******************/
+  /* Velocity Option */
+  /*******************/
   nodeHandle_.param("params/target_vel", TargetVel_, 0.5f); // m/s
   nodeHandle_.param("params/safety_vel", SafetyVel_, 0.3f); // m/s
   nodeHandle_.param("params/fv_max_vel", FVmaxVel_, 0.8f); // m/s
   nodeHandle_.param("params/ref_vel", RefVel_, 0.0f); // m/s
+  
+  /*******************/
+  /* Distance Option */
+  /*******************/
   nodeHandle_.param("params/lv_stop_dist", LVstopDist_, 0.5f); // m
   nodeHandle_.param("params/fv_stop_dist", FVstopDist_, 0.5f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.5f); // m
   nodeHandle_.param("params/target_dist", TargetDist_, 0.8f); // m
+  
+  /**************/
+  /* UDP Option */
+  /**************/
   nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
   nodeHandle_.param("params/udp_group_port", PORT_, 9307);
   nodeHandle_.param("params/truck_info", Index_, 0);
-  nodeHandle_.param("params/Kp_d", Kp_d_, 2.0f);
-  nodeHandle_.param("params/Kd_d", Kd_d_, 0.4f);
 
   return true;
 }
@@ -68,23 +81,40 @@ void ScaleTruckController::init() {
   std::string LanecoefTopicName;
   int LanecoefQueueSize;
 
+  /******************************/
+  /* Ros Topic Subscribe Option */
+  /******************************/
   nodeHandle_.param("subscribers/camera_reading/topic", imageTopicName, std::string("/usb_cam/image_raw"));
   nodeHandle_.param("subscribers/camera_reading/queue_size",imageQueueSize, 1);
   nodeHandle_.param("subscribers/obstacle_reading/topic", objectTopicName, std::string("/raw_obstacles"));
   nodeHandle_.param("subscribers/obstacle_reading/queue_size",objectQueueSize, 100);
   nodeHandle_.param("subscribers/velocity_reading/topic", velTopicName, std::string("/vel_msg"));
   nodeHandle_.param("subscribers/velocity_reading/queue_size",velQueueSize, 100);
+  
+  /******************************/
+  /* Ros Topic Publish Option */
+  /******************************/
   nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("ctl_msg"));
   nodeHandle_.param("publishers/control_data/queue_size", ControlDataQueueSize, 1);
   nodeHandle_.param("publishers/lane_coef/topic", LanecoefTopicName, std::string("lane_msg"));
   nodeHandle_.param("publishers/lane_coef/queue_size", LanecoefQueueSize, 10);
 
+  /************************/
+  /* Ros Topic Subscriber */
+  /************************/
   imageSubscriber_ = nodeHandle_.subscribe(imageTopicName, imageQueueSize, &ScaleTruckController::imageCallback, this);
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
   velSubscriber_ = nodeHandle_.subscribe(velTopicName, velQueueSize, &ScaleTruckController::velCallback, this);
+  
+  /***********************/
+  /* Ros Topic Publisher */
+  /***********************/
   ControlDataPublisher_ = nodeHandle_.advertise<scale_truck_control::ctl>(ControlDataTopicName, ControlDataQueueSize);
   LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
  
+  /******************/
+  /* UDP Multicast  */
+  /******************/
   UDPsend_.GROUP_ = ADDR_.c_str();
   UDPsend_.PORT_ = PORT_;
   UDPsend_.sendInit();
@@ -93,12 +123,17 @@ void ScaleTruckController::init() {
   UDPrecv_.PORT_ = PORT_;
   UDPrecv_.recvInit();
 
+  /**********************************/
+  /* Control & Communication Thread */
+  /**********************************/
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
   udprecvThread_ = std::thread(&ScaleTruckController::UDPrecvInThread, this);
 
+  /**********************/
+  /* Safety Start Setup */
+  /**********************/
   distance_ = 10.f;
   distAngle_ = 0;
-  cam_failure_ = false;
 }
 
 bool ScaleTruckController::getImageStatus(void){
@@ -109,6 +144,11 @@ bool ScaleTruckController::getImageStatus(void){
 bool ScaleTruckController::isNodeRunning(void){
   boost::shared_lock<boost::shared_mutex> lock(mutexNodeStatus_);
   return isNodeRunning_;
+}
+
+bool ScaleTruckController::isCamRunning(void){
+  boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
+  return cam_failure_;
 }
 
 void* ScaleTruckController::lanedetectInThread() {
@@ -123,7 +163,7 @@ void* ScaleTruckController::lanedetectInThread() {
     for(int ch = 0; ch<dst.channels();ch++) {
       count += countNonZero(channels[ch]);
     }
-    if(count == 0 && cam_failure_ == 1)
+    if(count == 0 && cam_failure_)
       cnt -= 1;
     else 
       cnt = 10;
@@ -145,6 +185,9 @@ void* ScaleTruckController::objectdetectInThread() {
   ObjCircles_ = Obstacle_.circles.size();
    
   dist_tmp = 10.f; 
+  /**************/
+  /* Lidar Data */
+  /**************/
   for(int i = 0; i < ObjCircles_; i++)
   {
     //dist = sqrt(pow(Obstacle_.circles[i].center.x,2)+pow(Obstacle_.circles[i].center.y,2));
@@ -160,6 +203,9 @@ void* ScaleTruckController::objectdetectInThread() {
     distance_ = dist_tmp;
     distAngle_ = angle_tmp;
   }
+  /*****************************/
+  /* Dynamic ROI Distance Data */
+  /*****************************/
   if(dist_tmp < 1.24 && dist_tmp > 0.30) // 1.26 ~ 0.28
   {
     double height;
@@ -168,8 +214,13 @@ void* ScaleTruckController::objectdetectInThread() {
   } else {
     laneDetector_.distance_ = 0;
   }
-  if(!Index_){	// LV velocity
+  
+  if(!Index_){	
+      /***************/
+      /* LV velocity */
+      /***************/
 	  if(distance_ <= LVstopDist_) {
+		// Emergency Brake
 	    ResultVel_ = 0.0f;
 	  }
 	  else if (distance_ <= SafetyDist_){
@@ -185,8 +236,12 @@ void* ScaleTruckController::objectdetectInThread() {
 		ResultVel_ = TargetVel_;
 	  }
   }
-  else{		// FV velocity
-	  if ((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){	// Emergency
+  else{
+      /***************/
+      /* FV velocity */
+      /***************/
+	  if ((distance_ <= FVstopDist_) || (TargetVel_ <= 0.1f)){
+		// Emergency Brake
 		ResultVel_ = 0.0f;
 	  } else {
 		ResultVel_ = TargetVel_;
@@ -226,11 +281,11 @@ void* ScaleTruckController::UDPsendInThread()
 void* ScaleTruckController::UDPrecvInThread()
 {
     struct UDPsock::UDP_DATA udpData;
-    //std::this_thread::sleep_for(wait_udp);
+	
     while(!controlDone_) { 
         UDPrecv_.recvData(&udpData);
         if(udpData.index == (Index_ - 1)) {
-            udpData_.target_vel = udpData.target_vel; //udpData.current_vel;
+            udpData_.target_vel = udpData.target_vel;
             TargetVel_ = udpData_.target_vel;
             TargetDist_ = udpData_.target_dist;
         }
@@ -240,12 +295,16 @@ void* ScaleTruckController::UDPrecvInThread()
                 udpData_.target_vel = udpData.target_vel;
                 udpData_.target_dist = udpData.target_dist;
                 udpData_.sync = udpData.sync;
-		udpData_.cf = udpData.cf;
-                
-		sync_flag_ = udpData_.sync;
-		cam_failure_ = udpData_.cf;
-                TargetVel_ = udpData_.target_vel;
-                TargetDist_ = udpData_.target_dist;
+				udpData_.cf = udpData.cf;
+				sync_flag_ = udpData_.sync;
+				
+				{
+				boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
+				cam_failure_ = udpData_.cf;
+				}
+				
+				TargetVel_ = udpData_.target_vel;
+				TargetDist_ = udpData_.target_dist;
             }
         }
     }
@@ -257,12 +316,9 @@ void ScaleTruckController::displayConsole() {
   printf("\033[1;1H");
   printf("\nAngle           : %2.3f degree", AngleDegree_);
   printf("\nRefer Vel       : %3.3f m/s", RefVel_);
-  printf("\nSend Vel       : %3.3f m/s", ResultVel_);
-  printf("\nTar/Saf/Cur Vel : %3.3f / %3.3f / %3.3f m/s", TargetVel_, SafetyVel_, CurVel_);
-  printf("\nTar/Saf/Cur Dist: %3.3f / %3.3f / %3.3f m", TargetDist_, SafetyDist_, distance_);
-  printf("\nUDP_data        : %d (LV:0,FV1:1,FV2:2,CMD:307)", udpData_.index);
-  printf("\nUDP_target_vel  : %3.3lf", udpData_.target_vel);
-  printf("\nUDP_target_dist : %3.3lf", udpData_.target_dist);
+  printf("\nSend Vel        : %3.3f m/s", ResultVel_);
+  printf("\nTar/Cur Vel     : %3.3f / %3.3f / %3.3f m/s", TargetVel_, CurVel_);
+  printf("\nTar/Cur Dist    : %3.3f / %3.3f / %3.3f m", TargetDist_, distance_);
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);

@@ -38,12 +38,6 @@
 
 namespace scale_truck_control {
 
-enum Trucks{
-  LV,
-  FV1,
-  FV2
-};
-
 class ScaleTruckController {
   public:
     explicit ScaleTruckController(ros::NodeHandle nh);
@@ -74,7 +68,6 @@ class ScaleTruckController {
     int waitKeyDelay_;
     bool enableConsoleOutput_;
     int sync_flag_;
-    int cam_failure_;
 
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
     float TargetVel_; // -1 ~ 1  - Twist msg linear.x
@@ -91,10 +84,6 @@ class ScaleTruckController {
     float FVstopDist_;
     float TargetDist_;
     float SafetyDist_;
-
-    //Interval Control
-    float Kp_d_;
-    float Kd_d_;
 
     //UDP
     UDPsock::UDPsocket UDPsend_;
@@ -126,13 +115,16 @@ class ScaleTruckController {
 
     bool isNodeRunning_ = true;
     boost::shared_mutex mutexNodeStatus_;
+	
+    bool cam_failure_ = false;
+    boost::shared_mutex mutexCamStatus_;
 
     bool controlDone_ = false;
      
     bool isNodeRunning(void);
-
     bool getImageStatus(void);    
-
+    bool isNodeRunning(void);
+	
     void* lanedetectInThread();
     void* objectdetectInThread();
     void* UDPsendInThread();

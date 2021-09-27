@@ -16,30 +16,18 @@ publishers:
   lane_coef:
     topic: /lane_msg
     queue_size: 10
-  
-ROI:
-  dynamic_roi: true
-  threshold: 170
 
 LaneDetector:  
-  sob_min_th: 175
-  sob_max_th: 255
-  his_min_th: 175
-  hls_max_th: 255
-  pid_params:
-    Kp: 0.5
-    Ki: 0.001
-    Kd: 0.01
-    dt: 0.1
-  filter_param: 10
   steer_angle: 0.0
   eL_height: 0.2
   e1_height: 1.2563
   trust_height: 0.6667
   lp: 609.3 
-  #K1: 0.08
-  #K2: 0.11
 
+ROI:
+  dynamic_roi: true
+  threshold: 170
+  
 image_view:
   enable_opencv: false
   wait_key_delay: 1

@@ -122,8 +122,7 @@ class ScaleTruckController {
     bool controlDone_ = false;
      
     bool isNodeRunning(void);
-    bool getImageStatus(void);    
-    bool isNodeRunning(void);
+    bool getImageStatus(void);
 	
     void* lanedetectInThread();
     void* objectdetectInThread();

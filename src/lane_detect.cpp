@@ -50,7 +50,6 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	center_position_ = width_/2;
 
 	e_values_.resize(3);
-	steer_flag_ = false;	
 
 	corners_.resize(4);
 	warpCorners_.resize(4);

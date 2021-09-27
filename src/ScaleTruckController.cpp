@@ -146,11 +146,6 @@ bool ScaleTruckController::isNodeRunning(void){
   return isNodeRunning_;
 }
 
-bool ScaleTruckController::isCamRunning(void){
-  boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
-  return cam_failure_;
-}
-
 void* ScaleTruckController::lanedetectInThread() {
   static int cnt = 10;
   Mat dst;

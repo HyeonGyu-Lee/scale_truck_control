@@ -566,17 +566,17 @@ Mat LaneDetector::draw_lane(Mat _sliding_frame, Mat _frame) {
 		
 		perspectiveTransform(droi_point_f, warped_droi_point, trans);
 		
-		int droi_num[5] = {0, 1, 2, 3};
-		int roi_num[5] = {0, 1, 3, 2};
+		int droi_num[5] = {0, 1, 2, 3, 0};
+		int roi_num[5] = {0, 1, 3, 2, 0};
 		
-		for (int i = 0; i < 4; i++) {
-			temp_droi_point.x = (int)warped_droi_point[i].x;
-			temp_droi_point.y = (int)warped_droi_point[i].y;
+		for (int i = 0; i < 5; i++) {
+			temp_droi_point.x = (int)warped_droi_point[droi_num[i]].x;
+			temp_droi_point.y = (int)warped_droi_point[droi_num[i]].y;
 			
 			droi_points.push_back(temp_droi_point);
 			
-			temp_roi_point.x = (int)corners_[i].x;
-			temp_roi_point.y = (int)corners_[i].y;
+			temp_roi_point.x = (int)corners_[roi_num[i]].x;
+			temp_roi_point.y = (int)corners_[roi_num[i]].y;
 			
 			roi_points.push_back(temp_roi_point);
 		}

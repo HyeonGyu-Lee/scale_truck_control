@@ -43,6 +43,7 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	last_Rlane_base_ = 0;
 	left_coef_ = Mat::zeros(3, 1, CV_32F);
 	right_coef_ = Mat::zeros(3, 1, CV_32F);
+	center_coef_ = Mat::zeros(3, 1, CV_32F);
 
 	nodeHandle_.param("ROI/width", width_, 1280);
 	nodeHandle_.param("ROI/height", height_, 720);

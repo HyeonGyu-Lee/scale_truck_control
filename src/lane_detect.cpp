@@ -100,6 +100,8 @@ void LaneDetector::LoadParams(void){
 	nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
 	nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
 	nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
+	nodeHandle_.param("params/K1",K1_, 0.15f);
+	nodeHandle_.param("params/K2",K2_, 0.15f);
 }
 
 Mat LaneDetector::warped_img(Mat _frame) {

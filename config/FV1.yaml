@@ -13,6 +13,8 @@ params:
   angle_degree: 0.0
   Kp_d: 2.0
   Kd_d: 0.4
+  K1: 0.15
+  K2: 0.15
   
 Calibration:
   matrix:

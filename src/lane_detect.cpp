@@ -9,26 +9,26 @@ namespace LaneDetect {
 
 LaneDetector::LaneDetector(ros::NodeHandle nh)
   : nodeHandle_(nh) {  
-    /******* recording log *******/	  
+    	/******* recording log *******/	  
 	gettimeofday(&start_, NULL);
 
-    /******* Camera  calibration *******/
+    	/******* Camera  calibration *******/
 	double matrix[9], dist_coef[5];
-	nodeHandle_.param("Calibration/matrix/1",matrix[0], 3.2918100682757097e+02);
-	nodeHandle_.param("Calibration/matrix/2",matrix[1], 0.);
-	nodeHandle_.param("Calibration/matrix/3",matrix[2], 320.);
-	nodeHandle_.param("Calibration/matrix/4",matrix[3], 0.);
-	nodeHandle_.param("Calibration/matrix/5",matrix[4], 3.2918100682757097e+02);
-	nodeHandle_.param("Calibration/matrix/6",matrix[5], 240.);
-	nodeHandle_.param("Calibration/matrix/7",matrix[6], 0.);
-	nodeHandle_.param("Calibration/matrix/8",matrix[7], 0.);
-	nodeHandle_.param("Calibration/matrix/9",matrix[8], 1.);
+	nodeHandle_.param("Calibration/matrix/a",matrix[0], 3.2918100682757097e+02);
+	nodeHandle_.param("Calibration/matrix/b",matrix[1], 0.);
+	nodeHandle_.param("Calibration/matrix/c",matrix[2], 320.);
+	nodeHandle_.param("Calibration/matrix/d",matrix[3], 0.);
+	nodeHandle_.param("Calibration/matrix/e",matrix[4], 3.2918100682757097e+02);
+	nodeHandle_.param("Calibration/matrix/f",matrix[5], 240.);
+	nodeHandle_.param("Calibration/matrix/g",matrix[6], 0.);
+	nodeHandle_.param("Calibration/matrix/h",matrix[7], 0.);
+	nodeHandle_.param("Calibration/matrix/i",matrix[8], 1.);
 
-	nodeHandle_.param("Calibration/dist_coef/1",dist_coef[0], -3.2566540239089398e-01);
-	nodeHandle_.param("Calibration/dist_coef/2",dist_coef[1], 1.1504807178349362e-01);
-	nodeHandle_.param("Calibration/dist_coef/3",dist_coef[2], 0.);
-	nodeHandle_.param("Calibration/dist_coef/4",dist_coef[3], 0.);
-	nodeHandle_.param("Calibration/dist_coef/5",dist_coef[4], -2.1908791800876997e-02);
+	nodeHandle_.param("Calibration/dist_coef/a",dist_coef[0], -3.2566540239089398e-01);
+	nodeHandle_.param("Calibration/dist_coef/b",dist_coef[1], 1.1504807178349362e-01);
+	nodeHandle_.param("Calibration/dist_coef/c",dist_coef[2], 0.);
+	nodeHandle_.param("Calibration/dist_coef/d",dist_coef[3], 0.);
+	nodeHandle_.param("Calibration/dist_coef/e",dist_coef[4], -2.1908791800876997e-02);
 
 	Mat camera_matrix = Mat::eye(3, 3, CV_64FC1);
 	Mat dist_coeffs = Mat::zeros(1, 5, CV_64FC1);
@@ -87,6 +87,19 @@ LaneDetector::LaneDetector(ros::NodeHandle nh)
 	warpCorners_[2] = Point2f(wide_extra_downside_, height_);
 	warpCorners_[3] = Point2f(width_ - wide_extra_downside_, height_);
 
+	/* Lateral Control coefficient */
+	nodeHandle_.param("params/K", K_, 0.15f);
+	nodeHandle_.param("params/a/a", a_[0], 0.);
+	nodeHandle_.param("params/a/b", a_[1], -0.37169);
+	nodeHandle_.param("params/a/c", a_[2], 1.2602);
+	nodeHandle_.param("params/a/d", a_[3], -1.5161);
+	nodeHandle_.param("params/a/e", a_[4], 0.70696);
+	nodeHandle_.param("params/b/a", b_[0], 0.);
+	nodeHandle_.param("params/b/b", b_[1], -1.7536);
+	nodeHandle_.param("params/b/c", b_[2], 5.0931);
+	nodeHandle_.param("params/b/d", b_[3], -4.9047);
+	nodeHandle_.param("params/b/e", b_[4], 1.6722);
+
 	LoadParams();
 }
 
@@ -100,8 +113,6 @@ void LaneDetector::LoadParams(void){
 	nodeHandle_.param("LaneDetector/trust_height",trust_height_, 1.0f);	
 	nodeHandle_.param("LaneDetector/lp",lp_, 756.0f);	
 	nodeHandle_.param("LaneDetector/steer_angle",SteerAngle_, 0.0f);
-	nodeHandle_.param("params/K1",K1_, 0.15f);
-	nodeHandle_.param("params/K2",K2_, 0.15f);
 }
 
 Mat LaneDetector::warped_img(Mat _frame) {
@@ -656,11 +667,11 @@ void LaneDetector::get_steer_coef(float vel){
 		value = vel;
 
 	if (value < 0.65f){
-		K1_ = K2_ =  0.15f;
+		K1_ = K2_ =  K_;
 	}
 	else{
-		K1_ = ((-4.1551f) * pow(value, 4)) + (14.7461f * pow(value, 3)) + ((-19.0274f) * pow(value, 2)) + (10.3868f * value) - 1.8701f;
-		K2_ = ((-8.1168f) * pow(value, 4)) + (27.6464f * pow(value, 3)) + ((-34.1671f) * pow(value, 2)) + (18.0079f * value) - 3.2609f;
+		K1_ = (a_[0] * pow(value, 4)) + (a_[1] * pow(value, 3)) + (a_[2] * pow(value, 2)) + (a_[3] * value) + a_[4];
+		K2_ = (b_[0] * pow(value, 4)) + (b_[1] * pow(value, 3)) + (b_[2] * pow(value, 2)) + (b_[3] * value) + b_[4];
 	}
 	
 }

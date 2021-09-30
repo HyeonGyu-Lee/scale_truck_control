@@ -165,7 +165,7 @@ void* ScaleTruckController::lanedetectInThread() {
   }
   float AngleDegree;
   camImageTmp_ = camImageCopy_.clone();
-  //laneDetector_.get_steer_coef(CurVel_);
+  laneDetector_.get_steer_coef(CurVel_);
   AngleDegree = laneDetector_.display_img(camImageTmp_, waitKeyDelay_, viewImage_);
   if(cnt == 0)
     AngleDegree_ = -distAngle_;

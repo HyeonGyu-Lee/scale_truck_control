@@ -72,8 +72,9 @@ private:
 	float right_curve_radius_;
 	float center_position_;
 	float SteerAngle_;
-	float eL_height_, trust_height_, e1_height_, lp_;//, K1_, K2_;
-	//float center_height_, trust_height_, lp_, K1_, K2_;
+	float eL_height_, trust_height_, e1_height_, lp_;
+	float K_;
+	double a_[5], b_[5];
 	vector<float> e_values_;
 
 	/********** PID control ***********/

@@ -312,8 +312,8 @@ void ScaleTruckController::displayConsole() {
   printf("\nAngle           : %2.3f degree", AngleDegree_);
   printf("\nRefer Vel       : %3.3f m/s", RefVel_);
   printf("\nSend Vel        : %3.3f m/s", ResultVel_);
-  printf("\nTar/Cur Vel     : %3.3f / %3.3f / %3.3f m/s", TargetVel_, CurVel_);
-  printf("\nTar/Cur Dist    : %3.3f / %3.3f / %3.3f m", TargetDist_, distance_);
+  printf("\nTar/Cur Vel     : %3.3f / %3.3f m/s", TargetVel_, CurVel_);
+  printf("\nTar/Cur Dist    : %3.3f / %3.3f m", TargetDist_, distance_);
   printf("\nK1/K2           : %3.3f / %3.3f", laneDetector_.K1_, laneDetector_.K2_);
   if(ObjCircles_ > 0) {
     printf("\nCirs            : %d", ObjCircles_);

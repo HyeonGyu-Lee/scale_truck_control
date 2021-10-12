@@ -35,6 +35,7 @@
 //custom msgs
 #include <scale_truck_control/ctl.h>
 #include <scale_truck_control/vel.h>
+#include <scale_truck_control/lrc.h>
 
 namespace scale_truck_control {
 
@@ -58,6 +59,7 @@ class ScaleTruckController {
     ros::NodeHandle nodeHandle_;
     ros::Publisher ControlDataPublisher_;
     ros::Publisher LanecoefPublisher_;
+	ros::Publisher LrcDataPublisher_;
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
     ros::Subscriber velSubscriber_;
@@ -92,6 +94,9 @@ class ScaleTruckController {
     int Index_;
     int PORT_;
     struct UDPsock::UDP_DATA udpData_;
+
+	//LRC
+	LRC::LRC LRC_;
 
     //Thread
     std::thread controlThread_;

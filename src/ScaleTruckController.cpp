@@ -3,7 +3,7 @@
 namespace scale_truck_control{
 
 ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
-    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_() {
+    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_(), LRC_() {
   if (!readParameters()) {
     ros::requestShutdown();
   }
@@ -80,6 +80,8 @@ void ScaleTruckController::init() {
   int ControlDataQueueSize;
   std::string LanecoefTopicName;
   int LanecoefQueueSize;
+  std::string LrcDataTopicName;
+  int LrcDataQueueSize;
 
   /******************************/
   /* Ros Topic Subscribe Option */
@@ -94,10 +96,12 @@ void ScaleTruckController::init() {
   /******************************/
   /* Ros Topic Publish Option */
   /******************************/
-  nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("ctl_msg"));
+  nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("/ctl_msg"));
   nodeHandle_.param("publishers/control_data/queue_size", ControlDataQueueSize, 1);
-  nodeHandle_.param("publishers/lane_coef/topic", LanecoefTopicName, std::string("lane_msg"));
+  nodeHandle_.param("publishers/lane_coef/topic", LanecoefTopicName, std::string("/lane_msg"));
   nodeHandle_.param("publishers/lane_coef/queue_size", LanecoefQueueSize, 10);
+  nodeHandle_.param("publishers/lrc_data/topic", LrcDataTopicName, std::string("/lrc_msg"));
+  nodeHandle_.param("publishers/lrc_data/queue_size", LrcDataQueueSize, 1);
 
   /************************/
   /* Ros Topic Subscriber */
@@ -111,6 +115,7 @@ void ScaleTruckController::init() {
   /***********************/
   ControlDataPublisher_ = nodeHandle_.advertise<scale_truck_control::ctl>(ControlDataTopicName, ControlDataQueueSize);
   LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
+  LrcDataPublisher_ = nodeHandle_.advertise<scale_truck_control::lrc>(LrcDataTopicName, LrcDataQueueSize);
  
   /******************/
   /* UDP Multicast  */
@@ -203,8 +208,6 @@ void* ScaleTruckController::objectdetectInThread() {
   /*****************************/
   if(dist_tmp < 1.24 && dist_tmp > 0.30) // 1.26 ~ 0.28
   {
-    double height;
-    //laneDetector_.distance_ = (int)(480*(1.0 - (dist_tmp)/1.));
     laneDetector_.distance_ = (int)((1.24 - dist_tmp)*490.0);
   } else {
     laneDetector_.distance_ = 0;
@@ -337,6 +340,7 @@ void ScaleTruckController::spin() {
   
   scale_truck_control::ctl msg;
   scale_truck_control::lane_coef lane;
+  scale_truck_control::lrc lrc;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
   
@@ -362,8 +366,10 @@ void ScaleTruckController::spin() {
     msg.sync = sync_flag_;
     msg.cf = cam_failure_;
     lane = laneDetector_.lane_coef_;
+	LRC_.Save();
     ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
+	LrcDataPublisher_.publish(lrc);
 
     if(!isNodeRunning()) {
       controlDone_ = true;

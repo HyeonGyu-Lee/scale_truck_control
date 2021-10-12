@@ -12,6 +12,12 @@
 
 namespace UDPsock{
 
+enum MODE{
+	TM=0,
+	RCM=1,
+	GDM=2
+};
+
 struct lane_coef{
     float a;
     float b;
@@ -25,10 +31,13 @@ struct UDP_DATA{
     int cf;
     float target_vel;
     float current_vel;
+	float crc_vel;
     float target_dist;
     float current_dist;
     float current_angle;
     float roi_dist;
+	bool alpha;
+	enum MODE Mode;
     struct lane_coef coef[3];
 };
 

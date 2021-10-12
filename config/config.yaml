@@ -16,6 +16,9 @@ publishers:
   lane_coef:
     topic: /lane_msg
     queue_size: 10
+  lrc_data:
+	topic: /lrc_msg
+	queue_size: 1
 
 LaneDetector:  
   steer_angle: 0.0

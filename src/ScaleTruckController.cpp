@@ -3,7 +3,7 @@
 namespace scale_truck_control{
 
 ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
-    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_(), LRC_() {
+    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_(), LocalRC_(nodeHandle_) {
   if (!readParameters()) {
     ros::requestShutdown();
   }
@@ -69,7 +69,7 @@ void ScaleTruckController::init() {
   ROS_INFO("[ScaleTruckController] init()");  
   
   gettimeofday(&laneDetector_.start_, NULL);
-
+  
   std::string imageTopicName;
   int imageQueueSize;
   std::string objectTopicName;
@@ -80,8 +80,6 @@ void ScaleTruckController::init() {
   int ControlDataQueueSize;
   std::string LanecoefTopicName;
   int LanecoefQueueSize;
-  std::string LrcDataTopicName;
-  int LrcDataQueueSize;
 
   /******************************/
   /* Ros Topic Subscribe Option */
@@ -100,8 +98,6 @@ void ScaleTruckController::init() {
   nodeHandle_.param("publishers/control_data/queue_size", ControlDataQueueSize, 1);
   nodeHandle_.param("publishers/lane_coef/topic", LanecoefTopicName, std::string("/lane_msg"));
   nodeHandle_.param("publishers/lane_coef/queue_size", LanecoefQueueSize, 10);
-  nodeHandle_.param("publishers/lrc_data/topic", LrcDataTopicName, std::string("/lrc_msg"));
-  nodeHandle_.param("publishers/lrc_data/queue_size", LrcDataQueueSize, 1);
 
   /************************/
   /* Ros Topic Subscriber */
@@ -115,7 +111,6 @@ void ScaleTruckController::init() {
   /***********************/
   ControlDataPublisher_ = nodeHandle_.advertise<scale_truck_control::ctl>(ControlDataTopicName, ControlDataQueueSize);
   LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
-  LrcDataPublisher_ = nodeHandle_.advertise<scale_truck_control::lrc>(LrcDataTopicName, LrcDataQueueSize);
  
   /******************/
   /* UDP Multicast  */
@@ -274,6 +269,7 @@ void* ScaleTruckController::UDPsendInThread()
     udpData.coef[2].c = laneDetector_.lane_coef_.center.c;
 
     UDPsend_.sendData(udpData);
+	LocalRC_.udpSend();
 }
 
 void* ScaleTruckController::UDPrecvInThread()
@@ -281,30 +277,21 @@ void* ScaleTruckController::UDPrecvInThread()
     struct UDPsock::UDP_DATA udpData;
 	
     while(!controlDone_) { 
-        UDPrecv_.recvData(&udpData);
-        if(udpData.index == (Index_ - 1)) {
-            udpData_.target_vel = udpData.target_vel;
-            TargetVel_ = udpData_.target_vel;
-            TargetDist_ = udpData_.target_dist;
-        }
-        if(udpData.index == 307) {
-            if(udpData.to == Index_) {
-                udpData_.index = udpData.index;
-                udpData_.target_vel = udpData.target_vel;
-                udpData_.target_dist = udpData.target_dist;
-                udpData_.sync = udpData.sync;
-				udpData_.cf = udpData.cf;
-				sync_flag_ = udpData_.sync;
+        LocalRC_.udpRecv();		
+        udpData_.index = LocalRC_.udpData_.index;
+        udpData_.target_vel = LocalRC_.udpData_.target_vel;
+        udpData_.target_dist = LocalRC_.udpData_.target_dist;
+        udpData_.sync = LocalRC_.udpData_.sync;
+		udpData_.cf = LocalRC_.udpData_.cf;
+		sync_flag_ = LocalRC_.udpData_.sync;
 				
-				{
-				boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
-				cam_failure_ = udpData_.cf;
-				}
+		{
+		boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
+		cam_failure_ = udpData_.cf;
+		}
 				
-				TargetVel_ = udpData_.target_vel;
-				TargetDist_ = udpData_.target_dist;
-            }
-        }
+		TargetVel_ = LocalRC_.TargetVel_;
+		TargetDist_ = LocalRC_.TargetDist_;  
     }
 }
 
@@ -340,7 +327,6 @@ void ScaleTruckController::spin() {
   
   scale_truck_control::ctl msg;
   scale_truck_control::lane_coef lane;
-  scale_truck_control::lrc lrc;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
   
@@ -366,10 +352,9 @@ void ScaleTruckController::spin() {
     msg.sync = sync_flag_;
     msg.cf = cam_failure_;
     lane = laneDetector_.lane_coef_;
-	LRC_.Save();
     ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
-	LrcDataPublisher_.publish(lrc);
+	LocalRC_.lrcPub();
 
     if(!isNodeRunning()) {
       controlDone_ = true;

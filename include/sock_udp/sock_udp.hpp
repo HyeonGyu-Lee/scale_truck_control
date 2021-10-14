@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -10,13 +11,14 @@
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
 
+enum class MODE{
+	TM,
+	RCM,
+	GDM
+};
+
 namespace UDPsock{
 
-enum MODE{
-	TM=0,
-	RCM=1,
-	GDM=2
-};
 
 struct lane_coef{
     float a;
@@ -37,7 +39,7 @@ struct UDP_DATA{
     float current_angle;
     float roi_dist;
 	bool alpha;
-	enum MODE Mode;
+	int Mode;
     struct lane_coef coef[3];
 };
 

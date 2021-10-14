@@ -1,5 +1,22 @@
 #pragma once
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudafeatures2d.hpp>
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <opencv2/cudawarping.hpp>
+#include <opencv2/cudafilters.hpp>
+#include <iostream>
+#include <cmath>
+#include <fstream>
+#include <ros/ros.h>
+#include <scale_truck_control/lane_coef.h>
+#include <time.h>
+
+using namespace cv;
+using namespace std;
 
 namespace LaneDetect {
 

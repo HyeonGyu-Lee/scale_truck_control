@@ -31,6 +31,7 @@
 
 #include "lane_detect/lane_detect.hpp"
 #include "sock_udp/sock_udp.hpp"
+#include "lrc/lrc.hpp"
 
 //custom msgs
 #include <scale_truck_control/ctl.h>
@@ -59,7 +60,6 @@ class ScaleTruckController {
     ros::NodeHandle nodeHandle_;
     ros::Publisher ControlDataPublisher_;
     ros::Publisher LanecoefPublisher_;
-	ros::Publisher LrcDataPublisher_;
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
     ros::Subscriber velSubscriber_;
@@ -96,7 +96,7 @@ class ScaleTruckController {
     struct UDPsock::UDP_DATA udpData_;
 
 	//LRC
-	LRC::LRC LRC_;
+	LocalResiliencyCoordinator::LocalRC LocalRC_;
 
     //Thread
     std::thread controlThread_;

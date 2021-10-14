@@ -9,6 +9,7 @@
 #include <IMU.h>
 #include <ctl.h>
 #include <vel.h>
+#include <lrc.h>
 
 // Period
 #define BAUD_RATE     (57600)
@@ -68,9 +69,6 @@ void rosCtlCallback(const scale_truck_control::ctl& msg) {
   tx_dist_ = msg.cur_dist;
   tx_steer_ = msg.steer_angle;  // float32
 }
-void rosLrcCallback(const scale_truck_control::lrc& msg) {
-  crc_vel_ = msg.crc_vel;
-}
 /*
    SPEED to RPM
 */
@@ -93,7 +91,7 @@ float setSPEED(float tar_vel, float cur_vel) {
   static float output, err, prev_err, P_err, I_err, D_err;
   static float prev_u_k, prev_u, A_err;
   static float dist_err, prev_dist_err, P_dist_err, D_dist_err;
-  static float lo_vel = 0.0;
+  static float hat_vel = 0.0;
   static float A = 0.6817;
   static float B = 0.3183;
   static float L = 0.2817;
@@ -101,6 +99,7 @@ float setSPEED(float tar_vel, float cur_vel) {
   float u_dist, u_dist_k;
   float ref_vel;
   vel_msg_.cur_vel = cur_vel;
+  lrc_msg_.cur_vel = cur_vel;
   if(tar_vel <= 0 ) {
     output = ZERO_PWM;
     I_err = 0;
@@ -141,9 +140,9 @@ float setSPEED(float tar_vel, float cur_vel) {
 	
   }
   // output command
-  lo_vel = A * lo_vel + B * u_k + L * (cur_vel - lo_vel);
-  tmp_ = cur_vel - lo_vel;
-  if(fabs(cur_vel - lo_vel) > epsilon_){
+  hat_vel = A * hat_vel + B * u_k + L * (cur_vel - hat_vel);
+  tmp_ = cur_vel - hat_vel;
+  if(fabs(cur_vel - hat_vel) > epsilon_){
 	  alpha_ = true;
   }
   else{
@@ -285,7 +284,6 @@ void CountT() {
 */
 ros::NodeHandle nh_;
 ros::Subscriber<scale_truck_control::ctl> rosSubMsg("/ctl_msg", &rosCtlCallback);
-ros::Subscriber<scale_truck_control::lrc> rosSubLrc("/lrc_msg", &rosLrcCallback);
 ros::Publisher rosPubVel("/vel_msg", &vel_msg_);
 ros::Publisher rosPubImu("/imu_msg", &imu_msg_);
 ros::Publisher rosPubLrc("/lrc_msg", &lrc_msg_);
@@ -295,7 +293,6 @@ ros::Publisher rosPubLrc("/lrc_msg", &lrc_msg_);
 void setup() {
   nh_.initNode();
   nh_.subscribe(rosSubMsg);
-  nh_.subscribe(rosSubLrc);
   nh_.advertise(rosPubVel);
   nh_.advertise(rosPubImu);
   nh_.advertise(rosPubLrc);

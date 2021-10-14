@@ -1,4 +1,3 @@
-int32 index
-float32 crc_vel
 bool alpha
-mode Mode
+float32 crc_vel
+float32 cur_vel

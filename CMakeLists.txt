@@ -35,6 +35,7 @@ add_message_files(
   lane.msg
   ctl.msg
   vel.msg
+  lrc.msg
 )
 
 generate_messages(
@@ -65,7 +66,9 @@ include_directories(
 )
 
 set(PROJECT_LIB_FILES
-  src/lane_detect.cpp					src/ScaleTruckController.cpp
+  src/lane_detect.cpp
+  src/lrc.cpp
+  src/ScaleTruckController.cpp
   src/sock_udp.cpp
 )
 

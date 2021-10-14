@@ -1,37 +1,54 @@
 #pragma once
 
+#include <iostream>
+#include <ros/ros.h>
+
 #include "sock_udp/sock_udp.hpp"
 
+#include <scale_truck_control/ctl.h>
 #include <scale_truck_control/lrc.h>
 
-namespace LRC{
-class LRC{
-public:
-	LRC(ros::NodeHandle nh);
-	~LRC(void);
-private:
-	void init();
-	void Save();
-	void velCallback(const scale_truck_control::vel &msg);
-	void distCallback(const scale_truck_control::ctl &msg);
-	void send();
-	void receive();
+using namespace std;
 
-	ros::NodeHandle nodeHandle_;
+namespace LocalResiliencyCoordinator{
+
+class LocalRC{
+	public:
+		LocalRC(ros::NodeHandle nh);
+		~LocalRC();
+
+		void lrcPub();
+		void udpSend();
+		void udpRecv();
+
+		struct UDPsock::UDP_DATA udpData_;
+		float TargetVel_;
+		float TargetDist_;
+
+	private:
+		void init();
+		void ctlCallback(const scale_truck_control::ctl &msg);
+		void lrcCallback(const scale_truck_control::lrc &lrc);
 	
-	//UDP
-	UDPsock::UDPsocket UDPsend_;
-	UDPsock::UDPsocket UDPrecv_;
-	std::string ADDR_;
-	int Index_;
-	int PORT_;
-	struct UDPsock::UDP_DATA udpData_;
+		ros::NodeHandle nodeHandle_;
+		ros::Publisher lrcPublisher_;
+		ros::Subscriber lrcSubscriber_;
+		ros::Subscriber ctlSubscriber_;
+	
+		//UDP
+		UDPsock::UDPsocket UDPsend_;
+		UDPsock::UDPsocket UDPrecv_;
+		std::string ADDR_;
+		int Index_;
+		int PORT_;
+	
+		bool Alpha_;
+		float CurVel_;
+		float CrcVel_ = 0;
+		float CurDist_;
+		int sync_flag_;
+		bool cam_failure_;
+		int Mode_ = static_cast<int>(MODE::TM);
+};
 
-	bool Alpha_;
-	float CurVel_;
-	float TargetVel_;
-	float CurDist_;
-	float TargetDist_;
-	enum MODE Mode_ = TM;
-}
 }

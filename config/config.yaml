@@ -8,6 +8,9 @@ subscribers:
   velocity_reading:
     topic: /vel_msg
     queue_size: 100
+  lrc_reading:
+	topic: /lrc_msg
+	queue_size: 1
 
 publishers:
   control_data:

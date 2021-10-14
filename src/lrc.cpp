@@ -28,8 +28,8 @@ void LocalRC::init(){
 	/******************************/
 	nodeHandle_.param("subscribers/lrc_reading/topic", lrcSubTopicName, std::string("/lrc_msg"));
 	nodeHandle_.param("subscribers/lrc_reading/queue_size", lrcSubQueueSize, 1);
-	nodeHandle_.param("publishers/control_data/topic", ctlSubTopicName, std::string("/ctl_msg"));
-	nodeHandle_.param("publishers/control_data/queue_size", ctlSubQueueSize, 1);
+//	nodeHandle_.param("publishers/control_data/topic", ctlSubTopicName, std::string("/ctl_msg"));
+//	nodeHandle_.param("publishers/control_data/queue_size", ctlSubQueueSize, 1);
 
 	/******************************/
 	/* ROS Topic Publish Option */
@@ -41,7 +41,7 @@ void LocalRC::init(){
 	/* ROS Topic Subscriber */ 
 	/************************/
 	lrcSubscriber_ = nodeHandle_.subscribe(lrcSubTopicName, lrcSubQueueSize, &LocalRC::lrcCallback, this);
-	ctlSubscriber_ = nodeHandle_.subscribe(ctlSubTopicName, ctlSubQueueSize, &LocalRC::ctlCallback, this);
+//	ctlSubscriber_ = nodeHandle_.subscribe(ctlSubTopicName, ctlSubQueueSize, &LocalRC::ctlCallback, this);
 
 	/************************/
 	/* ROS Topic Publisher */ 
@@ -73,9 +73,9 @@ void LocalRC::lrcPub(){
 	lrcPublisher_.publish(lrc);
 }
 
-void LocalRC::ctlCallback(const scale_truck_control::ctl &msg){
-	CurDist_ = msg.cur_dist;
-}
+//void LocalRC::ctlCallback(const scale_truck_control::ctl &msg){
+//	CurDist_ = msg.cur_dist;
+//}
 
 void LocalRC::lrcCallback(const scale_truck_control::lrc &lrc){
 	CurVel_ = lrc.cur_vel;

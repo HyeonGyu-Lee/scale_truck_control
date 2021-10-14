@@ -5,7 +5,7 @@
 
 #include "sock_udp/sock_udp.hpp"
 
-#include <scale_truck_control/ctl.h>
+//#include <scale_truck_control/ctl.h>
 #include <scale_truck_control/lrc.h>
 
 using namespace std;
@@ -24,16 +24,17 @@ class LocalRC{
 		struct UDPsock::UDP_DATA udpData_;
 		float TargetVel_;
 		float TargetDist_;
+		float CurDist_;
 
 	private:
 		void init();
-		void ctlCallback(const scale_truck_control::ctl &msg);
+		//void ctlCallback(const scale_truck_control::ctl &msg);
 		void lrcCallback(const scale_truck_control::lrc &lrc);
 	
 		ros::NodeHandle nodeHandle_;
 		ros::Publisher lrcPublisher_;
 		ros::Subscriber lrcSubscriber_;
-		ros::Subscriber ctlSubscriber_;
+		//ros::Subscriber ctlSubscriber_;
 	
 		//UDP
 		UDPsock::UDPsocket UDPsend_;
@@ -45,7 +46,6 @@ class LocalRC{
 		bool Alpha_;
 		float CurVel_;
 		float CrcVel_ = 0;
-		float CurDist_;
 		int sync_flag_;
 		bool cam_failure_;
 		int Mode_ = static_cast<int>(MODE::TM);

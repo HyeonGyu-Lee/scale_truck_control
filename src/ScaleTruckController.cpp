@@ -348,6 +348,7 @@ void ScaleTruckController::spin() {
     msg.steer_angle = AngleDegree_;
     msg.send_vel = ResultVel_;
     msg.cur_dist = distance_;
+	LocalRC_.CurDist_ = msg.cur_dist;
     msg.ref_dist = TargetDist_;
     msg.sync = sync_flag_;
     msg.cf = cam_failure_;

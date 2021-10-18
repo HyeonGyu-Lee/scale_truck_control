@@ -6,6 +6,7 @@
 
   <!-- ROS parameter files -->
   <arg name="ros_param_file"             default="$(find scale_truck_control)/config/config.yaml"/>
+  <arg name="lrc_param_file"             default="$(find scale_truck_control)/config/lrc.yaml"/>
   <arg name="vehicle_param_file"             default="$(find scale_truck_control)/config/FV2.yaml"/>
   <arg name="lidar_param_file"             default="$(find scale_truck_control)/config/laser_filter.yaml"/>
 

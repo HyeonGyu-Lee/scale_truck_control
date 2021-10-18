@@ -5,11 +5,8 @@ subscribers:
   obstacle_reading:
     topic: /tracked_obstacles
     queue_size: 100
-  velocity_reading:
-    topic: /vel_msg
-    queue_size: 100
-  lrc_reading:
-    topic: /lrc_msg
+  lrc_to_xavier:
+    topic: /lrc2xav_msg
     queue_size: 1
 
 publishers:
@@ -19,8 +16,8 @@ publishers:
   lane_coef:
     topic: /lane_msg
     queue_size: 10
-  lrc_data:
-    topic: /lrc_msg
+  xavier_to_lrc:
+    topic: /xav2lrc_msg
     queue_size: 1
 
 LaneDetector:  

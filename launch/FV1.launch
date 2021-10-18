@@ -6,6 +6,7 @@
 
   <!-- ROS parameter files -->
   <arg name="ros_param_file"             default="$(find scale_truck_control)/config/config.yaml"/>
+  <arg name="lrc_param_file"             default="$(find scale_truck_control)/config/lrc.yaml"/>
   <arg name="vehicle_param_file"             default="$(find scale_truck_control)/config/FV1.yaml"/>
   <arg name="lidar_param_file"             default="$(find scale_truck_control)/config/laser_filter.yaml"/>
 
@@ -76,6 +77,7 @@
   <!-- Start Scale Truck Control -->
   <node pkg="scale_truck_control" type="scale_truck_control" name="scale_truck_control" output="screen" />
 
+  <node pkg="scale_truck_control" type="LRC" name="LRC" output="screen" />
   <node pkg="rosserial_python" type="serial_node.py" name="serial_node" >
     <param name="port" value="/dev/ttyACM0"/>
     <param name="baud" value="57600"/>

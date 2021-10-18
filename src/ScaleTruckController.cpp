@@ -3,7 +3,7 @@
 namespace scale_truck_control{
 
 ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
-    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_(), LocalRC_(nodeHandle_) {
+    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_(){
   if (!readParameters()) {
     ros::requestShutdown();
   }
@@ -17,14 +17,15 @@ ScaleTruckController::~ScaleTruckController() {
     isNodeRunning_ = false;
   }
 
-  scale_truck_control::ctl msg;
-  msg.index = Index_;
+  scale_truck_control::xav2lrc msg;
   msg.steer_angle = 0;
-  msg.send_vel = 0;
   msg.cur_dist = distance_;
-  msg.ref_dist = TargetDist_;
+  msg.tar_vel = ResultVel_;	//Xavier to LRC and LRC to OpenCR
+  msg.tar_dist = TargetDist_;
+  msg.beta = Beta_;
+  msg.gamma = Gamma_;
 
-  ControlDataPublisher_.publish(msg);
+  XavPublisher_.publish(msg);
   controlThread_.join();
   udprecvThread_.join();
 
@@ -54,14 +55,13 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/fv_stop_dist", FVstopDist_, 0.5f); // m
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.5f); // m
   nodeHandle_.param("params/target_dist", TargetDist_, 0.8f); // m
-  
+
   /**************/
   /* UDP Option */
   /**************/
   nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
   nodeHandle_.param("params/udp_group_port", PORT_, 9307);
   nodeHandle_.param("params/truck_info", Index_, 0);
-
   return true;
 }
 
@@ -74,10 +74,10 @@ void ScaleTruckController::init() {
   int imageQueueSize;
   std::string objectTopicName;
   int objectQueueSize; 
-  std::string velTopicName;
-  int velQueueSize;
-  std::string ControlDataTopicName;
-  int ControlDataQueueSize;
+  std::string XavSubTopicName;
+  int XavSubQueueSize;
+  std::string XavPubTopicName;
+  int XavPubQueueSize;
   std::string LanecoefTopicName;
   int LanecoefQueueSize;
 
@@ -85,33 +85,33 @@ void ScaleTruckController::init() {
   /* Ros Topic Subscribe Option */
   /******************************/
   nodeHandle_.param("subscribers/camera_reading/topic", imageTopicName, std::string("/usb_cam/image_raw"));
-  nodeHandle_.param("subscribers/camera_reading/queue_size",imageQueueSize, 1);
+  nodeHandle_.param("subscribers/camera_reading/queue_size", imageQueueSize, 1);
   nodeHandle_.param("subscribers/obstacle_reading/topic", objectTopicName, std::string("/raw_obstacles"));
-  nodeHandle_.param("subscribers/obstacle_reading/queue_size",objectQueueSize, 100);
-  nodeHandle_.param("subscribers/velocity_reading/topic", velTopicName, std::string("/vel_msg"));
-  nodeHandle_.param("subscribers/velocity_reading/queue_size",velQueueSize, 100);
+  nodeHandle_.param("subscribers/obstacle_reading/queue_size", objectQueueSize, 100);
+  nodeHandle_.param("lrcSubPub/lrc_to_xavier/topic", XavSubTopicName, std::string("/lrc2xav_msg"));
+  nodeHandle_.param("lrcSubPub/lrc_to_xavier/queue_size", XavSubQueueSize, 1);
   
-  /******************************/
+  /****************************/
   /* Ros Topic Publish Option */
-  /******************************/
-  nodeHandle_.param("publishers/control_data/topic", ControlDataTopicName, std::string("/ctl_msg"));
-  nodeHandle_.param("publishers/control_data/queue_size", ControlDataQueueSize, 1);
+  /****************************/
   nodeHandle_.param("publishers/lane_coef/topic", LanecoefTopicName, std::string("/lane_msg"));
   nodeHandle_.param("publishers/lane_coef/queue_size", LanecoefQueueSize, 10);
+  nodeHandle_.param("lrcSubPub/xavier_to_lrc/topic", XavPubTopicName, std::string("/xav2lrc_msg"));
+  nodeHandle_.param("lrcSubPub/xavier_to_lrc/queue_size", XavPubQueueSize, 1);
 
   /************************/
   /* Ros Topic Subscriber */
   /************************/
   imageSubscriber_ = nodeHandle_.subscribe(imageTopicName, imageQueueSize, &ScaleTruckController::imageCallback, this);
   objectSubscriber_ = nodeHandle_.subscribe(objectTopicName, objectQueueSize, &ScaleTruckController::objectCallback, this);
-  velSubscriber_ = nodeHandle_.subscribe(velTopicName, velQueueSize, &ScaleTruckController::velCallback, this);
+  XavSubscriber_ = nodeHandle_.subscribe(XavSubTopicName, XavSubQueueSize, &ScaleTruckController::XavSubCallback, this);
   
   /***********************/
   /* Ros Topic Publisher */
   /***********************/
-  ControlDataPublisher_ = nodeHandle_.advertise<scale_truck_control::ctl>(ControlDataTopicName, ControlDataQueueSize);
+  XavPublisher_ = nodeHandle_.advertise<scale_truck_control::xav2lrc>(XavPubTopicName, XavPubQueueSize);
   LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
- 
+
   /******************/
   /* UDP Multicast  */
   /******************/
@@ -158,7 +158,7 @@ void* ScaleTruckController::lanedetectInThread() {
     for(int ch = 0; ch<dst.channels();ch++) {
       count += countNonZero(channels[ch]);
     }
-    if(count == 0 && cam_failure_)
+    if(count == 0 && Beta_)
       cnt -= 1;
     else 
       cnt = 10;
@@ -167,8 +167,9 @@ void* ScaleTruckController::lanedetectInThread() {
   camImageTmp_ = camImageCopy_.clone();
   laneDetector_.get_steer_coef(CurVel_);
   AngleDegree = laneDetector_.display_img(camImageTmp_, waitKeyDelay_, viewImage_);
-  if(cnt == 0)
+  if(cnt == 0){
     AngleDegree_ = -distAngle_;
+  }
   else
     AngleDegree_ = AngleDegree;
 }
@@ -269,29 +270,39 @@ void* ScaleTruckController::UDPsendInThread()
     udpData.coef[2].c = laneDetector_.lane_coef_.center.c;
 
     UDPsend_.sendData(udpData);
-	LocalRC_.udpSend();
 }
 
 void* ScaleTruckController::UDPrecvInThread()
 {
-    struct UDPsock::UDP_DATA udpData;
+	struct UDPsock::UDP_DATA udpData;
 	
     while(!controlDone_) { 
-        LocalRC_.udpRecv();		
-        udpData_.index = LocalRC_.udpData_.index;
-        udpData_.target_vel = LocalRC_.udpData_.target_vel;
-        udpData_.target_dist = LocalRC_.udpData_.target_dist;
-        udpData_.sync = LocalRC_.udpData_.sync;
-		udpData_.cf = LocalRC_.udpData_.cf;
-		sync_flag_ = LocalRC_.udpData_.sync;
+        UDPrecv_.recvData(&udpData);
+        if(udpData.index == (Index_ - 1)) {
+            udpData_.target_vel = udpData.target_vel;
+            TargetVel_ = udpData_.target_vel;
+            TargetDist_ = udpData_.target_dist;
+        }
+        if(udpData.index == 307) {
+            if(udpData.to == Index_) {
+                udpData_.index = udpData.index;
+                udpData_.target_vel = udpData.target_vel;
+                udpData_.target_dist = udpData.target_dist;
+                udpData_.sync = udpData.sync;
+				udpData_.cf = udpData.cf;
+				sync_flag_ = udpData_.sync;
 				
-		{
-		boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
-		cam_failure_ = udpData_.cf;
-		}
+				{
+				boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
+				Beta_ = udpData_.cf;
+				}
 				
-		TargetVel_ = LocalRC_.TargetVel_;
-		TargetDist_ = LocalRC_.TargetDist_;  
+				//Gamma_
+
+				TargetVel_ = udpData_.target_vel;
+				TargetDist_ = udpData_.target_dist;
+            }
+        }
     }
 }
 
@@ -325,7 +336,7 @@ void ScaleTruckController::spin() {
     std::this_thread::sleep_for(wait_duration);
   }
   
-  scale_truck_control::ctl msg;
+  scale_truck_control::xav2lrc msg;
   scale_truck_control::lane_coef lane;
   std::thread lanedetect_thread;
   std::thread objectdetect_thread;
@@ -344,18 +355,16 @@ void ScaleTruckController::spin() {
     if(enableConsoleOutput_)
       displayConsole();
 
-    msg.index = Index_;    
-    msg.steer_angle = AngleDegree_;
-    msg.send_vel = ResultVel_;
-    msg.cur_dist = distance_;
-	LocalRC_.CurDist_ = msg.cur_dist;
-    msg.ref_dist = TargetDist_;
-    msg.sync = sync_flag_;
-    msg.cf = cam_failure_;
+	msg.steer_angle = AngleDegree_;
+	msg.cur_dist = distance_;
+	msg.tar_vel = ResultVel_;	//Xavier to LRC and LRC to OpenCR
+	msg.tar_dist = TargetDist_;
+	msg.beta = Beta_;
+	msg.gamma = Gamma_;
+
     lane = laneDetector_.lane_coef_;
-    ControlDataPublisher_.publish(msg);
     LanecoefPublisher_.publish(lane);
-	LocalRC_.lrcPub();
+	XavPublisher_.publish(msg);
 
     if(!isNodeRunning()) {
       controlDone_ = true;
@@ -379,7 +388,7 @@ void ScaleTruckController::imageCallback(const sensor_msgs::ImageConstPtr &msg) 
     ROS_ERROR("cv_bridge exception : %s", e.what());
   }
 
-  if(cam_image && !cam_failure_) {
+  if(cam_image && !Beta_) {
     {
       boost::unique_lock<boost::shared_mutex> lockImageCallback(mutexImageCallback_);
       imageHeader_ = msg->header;
@@ -392,12 +401,11 @@ void ScaleTruckController::imageCallback(const sensor_msgs::ImageConstPtr &msg) 
   }
 }
 
-void ScaleTruckController::velCallback(const scale_truck_control::vel &msg) {
+void ScaleTruckController::XavSubCallback(const scale_truck_control::lrc2xav &msg){
   {
     boost::unique_lock<boost::shared_mutex> lockVelCallback(mutexVelCallback_);
     CurVel_ = msg.cur_vel;
-    RefVel_ = msg.ref_vel;
-  }
+  }	
 }
 
 } /* namespace scale_truck_control */ 

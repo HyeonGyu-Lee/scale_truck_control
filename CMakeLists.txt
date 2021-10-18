@@ -33,9 +33,10 @@ add_message_files(
   FILES
   lane_coef.msg
   lane.msg
-  ctl.msg
-  vel.msg
-  lrc.msg
+  xav2lrc.msg
+  lrc2xav.msg
+  lrc2ocr.msg
+  ocr2lrc.msg
 )
 
 generate_messages(
@@ -84,6 +85,11 @@ add_executable(${PROJECT_NAME}
   nodes/control_node.cpp
 )
 
+add_dependencies(${PROJECT_NAME}
+  ${catkin_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+)
+
 target_link_libraries(${PROJECT_NAME}_lib
   pthread
   stdc++
@@ -97,7 +103,26 @@ target_link_libraries(${PROJECT_NAME}
   ${PROJECT_NAME}_lib
 )
 
-add_dependencies(${PROJECT_NAME}
+add_library(LRC_lib
+  ${PROJECT_LIB_FILES}	
+)
+
+add_executable(LRC
+  nodes/lrc_node.cpp
+)
+
+add_dependencies(LRC
   ${catkin_EXPORTED_TARGETS}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
+
+target_link_libraries(LRC_lib
+  pthread
+  stdc++
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(LRC
+  LRC_lib
+)
+

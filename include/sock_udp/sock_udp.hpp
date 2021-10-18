@@ -11,14 +11,7 @@
 #include <stdlib.h>
 #include <opencv2/opencv.hpp>
 
-enum class MODE{
-	TM,
-	RCM,
-	GDM
-};
-
 namespace UDPsock{
-
 
 struct lane_coef{
     float a;
@@ -33,13 +26,15 @@ struct UDP_DATA{
     int cf;
     float target_vel;
     float current_vel;
-	float crc_vel;
+	float predict_vel;
     float target_dist;
     float current_dist;
     float current_angle;
     float roi_dist;
 	bool alpha;
-	int Mode;
+	bool beta;
+	bool gamma;
+	uint8_t mode;
     struct lane_coef coef[3];
 };
 

@@ -1,0 +1,19 @@
+lrcSubPub:
+  xavier_to_lrc:
+    topic: /xav2lrc_msg
+    queue_size: 1
+  ocr_to_lrc:
+    topic: /ocr2lrc_msg
+    queue_size: 1
+  lrc_to_xavier:
+    topic: /lrc2xav_msg
+    queue_size: 1
+  lrc_to_ocr:
+    topic: /lrc2ocr_msg
+    queue_size: 1
+
+Params:
+  epsilon: 0.5
+  lu_ob_A: 0.6817
+  lu_ob_B: 0.3183
+  lu_ob_L: 0.2817

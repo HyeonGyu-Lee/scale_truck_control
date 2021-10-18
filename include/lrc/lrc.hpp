@@ -1,12 +1,18 @@
 #pragma once
 
 #include <iostream>
+#include <pthread.h>
+#include <thread>
+#include <mutex>
 #include <ros/ros.h>
+#include <cmath>
 
 #include "sock_udp/sock_udp.hpp"
 
-//#include <scale_truck_control/ctl.h>
-#include <scale_truck_control/lrc.h>
+#include <scale_truck_control/xav2lrc.h>
+#include <scale_truck_control/ocr2lrc.h>
+#include <scale_truck_control/lrc2xav.h>
+#include <scale_truck_control/lrc2ocr.h>
 
 using namespace std;
 
@@ -17,38 +23,58 @@ class LocalRC{
 		LocalRC(ros::NodeHandle nh);
 		~LocalRC();
 
-		void lrcPub();
-		void udpSend();
-		void udpRecv();
-
-		struct UDPsock::UDP_DATA udpData_;
-		float TargetVel_;
-		float TargetDist_;
-		float CurDist_;
+		void spin();
 
 	private:
 		void init();
-		//void ctlCallback(const scale_truck_control::ctl &msg);
-		void lrcCallback(const scale_truck_control::lrc &lrc);
 	
 		ros::NodeHandle nodeHandle_;
-		ros::Publisher lrcPublisher_;
-		ros::Subscriber lrcSubscriber_;
-		//ros::Subscriber ctlSubscriber_;
-	
-		//UDP
+		ros::Subscriber XavSubscriber_;	
+		ros::Subscriber OcrSubscriber_;	
+		ros::Publisher XavPublisher_;
+		ros::Publisher OcrPublisher_;
+
 		UDPsock::UDPsocket UDPsend_;
 		UDPsock::UDPsocket UDPrecv_;
 		std::string ADDR_;
 		int Index_;
 		int PORT_;
-	
-		bool Alpha_;
-		float CurVel_;
-		float CrcVel_ = 0;
-		int sync_flag_;
-		bool cam_failure_;
-		int Mode_ = static_cast<int>(MODE::TM);
+		struct UDPsock::UDP_DATA udpData_;
+
+		bool isNodeRunning();
+		void XavCallback(const scale_truck_control::xav2lrc &msg);
+		void OcrCallback(const scale_truck_control::ocr2lrc &msg);
+		void LrcPub();
+		void* UDPsendInThread();
+		void* UDPrecvInThread();
+		void velocitySensorCheck();
+		void modeCheck();
+
+		float A_, B_, L_;
+		float Epsilon_;
+		float AngleDegree_;
+		float CurDist_;
+		float TarDist_;
+		float CurVel_ = 0;
+		float TarVel_ = 0;
+		float PredVel_ = 0;
+		float HatVel_ = 0;
+		float SatVel_ = 0;
+		float Alpha_ = false;
+		float Beta_ = false;
+		float Gamma_ = false;
+		uint8_t LrcMode_ = 0;
+		uint8_t CrcMode_ = 0;
+
+		std::thread spinThread_;
+		std::thread udpsendThread_;
+		std::thread udprecvThread_;
+
+		bool isNodeRunning_;
+		std::mutex mutexNodeStatus_;
+
+		std::mutex mutexXavCallback_;
+		std::mutex mutexOcrCallback_;
 };
 
 }

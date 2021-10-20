@@ -135,6 +135,8 @@
 >make check
 >sudo make install
 >make installcheck
+>~~~
+
 >## 0.3.2 Environment setup
 >-Setup the path
 >~~~

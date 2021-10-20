@@ -18,7 +18,7 @@
 >sudo find /usr/local/ -name "*opencv*" -exec rm -i {} \;
 >~~~
 >
->-install 4.4.0 version of OpenCV
+>-Install 4.4.0 version of OpenCV
 >~~~
 >sudo apt-get update
 >sudo apt-get upgrade
@@ -107,6 +107,38 @@
 >~~~
 >sudo -H pip3 install jetson-stats
 >jeson_release
+>~~~
+
+>## 0.3.1 ZeroMQ (zmqpp)
+>-Install and Build of ZeroMQ for cpp
+>http://github.com/zeromq/zmqpp
+>~~~
+>git clone git://github.com/jedisct1/libsodium.git
+>cd libsodium
+>./autogen.sh 
+>./configure && make check 
+>sudo make install 
+>sudo ldconfig
+>cd ../
+># Build, check, and install the latest version of ZeroMQ
+>git clone git://github.com/zeromq/libzmq.git
+>cd libzmq
+>./autogen.sh 
+>./configure --with-libsodium && make
+>sudo make install
+>sudo ldconfig
+>cd ../
+># Now install ZMQPP
+>git clone git://github.com/zeromq/zmqpp.git
+>cd zmqpp
+>make
+>make check
+>sudo make install
+>make installcheck
+>~~~
+>-Setup the path
+>~~~
+>sudo cp -R /usr/local/lib/* /usr/lib
 >~~~
 
 # 1. Install ROS (melodic)

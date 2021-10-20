@@ -7,8 +7,8 @@
 #include <sensor_msgs/Imu.h>
 #include <SD.h>
 #include <IMU.h>
-#include <ctl.h>
-#include <vel.h>
+#include <lrc2ocr.h>
+#include <ocr2lrc.h>
 
 // Period
 #define BAUD_RATE     (57600)
@@ -60,10 +60,10 @@ HardwareTimer Timer3(TIMER_CH3); // Angle
 /*
    ros Subscribe Callback Function
 */
-void rosCtlCallback(const scale_truck_control::ctl& msg) {
+void LrcCallback(const scale_truck_control::lrc2ocr &msg) {
   Index_ = msg.index;
-  tx_throttle_ = msg.send_vel;
-  tx_tdist_ = msg.ref_dist;
+  tx_throttle_ = msg.tar_vel;
+  tx_tdist_ = msg.tar_dist;
   tx_dist_ = msg.cur_dist;
   tx_steer_ = msg.steer_angle;  // float32
 }
@@ -78,7 +78,7 @@ float Ka_ = 0.01;
 float Kf_ = 1.0;  // feed forward const.
 float dt_ = 0.1;
 float circ_ = WHEEL_DIM * M_PI;
-scale_truck_control::vel vel_msg_;
+scale_truck_control::ocr2lrc pub_msg_;
 sensor_msgs::Imu imu_msg_;
 float setSPEED(float tar_vel, float cur_vel) { 
   static float output, err, P_err, I_err;
@@ -87,12 +87,11 @@ float setSPEED(float tar_vel, float cur_vel) {
   float u, u_k;
   float u_dist, u_dist_k;
   float ref_vel;
-  vel_msg_.cur_vel = cur_vel;
+  pub_msg_.cur_vel = cur_vel;
   if(tar_vel <= 0 ) {
     output = ZERO_PWM;
     I_err = 0;
     A_err = 0;
-    vel_msg_.ref_vel = 0;
   } else {
     if(Index_!=0) {
       dist_err = tx_dist_ - tx_tdist_;    
@@ -109,9 +108,7 @@ float setSPEED(float tar_vel, float cur_vel) {
     } else {
       ref_vel = tar_vel;
     }
-    
-    vel_msg_.ref_vel = ref_vel;
-    
+     
     err = ref_vel - cur_vel;
     P_err = Kp_ * err;
     I_err += Ki_ * err * dt_;
@@ -121,6 +118,8 @@ float setSPEED(float tar_vel, float cur_vel) {
     if(u > 2.0) u_k = 2.0;
     else if(u <= 0) u_k = 0;
     else u_k = u;
+
+	pub_msg_.u_k = u_k;
 
     // inverse function 
     output = (-4.3253e-02 + sqrt(pow(4.3253e-02,2)-4*(-1.0444e-05)*(-42.3682-u_k)))/(2*(-1.0444e-05));
@@ -260,17 +259,15 @@ void CountT() {
    ros variable
 */
 ros::NodeHandle nh_;
-ros::Subscriber<scale_truck_control::ctl> rosSubMsg("/ctl_msg", &rosCtlCallback);
-ros::Publisher rosPubVel("/vel_msg", &vel_msg_);
-ros::Publisher rosPubImu("/imu_msg", &imu_msg_);
+ros::Subscriber<scale_truck_control::ctl> rosSubMsg("/lrc2ocr_msg", &LrcCallback);
+ros::Publisher rosPubMsg("/ocr2lrc_msg", &pub_msg_);
 /*
    Arduino setup()
 */
 void setup() {
   nh_.initNode();
   nh_.subscribe(rosSubMsg);
-  nh_.advertise(rosPubVel);
-  nh_.advertise(rosPubImu);
+  nh_.advertise(rosPubMsg);
   throttle_.attach(THROTTLE_PIN);
   steer_.attach(STEER_PIN);
   pinMode(EN_PINA, INPUT);
@@ -342,8 +339,7 @@ void loop() {
   
   currentTime = millis();
   if ((currentTime - prevTime) >= (ANGLE_TIME / 1000)) {
-    rosPubVel.publish(&vel_msg_);
-    rosPubImu.publish(&imu_msg_);
+    rosPubVel.publish(&pub_msg_);
     prevTime = currentTime;
   }
 }

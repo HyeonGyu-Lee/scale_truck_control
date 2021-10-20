@@ -74,7 +74,6 @@ float Kp_dist_ = 1.0; // 2.0; //0.8;
 float Kd_dist_ = 0.05; //0.05;
 float Kp_ = 0.8; // 2.0; //0.8;
 float Ki_ = 2.0; // 0.4; //10.0;
-float Kd_ = 0.0; //0.05;
 float Ka_ = 0.01;
 float Kf_ = 1.0;  // feed forward const.
 float dt_ = 0.1;
@@ -82,7 +81,7 @@ float circ_ = WHEEL_DIM * M_PI;
 scale_truck_control::ocr2lrc pub_msg_;
 sensor_msgs::Imu imu_msg_;
 float setSPEED(float tar_vel, float cur_vel) { 
-  static float output, err, prev_err, P_err, I_err, D_err;
+  static float output, err, P_err, I_err;
   static float prev_u_k, prev_u, A_err;
   static float dist_err, prev_dist_err, P_dist_err, D_dist_err;
   float u, u_k;
@@ -235,8 +234,6 @@ void CheckEN() {
   logfile_.print(Kp_);
   logfile_.print(",");
   logfile_.print(Ki_);
-  logfile_.print(",");
-  logfile_.print(Kd_);
   logfile_.print(",");
   logfile_.print(tx_dist_);
   logfile_.print(",");

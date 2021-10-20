@@ -6,6 +6,7 @@
 #include <mutex>
 #include <ros/ros.h>
 #include <cmath>
+#include <fstream>
 
 #include "sock_udp/sock_udp.hpp"
 
@@ -50,6 +51,9 @@ class LocalRC{
 		void velocitySensorCheck();
 		void modeCheck();
 
+		bool Alpha_ = false;
+		bool Beta_ = false;
+		bool Gamma_ = false;
 		float A_, B_, L_;
 		float Epsilon_;
 		float AngleDegree_;
@@ -60,9 +64,6 @@ class LocalRC{
 		float PredVel_ = 0;
 		float HatVel_ = 0;
 		float SatVel_ = 0;
-		float Alpha_ = false;
-		float Beta_ = false;
-		float Gamma_ = false;
 		uint8_t LrcMode_ = 0;
 		uint8_t CrcMode_ = 0;
 

@@ -147,7 +147,7 @@ void* LocalRC::UDPrecvInThread()
 	
     while(ros::ok()) { 
         UDPrecv_.recvData(&udpData);
-        if(udpData.index == 100) {	//CRC index
+        if(udpData.index == 100 && udpData.to == Index_) {	//CRC index
 			{
 				const std::lock_guard<std::mutex> lock(mutexXavCallback_);
 				TarVel_ = udpData.target_vel;
@@ -163,7 +163,7 @@ void* LocalRC::UDPrecvInThread()
     }
 }
 
-void LocalRC::velocitySensorCheck(){
+void LocalRC::VelocitySensorCheck(){
 	{
 		const std::lock_guard<std::mutex> lock(mutexOcrCallback_);
 		HatVel_ = A_ * HatVel_ + B_ * SatVel_ + L_ * (CurVel_ - HatVel_);
@@ -176,9 +176,9 @@ void LocalRC::velocitySensorCheck(){
 	}
 }
 
-void LocalRC::modeCheck(){
+void LocalRC::ModeCheck(){
 	if(!Index_){	//LV
-		if(Beta_){	//Camera sensor failure;
+		if(Beta_){	//Camera sensor failure
 			LrcMode_ = 2;	//GDM
 		}
 		else if(Alpha_ || Gamma_ ){
@@ -203,8 +203,8 @@ void LocalRC::modeCheck(){
 
 void LocalRC::spin(){
 	while(ros::ok()){
-		velocitySensorCheck();
-		modeCheck();
+		VelocitySensorCheck();
+		ModeCheck();
 		LrcPub();
 		udpsendThread_ = std::thread(&LocalRC::UDPsendInThread, this);
 

@@ -27,8 +27,6 @@ class LocalRC{
 		void spin();
 
 	private:
-		void init();
-	
 		ros::NodeHandle nodeHandle_;
 		ros::Subscriber XavSubscriber_;	
 		ros::Subscriber OcrSubscriber_;	
@@ -42,14 +40,15 @@ class LocalRC{
 		int PORT_;
 		struct UDPsock::UDP_DATA udpData_;
 
+		void init();
 		bool isNodeRunning();
 		void XavCallback(const scale_truck_control::xav2lrc &msg);
 		void OcrCallback(const scale_truck_control::ocr2lrc &msg);
 		void LrcPub();
 		void* UDPsendInThread();
 		void* UDPrecvInThread();
-		void velocitySensorCheck();
-		void modeCheck();
+		void VelocitySensorCheck();
+		void ModeCheck();
 
 		bool Alpha_ = false;
 		bool Beta_ = false;

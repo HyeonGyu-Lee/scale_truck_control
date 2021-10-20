@@ -8,6 +8,7 @@ class CenterRC{
 		CenterRC();
 		~CenterRC();
 
+		void Communicate();
 	private:
 		UDPsock::UDPsocket UDPsend_;
 		UDPsock::UDPsocket UDPrecv_;
@@ -18,7 +19,6 @@ class CenterRC{
 		void UDPrecvControlCenterData();
 		float PredictVelocity(int index);
 		uint8_t ModeCheck(uint8_t lv_mode, uint8_t fv1_mode, uint8_t fv2_mode);
-		void Communicate();
 
 		int Index_;
 		//bool Alpha_ = 0;

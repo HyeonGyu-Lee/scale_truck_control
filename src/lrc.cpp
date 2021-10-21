@@ -55,8 +55,8 @@ void LocalRC::init(){
 	/******************************/
 	nodeHandle_.param("lrcSubPub/lrc_to_xavier/topic", XavPubTopicName, std::string("/lrc2xav_msg"));
 	nodeHandle_.param("lrcSubPub/lrc_to_xavier/queue_size", XavSubQueueSize, 1);
-	nodeHandle_.param("lrcSubPub/lrc_to_ocr/topic", OcrSubTopicName, std::string("/lrc2ocr_msg"));
-	nodeHandle_.param("lrcSubPub/lrc_to_ocr/queue_size", OcrSubQueueSize, 1);
+	nodeHandle_.param("lrcSubPub/lrc_to_ocr/topic", OcrPubTopicName, std::string("/lrc2ocr_msg"));
+	nodeHandle_.param("lrcSubPub/lrc_to_ocr/queue_size", OcrPubQueueSize, 1);
 
 	/************************/
 	/* ROS Topic Subscriber */ 
@@ -140,7 +140,7 @@ void* LocalRC::UDPsendInThread()
     udpData.alpha = Alpha_;
     udpData.beta = Beta_;
     udpData.gamma = Gamma_;
-    udpData.current_angle = CurVel_;
+    udpData.current_vel = CurVel_;
     udpData.current_dist = CurDist_;
     udpData.mode = LrcMode_;
 
@@ -209,11 +209,12 @@ void LocalRC::spin(){
 		LrcPub();
 		udpsendThread_ = std::thread(&LocalRC::UDPsendInThread, this);
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 		udpsendThread_.join();
 		cnt++;
 		if (cnt > 100){
+			printf("Estimated Velocity:\t%.3f\n", fabs(CurVel_ - HatVel_));
 			printf("Predict Velocity:\t%.3f\n", PredVel_);
 			printf("Target Velocity:\t%.3f\n", TarVel_);
 			printf("Current Velocity:\t%.3f\n", CurVel_);

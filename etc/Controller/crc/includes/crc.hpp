@@ -1,4 +1,6 @@
 #include <iostream>
+#include <windows.h>
+
 #include "sock_udp.hpp"
 
 namespace CenterResiliencyCoordinator{

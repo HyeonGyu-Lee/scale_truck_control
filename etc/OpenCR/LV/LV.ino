@@ -339,7 +339,7 @@ void loop() {
   
   currentTime = millis();
   if ((currentTime - prevTime) >= (ANGLE_TIME / 1000)) {
-    rosPubVel.publish(&pub_msg_);
+    rosPubMsg.publish(&pub_msg_);
     prevTime = currentTime;
   }
 }

@@ -156,7 +156,7 @@ void CenterRC::Communicate(){
 	UDPrecvTruckData();
 	ModeCheck(lv_lrc_mode_, fv1_lrc_mode_, fv2_lrc_mode_);
 
-	Sleep(1);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 	UDPsendData(PredictVelocity(0), 0);
 	UDPsendData(PredictVelocity(1), 1);

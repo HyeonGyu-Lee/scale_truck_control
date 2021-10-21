@@ -28,28 +28,28 @@ The CXX compiler identification is GNU, found in "/home/avees/catkin_ws/src/scal
 Determining if the C compiler works passed with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_128b3/fast"
-/usr/bin/make -f CMakeFiles/cmTC_128b3.dir/build.make CMakeFiles/cmTC_128b3.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_96604/fast"
+/usr/bin/make -f CMakeFiles/cmTC_96604.dir/build.make CMakeFiles/cmTC_96604.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_128b3.dir/testCCompiler.c.o
-/usr/bin/cc    -o CMakeFiles/cmTC_128b3.dir/testCCompiler.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp/testCCompiler.c
-Linking C executable cmTC_128b3
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_128b3.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_128b3.dir/testCCompiler.c.o  -o cmTC_128b3 
+Building C object CMakeFiles/cmTC_96604.dir/testCCompiler.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_96604.dir/testCCompiler.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_96604
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_96604.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_96604.dir/testCCompiler.c.o  -o cmTC_96604 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
 Detecting C compiler ABI info compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_70892/fast"
-/usr/bin/make -f CMakeFiles/cmTC_70892.dir/build.make CMakeFiles/cmTC_70892.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_fd87f/fast"
+/usr/bin/make -f CMakeFiles/cmTC_fd87f.dir/build.make CMakeFiles/cmTC_fd87f.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o
-/usr/bin/cc    -o CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c
-Linking C executable cmTC_70892
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_70892.dir/link.txt --verbose=1
-/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o  -o cmTC_70892 
+Building C object CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c
+Linking C executable cmTC_fd87f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_fd87f.dir/link.txt --verbose=1
+/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o  -o cmTC_fd87f 
 Using built-in specs.
 COLLECT_GCC=/usr/bin/cc
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper
@@ -59,9 +59,9 @@ Thread model: posix
 gcc version 7.5.0 (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) 
 COMPILER_PATH=/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/:/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/
 LIBRARY_PATH=/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib/:/lib/aarch64-linux-gnu/:/lib/../lib/:/usr/lib/aarch64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../:/lib/:/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_70892' '-mlittle-endian' '-mabi=lp64'
- /usr/lib/gcc/aarch64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cciTEqTd.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o cmTC_70892 /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/7 -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/7/../../.. CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/aarch64-linux-gnu/7/crtendS.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crtn.o
-COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_70892' '-mlittle-endian' '-mabi=lp64'
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_fd87f' '-mlittle-endian' '-mabi=lp64'
+ /usr/lib/gcc/aarch64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccO0tSI4.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o cmTC_fd87f /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/7 -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/7/../../.. CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/aarch64-linux-gnu/7/crtendS.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_fd87f' '-mlittle-endian' '-mabi=lp64'
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -69,14 +69,14 @@ Parsed C implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_70892/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_70892.dir/build.make CMakeFiles/cmTC_70892.dir/build]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_fd87f/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_fd87f.dir/build.make CMakeFiles/cmTC_fd87f.dir/build]
   ignore line: [make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building C object CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o]
-  ignore line: [/usr/bin/cc    -o CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c]
-  ignore line: [Linking C executable cmTC_70892]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_70892.dir/link.txt --verbose=1]
-  ignore line: [/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o  -o cmTC_70892 ]
+  ignore line: [Building C object CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/bin/cc    -o CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTC_fd87f]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_fd87f.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o  -o cmTC_fd87f ]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/cc]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper]
@@ -86,13 +86,13 @@ Parsed C implicit link information from above output:
   ignore line: [gcc version 7.5.0 (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) ]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/:/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib/:/lib/aarch64-linux-gnu/:/lib/../lib/:/usr/lib/aarch64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../:/lib/:/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_70892' '-mlittle-endian' '-mabi=lp64']
-  link line: [ /usr/lib/gcc/aarch64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/cciTEqTd.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o cmTC_70892 /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/7 -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/7/../../.. CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/aarch64-linux-gnu/7/crtendS.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_fd87f' '-mlittle-endian' '-mabi=lp64']
+  link line: [ /usr/lib/gcc/aarch64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccO0tSI4.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o cmTC_fd87f /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/7 -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/7/../../.. CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/aarch64-linux-gnu/7/crtendS.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crtn.o]
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/cciTEqTd.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccO0tSI4.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -113,7 +113,7 @@ Parsed C implicit link information from above output:
     arg [-znow] ==> ignore
     arg [-zrelro] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_70892] ==> ignore
+    arg [cmTC_fd87f] ==> ignore
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o] ==> ignore
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o] ==> ignore
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o] ==> ignore
@@ -125,7 +125,7 @@ Parsed C implicit link information from above output:
     arg [-L/usr/lib/aarch64-linux-gnu] ==> dir [/usr/lib/aarch64-linux-gnu]
     arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
     arg [-L/usr/lib/gcc/aarch64-linux-gnu/7/../../..] ==> dir [/usr/lib/gcc/aarch64-linux-gnu/7/../../..]
-    arg [CMakeFiles/cmTC_70892.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [CMakeFiles/cmTC_fd87f.dir/CMakeCCompilerABI.c.o] ==> ignore
     arg [-lgcc] ==> lib [gcc]
     arg [--push-state] ==> ignore
     arg [--as-needed] ==> ignore
@@ -157,14 +157,14 @@ Parsed C implicit link information from above output:
 Detecting C [-std=c11] compiler features compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_c3bdd/fast"
-/usr/bin/make -f CMakeFiles/cmTC_c3bdd.dir/build.make CMakeFiles/cmTC_c3bdd.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_154bd/fast"
+/usr/bin/make -f CMakeFiles/cmTC_154bd.dir/build.make CMakeFiles/cmTC_154bd.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_c3bdd.dir/feature_tests.c.o
-/usr/bin/cc   -std=c11 -o CMakeFiles/cmTC_c3bdd.dir/feature_tests.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_c3bdd
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c3bdd.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_c3bdd.dir/feature_tests.c.o  -o cmTC_c3bdd 
+Building C object CMakeFiles/cmTC_154bd.dir/feature_tests.c.o
+/usr/bin/cc   -std=c11 -o CMakeFiles/cmTC_154bd.dir/feature_tests.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_154bd
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_154bd.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_154bd.dir/feature_tests.c.o  -o cmTC_154bd 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -177,14 +177,14 @@ make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Co
 Detecting C [-std=c99] compiler features compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_b39ce/fast"
-/usr/bin/make -f CMakeFiles/cmTC_b39ce.dir/build.make CMakeFiles/cmTC_b39ce.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_79807/fast"
+/usr/bin/make -f CMakeFiles/cmTC_79807.dir/build.make CMakeFiles/cmTC_79807.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_b39ce.dir/feature_tests.c.o
-/usr/bin/cc   -std=c99 -o CMakeFiles/cmTC_b39ce.dir/feature_tests.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_b39ce
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b39ce.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_b39ce.dir/feature_tests.c.o  -o cmTC_b39ce 
+Building C object CMakeFiles/cmTC_79807.dir/feature_tests.c.o
+/usr/bin/cc   -std=c99 -o CMakeFiles/cmTC_79807.dir/feature_tests.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_79807
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_79807.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_79807.dir/feature_tests.c.o  -o cmTC_79807 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -197,14 +197,14 @@ make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Co
 Detecting C [-std=c90] compiler features compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_b8b3d/fast"
-/usr/bin/make -f CMakeFiles/cmTC_b8b3d.dir/build.make CMakeFiles/cmTC_b8b3d.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_195c4/fast"
+/usr/bin/make -f CMakeFiles/cmTC_195c4.dir/build.make CMakeFiles/cmTC_195c4.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_b8b3d.dir/feature_tests.c.o
-/usr/bin/cc   -std=c90 -o CMakeFiles/cmTC_b8b3d.dir/feature_tests.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_b8b3d
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b8b3d.dir/link.txt --verbose=1
-/usr/bin/cc      -rdynamic CMakeFiles/cmTC_b8b3d.dir/feature_tests.c.o  -o cmTC_b8b3d 
+Building C object CMakeFiles/cmTC_195c4.dir/feature_tests.c.o
+/usr/bin/cc   -std=c90 -o CMakeFiles/cmTC_195c4.dir/feature_tests.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_195c4
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_195c4.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_195c4.dir/feature_tests.c.o  -o cmTC_195c4 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -215,28 +215,28 @@ make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Co
 Determining if the CXX compiler works passed with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_0d7cd/fast"
-/usr/bin/make -f CMakeFiles/cmTC_0d7cd.dir/build.make CMakeFiles/cmTC_0d7cd.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_a33a1/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a33a1.dir/build.make CMakeFiles/cmTC_a33a1.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_0d7cd.dir/testCXXCompiler.cxx.o
-/usr/bin/c++     -o CMakeFiles/cmTC_0d7cd.dir/testCXXCompiler.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
-Linking CXX executable cmTC_0d7cd
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0d7cd.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_0d7cd.dir/testCXXCompiler.cxx.o  -o cmTC_0d7cd 
+Building CXX object CMakeFiles/cmTC_a33a1.dir/testCXXCompiler.cxx.o
+/usr/bin/c++     -o CMakeFiles/cmTC_a33a1.dir/testCXXCompiler.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_a33a1
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a33a1.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_a33a1.dir/testCXXCompiler.cxx.o  -o cmTC_a33a1 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
 Detecting CXX compiler ABI info compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_7705c/fast"
-/usr/bin/make -f CMakeFiles/cmTC_7705c.dir/build.make CMakeFiles/cmTC_7705c.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_d52e1/fast"
+/usr/bin/make -f CMakeFiles/cmTC_d52e1.dir/build.make CMakeFiles/cmTC_d52e1.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o
-/usr/bin/c++     -o CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp
-Linking CXX executable cmTC_7705c
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7705c.dir/link.txt --verbose=1
-/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_7705c 
+Building CXX object CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o
+/usr/bin/c++     -o CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTC_d52e1
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d52e1.dir/link.txt --verbose=1
+/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_d52e1 
 Using built-in specs.
 COLLECT_GCC=/usr/bin/c++
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper
@@ -246,9 +246,9 @@ Thread model: posix
 gcc version 7.5.0 (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) 
 COMPILER_PATH=/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/:/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/
 LIBRARY_PATH=/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib/:/lib/aarch64-linux-gnu/:/lib/../lib/:/usr/lib/aarch64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../:/lib/:/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_7705c' '-shared-libgcc' '-mlittle-endian' '-mabi=lp64'
- /usr/lib/gcc/aarch64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccsEbUof.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o cmTC_7705c /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/7 -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/7/../../.. CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/aarch64-linux-gnu/7/crtendS.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crtn.o
-COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_7705c' '-shared-libgcc' '-mlittle-endian' '-mabi=lp64'
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_d52e1' '-shared-libgcc' '-mlittle-endian' '-mabi=lp64'
+ /usr/lib/gcc/aarch64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccrZdf08.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o cmTC_d52e1 /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/7 -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/7/../../.. CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/aarch64-linux-gnu/7/crtendS.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_d52e1' '-shared-libgcc' '-mlittle-endian' '-mabi=lp64'
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -256,14 +256,14 @@ Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_7705c/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_7705c.dir/build.make CMakeFiles/cmTC_7705c.dir/build]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_d52e1/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_d52e1.dir/build.make CMakeFiles/cmTC_d52e1.dir/build]
   ignore line: [make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building CXX object CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o]
-  ignore line: [/usr/bin/c++     -o CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp]
-  ignore line: [Linking CXX executable cmTC_7705c]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7705c.dir/link.txt --verbose=1]
-  ignore line: [/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_7705c ]
+  ignore line: [Building CXX object CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/bin/c++     -o CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTC_d52e1]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d52e1.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_d52e1 ]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/c++]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper]
@@ -273,13 +273,13 @@ Parsed CXX implicit link information from above output:
   ignore line: [gcc version 7.5.0 (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) ]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/:/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/aarch64-linux-gnu/7/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib/:/lib/aarch64-linux-gnu/:/lib/../lib/:/usr/lib/aarch64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/aarch64-linux-gnu/7/../../../:/lib/:/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_7705c' '-shared-libgcc' '-mlittle-endian' '-mabi=lp64']
-  link line: [ /usr/lib/gcc/aarch64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccsEbUof.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o cmTC_7705c /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/7 -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/7/../../.. CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/aarch64-linux-gnu/7/crtendS.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_d52e1' '-shared-libgcc' '-mlittle-endian' '-mabi=lp64']
+  link line: [ /usr/lib/gcc/aarch64-linux-gnu/7/collect2 -plugin /usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so -plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper -plugin-opt=-fresolution=/tmp/ccrZdf08.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib/ld-linux-aarch64.so.1 -X -EL -maarch64linux --fix-cortex-a53-843419 -pie -z now -z relro -o cmTC_d52e1 /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o /usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o -L/usr/lib/gcc/aarch64-linux-gnu/7 -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu -L/usr/lib/gcc/aarch64-linux-gnu/7/../../../../lib -L/lib/aarch64-linux-gnu -L/lib/../lib -L/usr/lib/aarch64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/aarch64-linux-gnu/7/../../.. CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/aarch64-linux-gnu/7/crtendS.o /usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crtn.o]
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/usr/lib/gcc/aarch64-linux-gnu/7/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/ccsEbUof.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccrZdf08.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -300,7 +300,7 @@ Parsed CXX implicit link information from above output:
     arg [-znow] ==> ignore
     arg [-zrelro] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_7705c] ==> ignore
+    arg [cmTC_d52e1] ==> ignore
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/Scrt1.o] ==> ignore
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/../../../aarch64-linux-gnu/crti.o] ==> ignore
     arg [/usr/lib/gcc/aarch64-linux-gnu/7/crtbeginS.o] ==> ignore
@@ -312,7 +312,7 @@ Parsed CXX implicit link information from above output:
     arg [-L/usr/lib/aarch64-linux-gnu] ==> dir [/usr/lib/aarch64-linux-gnu]
     arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
     arg [-L/usr/lib/gcc/aarch64-linux-gnu/7/../../..] ==> dir [/usr/lib/gcc/aarch64-linux-gnu/7/../../..]
-    arg [CMakeFiles/cmTC_7705c.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_d52e1.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
     arg [-lstdc++] ==> lib [stdc++]
     arg [-lm] ==> lib [m]
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -340,14 +340,14 @@ Parsed CXX implicit link information from above output:
 Detecting CXX [-std=c++1z] compiler features compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_6e078/fast"
-/usr/bin/make -f CMakeFiles/cmTC_6e078.dir/build.make CMakeFiles/cmTC_6e078.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_cb10d/fast"
+/usr/bin/make -f CMakeFiles/cmTC_cb10d.dir/build.make CMakeFiles/cmTC_cb10d.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_6e078.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++1z -o CMakeFiles/cmTC_6e078.dir/feature_tests.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_6e078
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6e078.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_6e078.dir/feature_tests.cxx.o  -o cmTC_6e078 
+Building CXX object CMakeFiles/cmTC_cb10d.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++1z -o CMakeFiles/cmTC_cb10d.dir/feature_tests.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_cb10d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_cb10d.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_cb10d.dir/feature_tests.cxx.o  -o cmTC_cb10d 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -413,14 +413,14 @@ make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Co
 Detecting CXX [-std=c++14] compiler features compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_711eb/fast"
-/usr/bin/make -f CMakeFiles/cmTC_711eb.dir/build.make CMakeFiles/cmTC_711eb.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_c859f/fast"
+/usr/bin/make -f CMakeFiles/cmTC_c859f.dir/build.make CMakeFiles/cmTC_c859f.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_711eb.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++14 -o CMakeFiles/cmTC_711eb.dir/feature_tests.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_711eb
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_711eb.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_711eb.dir/feature_tests.cxx.o  -o cmTC_711eb 
+Building CXX object CMakeFiles/cmTC_c859f.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++14 -o CMakeFiles/cmTC_c859f.dir/feature_tests.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_c859f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c859f.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_c859f.dir/feature_tests.cxx.o  -o cmTC_c859f 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -486,14 +486,14 @@ make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Co
 Detecting CXX [-std=c++11] compiler features compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_168dd/fast"
-/usr/bin/make -f CMakeFiles/cmTC_168dd.dir/build.make CMakeFiles/cmTC_168dd.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_9d2bd/fast"
+/usr/bin/make -f CMakeFiles/cmTC_9d2bd.dir/build.make CMakeFiles/cmTC_9d2bd.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_168dd.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++11 -o CMakeFiles/cmTC_168dd.dir/feature_tests.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_168dd
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_168dd.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_168dd.dir/feature_tests.cxx.o  -o cmTC_168dd 
+Building CXX object CMakeFiles/cmTC_9d2bd.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++11 -o CMakeFiles/cmTC_9d2bd.dir/feature_tests.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_9d2bd
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9d2bd.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_9d2bd.dir/feature_tests.cxx.o  -o cmTC_9d2bd 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -559,14 +559,14 @@ make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Co
 Detecting CXX [-std=c++98] compiler features compiled with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_bd65c/fast"
-/usr/bin/make -f CMakeFiles/cmTC_bd65c.dir/build.make CMakeFiles/cmTC_bd65c.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_3f315/fast"
+/usr/bin/make -f CMakeFiles/cmTC_3f315.dir/build.make CMakeFiles/cmTC_3f315.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_bd65c.dir/feature_tests.cxx.o
-/usr/bin/c++    -std=c++98 -o CMakeFiles/cmTC_bd65c.dir/feature_tests.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_bd65c
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bd65c.dir/link.txt --verbose=1
-/usr/bin/c++       -rdynamic CMakeFiles/cmTC_bd65c.dir/feature_tests.cxx.o  -o cmTC_bd65c 
+Building CXX object CMakeFiles/cmTC_3f315.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++98 -o CMakeFiles/cmTC_3f315.dir/feature_tests.cxx.o -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_3f315
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3f315.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_3f315.dir/feature_tests.cxx.o  -o cmTC_3f315 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
@@ -630,28 +630,28 @@ make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Co
 Determining if the include file pthread.h exists passed with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_18f49/fast"
-/usr/bin/make -f CMakeFiles/cmTC_18f49.dir/build.make CMakeFiles/cmTC_18f49.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_a85a5/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a85a5.dir/build.make CMakeFiles/cmTC_a85a5.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_18f49.dir/CheckIncludeFile.c.o
-/usr/bin/cc   -fPIC    -o CMakeFiles/cmTC_18f49.dir/CheckIncludeFile.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
-Linking C executable cmTC_18f49
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_18f49.dir/link.txt --verbose=1
-/usr/bin/cc -fPIC     -rdynamic CMakeFiles/cmTC_18f49.dir/CheckIncludeFile.c.o  -o cmTC_18f49 
+Building C object CMakeFiles/cmTC_a85a5.dir/CheckIncludeFile.c.o
+/usr/bin/cc   -fPIC    -o CMakeFiles/cmTC_a85a5.dir/CheckIncludeFile.c.o   -c /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTC_a85a5
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a85a5.dir/link.txt --verbose=1
+/usr/bin/cc -fPIC     -rdynamic CMakeFiles/cmTC_a85a5.dir/CheckIncludeFile.c.o  -o cmTC_a85a5 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 
 Determining if the function pthread_create exists in the pthread passed with the following output:
 Change Dir: /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_15303/fast"
-/usr/bin/make -f CMakeFiles/cmTC_15303.dir/build.make CMakeFiles/cmTC_15303.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_b7cc9/fast"
+/usr/bin/make -f CMakeFiles/cmTC_b7cc9.dir/build.make CMakeFiles/cmTC_b7cc9.dir/build
 make[1]: Entering directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_15303.dir/CheckFunctionExists.c.o
-/usr/bin/cc   -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_15303.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
-Linking C executable cmTC_15303
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_15303.dir/link.txt --verbose=1
-/usr/bin/cc -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_15303.dir/CheckFunctionExists.c.o  -o cmTC_15303 -lpthread 
+Building C object CMakeFiles/cmTC_b7cc9.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_b7cc9.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.10/Modules/CheckFunctionExists.c
+Linking C executable cmTC_b7cc9
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b7cc9.dir/link.txt --verbose=1
+/usr/bin/cc -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_b7cc9.dir/CheckFunctionExists.c.o  -o cmTC_b7cc9 -lpthread 
 make[1]: Leaving directory '/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/CMakeTmp'
 
 

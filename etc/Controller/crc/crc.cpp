@@ -16,11 +16,11 @@ void CenterRC::init(){
 	Index_ = 100;
 
 	UDPsend_.GROUP_ = "239.255.255.250";
-	UDPsend_.PORT_ = 9307;
+	UDPsend_.PORT_ = 9308;
 	UDPsend_.sendInit();
 
 	UDPrecv_.GROUP_ = "239.255.255.250";
-	UDPrecv_.PORT_ = 9307;
+	UDPrecv_.PORT_ = 9308;
 	UDPrecv_.recvInit();
 }
 
@@ -29,8 +29,6 @@ void CenterRC::UDPsendData(float pred_vel, int to){
 
 	udpData.index = Index_;
 	udpData.to = to;
-	udpData.target_vel = TarVel_;
-	udpData.target_dist = TarDist_;
 	udpData.mode = CrcMode_;
 	if (to == 0){
 		udpData.predict_vel = lv_pred_vel_;

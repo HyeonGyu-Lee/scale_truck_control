@@ -259,7 +259,7 @@ void CountT() {
    ros variable
 */
 ros::NodeHandle nh_;
-ros::Subscriber<scale_truck_control::ctl> rosSubMsg("/lrc2ocr_msg", &LrcCallback);
+ros::Subscriber<scale_truck_control::lrc2ocr> rosSubMsg("/lrc2ocr_msg", &LrcCallback);
 ros::Publisher rosPubMsg("/ocr2lrc_msg", &pub_msg_);
 /*
    Arduino setup()

@@ -34,10 +34,10 @@ void LocalRC::init(){
 	int OcrPubQueueSize;
 
 	nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
-	nodeHandle_.param("params/udp_group_port", PORT_, 9307);
+	nodeHandle_.param("params/udp_group_port", PORT_, 9308);
 	nodeHandle_.param("params/truck_info", Index_, 0);
 	
-	nodeHandle_.param("Params/epsilon", Epsilon_, 0.5f);
+	nodeHandle_.param("Params/epsilon", Epsilon_, 1.0f);
 	nodeHandle_.param("Params/lu_ob_A", A_, 0.6817f);
 	nodeHandle_.param("Params/lu_ob_B", B_, 0.3183f);
 	nodeHandle_.param("Params/lu_ob_L", L_, 0.2817f);
@@ -102,6 +102,7 @@ void LocalRC::XavCallback(const scale_truck_control::xav2lrc &msg){
 	TarVel_ = msg.tar_vel;
 	Beta_ = msg.beta;
 	Gamma_ = msg.gamma;
+	printf("***************************\n");
 }
 
 void LocalRC::OcrCallback(const scale_truck_control::ocr2lrc &msg){
@@ -119,7 +120,12 @@ void LocalRC::LrcPub(){
 	ocr.steer_angle = AngleDegree_;
 	ocr.cur_dist = CurDist_;
 	ocr.tar_dist = TarDist_;
-	ocr.tar_vel = TarVel_;
+	if (!Alpha_){
+		ocr.tar_vel = TarVel_;
+	}
+	else{
+		ocr.tar_vel = PredVel_;
+	}
 
 	XavPublisher_.publish(xav);
 	OcrPublisher_.publish(ocr);
@@ -147,13 +153,7 @@ void* LocalRC::UDPrecvInThread()
 	
     while(ros::ok()) { 
         UDPrecv_.recvData(&udpData);
-        if(udpData.index == 100 && udpData.to == Index_) {	//CRC index
-			{
-				const std::lock_guard<std::mutex> lock(mutexXavCallback_);
-				TarVel_ = udpData.target_vel;
-				TarDist_ = udpData.target_dist;
-			}
-			
+        if(udpData.index == 100 && udpData.to == Index_) {	//CRC index	
 			PredVel_ = udpData.predict_vel;
 			CrcMode_ = udpData.mode;
 			if (CrcMode_ >= LrcMode_){
@@ -202,15 +202,24 @@ void LocalRC::ModeCheck(){
 }
 
 void LocalRC::spin(){
+	static int cnt = 0;
 	while(ros::ok()){
 		VelocitySensorCheck();
 		ModeCheck();
 		LrcPub();
 		udpsendThread_ = std::thread(&LocalRC::UDPsendInThread, this);
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
 		udpsendThread_.join();
+		cnt++;
+		if (cnt > 100){
+			printf("Predict Velocity:\t%.3f\n", PredVel_);
+			printf("Target Velocity:\t%.3f\n", TarVel_);
+			printf("Current Velocity:\t%.3f\n", CurVel_);
+			printf("alpha, beta, gamma:\t%d, %d, %d\n", Alpha_, Beta_, Gamma_); 
+			cnt = 0;
+		}
 		if(!isNodeRunning()){
 			ros::requestShutdown();
 			break;

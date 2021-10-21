@@ -1,5 +1,7 @@
 #include "lrc/lrc.hpp"
 
+#define PATH "/home/avees/catkin_ws/logfiles/"
+
 using namespace std;
 
 namespace LocalResiliencyCoordinator{
@@ -33,30 +35,30 @@ void LocalRC::init(){
 	std::string OcrPubTopicName;
 	int OcrPubQueueSize;
 
-	nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
-	nodeHandle_.param("params/udp_group_port", PORT_, 9308);
 	nodeHandle_.param("params/truck_info", Index_, 0);
-	
-	nodeHandle_.param("Params/epsilon", Epsilon_, 1.0f);
-	nodeHandle_.param("Params/lu_ob_A", A_, 0.6817f);
-	nodeHandle_.param("Params/lu_ob_B", B_, 0.3183f);
-	nodeHandle_.param("Params/lu_ob_L", L_, 0.2817f);
+
+	nodeHandle_.param("LrcParams/udp_group_addr", ADDR_, std::string("239.255.255.250"));
+	nodeHandle_.param("LrcParams/udp_group_port", PORT_, 9308);	
+	nodeHandle_.param("LrcParams/epsilon", Epsilon_, 1.0f);
+	nodeHandle_.param("LrcParams/lu_ob_A", A_, 0.6817f);
+	nodeHandle_.param("LrcParams/lu_ob_B", B_, 0.3183f);
+	nodeHandle_.param("LrcParams/lu_ob_L", L_, 0.2817f);
 	
 	/******************************/
 	/* ROS Topic Subscribe Option */
 	/******************************/
-	nodeHandle_.param("lrcSubPub/xavier_to_lrc/topic", XavSubTopicName, std::string("/xav2lrc_msg"));
-	nodeHandle_.param("lrcSubPub/xavier_to_lrc/queue_size", XavSubQueueSize, 1);
-	nodeHandle_.param("lrcSubPub/ocr_to_lrc/topic", OcrSubTopicName, std::string("/ocr2lrc_msg"));
-	nodeHandle_.param("lrcSubPub/ocr_to_lrc/queue_size", OcrSubQueueSize, 1);
+	nodeHandle_.param("LrcSubPub/xavier_to_lrc/topic", XavSubTopicName, std::string("/xav2lrc_msg"));
+	nodeHandle_.param("LrcSubPub/xavier_to_lrc/queue_size", XavSubQueueSize, 1);
+	nodeHandle_.param("LrcSubPub/ocr_to_lrc/topic", OcrSubTopicName, std::string("/ocr2lrc_msg"));
+	nodeHandle_.param("LrcSubPub/ocr_to_lrc/queue_size", OcrSubQueueSize, 1);
 
 	/******************************/
 	/* ROS Topic Publish Option */
 	/******************************/
-	nodeHandle_.param("lrcSubPub/lrc_to_xavier/topic", XavPubTopicName, std::string("/lrc2xav_msg"));
-	nodeHandle_.param("lrcSubPub/lrc_to_xavier/queue_size", XavSubQueueSize, 1);
-	nodeHandle_.param("lrcSubPub/lrc_to_ocr/topic", OcrPubTopicName, std::string("/lrc2ocr_msg"));
-	nodeHandle_.param("lrcSubPub/lrc_to_ocr/queue_size", OcrPubQueueSize, 1);
+	nodeHandle_.param("LrcSubPub/lrc_to_xavier/topic", XavPubTopicName, std::string("/lrc2xav_msg"));
+	nodeHandle_.param("LrcSubPub/lrc_to_xavier/queue_size", XavSubQueueSize, 1);
+	nodeHandle_.param("LrcSubPub/lrc_to_ocr/topic", OcrPubTopicName, std::string("/lrc2ocr_msg"));
+	nodeHandle_.param("LrcSubPub/lrc_to_ocr/queue_size", OcrPubQueueSize, 1);
 
 	/************************/
 	/* ROS Topic Subscriber */ 
@@ -203,15 +205,18 @@ void LocalRC::ModeCheck(){
 
 void LocalRC::spin(){
 	static int cnt = 0;
+	struct timeval startTime, endTime;
+	double diffTime;
 	while(ros::ok()){
 		VelocitySensorCheck();
 		ModeCheck();
 		LrcPub();
 		udpsendThread_ = std::thread(&LocalRC::UDPsendInThread, this);
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 		udpsendThread_.join();
+
 		cnt++;
 		if (cnt > 100){
 			printf("Estimated Velocity:\t%.3f\n", fabs(CurVel_ - HatVel_));

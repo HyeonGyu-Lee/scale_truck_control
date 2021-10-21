@@ -7,6 +7,7 @@
 #include <ros/ros.h>
 #include <cmath>
 #include <fstream>
+#include <sys/time.h>
 
 #include "sock_udp/sock_udp.hpp"
 

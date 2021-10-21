@@ -1,4 +1,4 @@
-lrcSubPub:
+LrcSubPub:
   xavier_to_lrc:
     topic: /xav2lrc_msg
     queue_size: 1
@@ -12,7 +12,9 @@ lrcSubPub:
     topic: /lrc2ocr_msg
     queue_size: 1
 
-Params:
+LrcParams:
+  udp_group_addr: 239.255.255.250
+  udp_group_port: 9308
   epsilon: 1.0
   lu_ob_A: 0.6817
   lu_ob_B: 0.3183

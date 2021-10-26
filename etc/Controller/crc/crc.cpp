@@ -162,6 +162,10 @@ void CenterRC::Communicate(){
 	UDPsendData(PredictVelocity(1), 1);
 	UDPsendData(PredictVelocity(2), 2);
 
+	printf("\033[2J\033[1;1H");
+	printf("CRC is running ...\n");
+	printf("CRC and each MODEs of LV, FV1, FV2:\t%d || %d, %d, %d\n", CrcMode_, lv_lrc_mode_,fv1_lrc_mode_,fv2_lrc_mode_);
+	printf("Predict Velocitys of LV, FV1, FV2:\t%.3f, %.3f, %.3f\n", lv_pred_vel_, fv1_pred_vel_, fv2_pred_vel_);
 }
 
 }

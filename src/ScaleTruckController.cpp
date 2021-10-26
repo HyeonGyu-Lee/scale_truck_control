@@ -62,6 +62,9 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
   nodeHandle_.param("params/udp_group_port", PORT_, 9307);
   nodeHandle_.param("params/truck_info", Index_, 0);
+  if(!nodeHandle_.hasParam("params/udp_group_addr")){
+	  ROS_INFO("No param named 'params/udp_group_addr");
+  }
   return true;
 }
 

@@ -19,3 +19,4 @@ LrcParams:
   lu_ob_A: 0.6817
   lu_ob_B: 0.3183
   lu_ob_L: 0.2817
+  enable_console_output: false

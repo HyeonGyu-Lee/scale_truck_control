@@ -55,6 +55,7 @@ class LocalRC{
 		bool Alpha_ = false;
 		bool Beta_ = false;
 		bool Gamma_ = false;
+		bool EnableConsoleOutput_;
 		float A_, B_, L_;
 		float Epsilon_;
 		float AngleDegree_;

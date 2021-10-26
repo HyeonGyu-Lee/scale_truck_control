@@ -10,9 +10,6 @@ subscribers:
     queue_size: 1
 
 publishers:
-  control_data:
-    topic: /ctl_msg
-    queue_size: 1
   lane_coef:
     topic: /lane_msg
     queue_size: 10

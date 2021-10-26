@@ -43,7 +43,8 @@ void LocalRC::init(){
 	nodeHandle_.param("LrcParams/lu_ob_A", A_, 0.6817f);
 	nodeHandle_.param("LrcParams/lu_ob_B", B_, 0.3183f);
 	nodeHandle_.param("LrcParams/lu_ob_L", L_, 0.2817f);
-	
+	nodeHandle_.param("LrcParams/enable_console_output", EnableConsoleOutput_, true);
+
 	/******************************/
 	/* ROS Topic Subscribe Option */
 	/******************************/
@@ -228,7 +229,7 @@ void LocalRC::spin(){
 		diffTime = ((endTime.tv_sec - startTime.tv_sec)*1000) + ((endTime.tv_usec - startTime.tv_usec)/1000);
 		fprintf(log_file, "%.3f,%.3f,%.3f,%.3f,%.3f,%d,%.3f\n", PredVel_,TarVel_,CurVel_,SatVel_,fabs(CurVel_ - HatVel_),Alpha_,diffTime);
 		fclose(log_file);
-		if(cnt > 100){
+		if(cnt > 100 && EnableConsoleOutput_){
 			printf("\nLRC Time:\t%.3f ms", diffTime);
 			printf("\nEstimated Velocity:\t%.3f", fabs(CurVel_ - HatVel_));
 			printf("\nPredict Velocity:\t%.3f", PredVel_);

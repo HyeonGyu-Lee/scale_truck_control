@@ -13,6 +13,8 @@
   <!-- Load parameters -->
   <rosparam command="load" ns="scale_truck_control" file="$(arg ros_param_file)"/>
   <rosparam command="load" ns="scale_truck_control" file="$(arg vehicle_param_file)"/>
+  <rosparam command="load" ns="LRC" file="$(arg lrc_param_file)"/>
+  <rosparam command="load" ns="LRC" file="$(arg vehicle_param_file)"/>
 
   <!-- Start usb_cam -->
   <node pkg="usb_cam" type="usb_cam_node" name="usb_cam" >

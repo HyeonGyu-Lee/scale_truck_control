@@ -21,7 +21,7 @@ class CenterRC{
 		void UDPrecvTruckData();
 		void UDPrecvControlCenterData();
 		float PredictVelocity(int index);
-		uint8_t ModeCheck(uint8_t lv_mode, uint8_t fv1_mode, uint8_t fv2_mode);
+		void ModeCheck(uint8_t lv_mode, uint8_t fv1_mode, uint8_t fv2_mode);
 
 		int Index_;
 		//bool Alpha_ = 0;

@@ -104,7 +104,6 @@ void LocalRC::XavCallback(const scale_truck_control::xav2lrc &msg){
 	TarVel_ = msg.tar_vel;
 	Beta_ = msg.beta;
 	Gamma_ = msg.gamma;
-	printf("***************************\n");
 }
 
 void LocalRC::OcrCallback(const scale_truck_control::ocr2lrc &msg){
@@ -204,28 +203,44 @@ void LocalRC::ModeCheck(){
 }
 
 void LocalRC::spin(){
-	static int cnt = 0;
 	struct timeval startTime, endTime;
 	double diffTime;
+	static int cnt = 0;
+	string name = "log.csv";
+	string temp = PATH;
+	temp = temp + name;
+	const char* path = temp.c_str();
+	FILE *log_file = fopen(path, "a");
+	fprintf(log_file, "Predict,Target,Current,Saturated,Estimated,Alpha,Time\n");
+	fclose(log_file);
 	while(ros::ok()){
+		log_file = fopen(path, "a");
+		gettimeofday(&startTime, NULL);
 		VelocitySensorCheck();
 		ModeCheck();
 		LrcPub();
 		udpsendThread_ = std::thread(&LocalRC::UDPsendInThread, this);
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 		udpsendThread_.join();
-
-		cnt++;
-		if (cnt > 100){
-			printf("Estimated Velocity:\t%.3f\n", fabs(CurVel_ - HatVel_));
-			printf("Predict Velocity:\t%.3f\n", PredVel_);
-			printf("Target Velocity:\t%.3f\n", TarVel_);
-			printf("Current Velocity:\t%.3f\n", CurVel_);
-			printf("alpha, beta, gamma:\t%d, %d, %d\n", Alpha_, Beta_, Gamma_); 
+		gettimeofday(&endTime, NULL);
+		diffTime = ((endTime.tv_sec - startTime.tv_sec)*1000) + ((endTime.tv_usec - startTime.tv_usec)/1000);
+		fprintf(log_file, "%.3f,%.3f,%.3f,%.3f,%.3f,%d,%.3f\n", PredVel_,TarVel_,CurVel_,SatVel_,fabs(CurVel_ - HatVel_),Alpha_,diffTime);
+		fclose(log_file);
+		if(cnt > 100){
+			printf("\nLRC Time:\t%.3f ms", diffTime);
+			printf("\nEstimated Velocity:\t%.3f", fabs(CurVel_ - HatVel_));
+			printf("\nPredict Velocity:\t%.3f", PredVel_);
+			printf("\nTarget Velocity:\t%.3f", TarVel_);
+			printf("\nCurrent Velocity:\t%.3f", CurVel_);
+			printf("\nSaturated Velocity:\t%.3f", SatVel_);
+			printf("\nEstimated Value:\t%.3f", fabs(CurVel_ - HatVel_));
+			printf("\nalpha, beta, gamma:\t%d, %d, %d", Alpha_, Beta_, Gamma_); 
+			printf("\n");
 			cnt = 0;
 		}
+		cnt++;
 		if(!isNodeRunning()){
 			ros::requestShutdown();
 			break;

@@ -39,6 +39,7 @@ void LocalRC::init(){
 
 	nodeHandle_.param("LrcParams/udp_group_addr", ADDR_, std::string("239.255.255.250"));
 	nodeHandle_.param("LrcParams/udp_group_port", PORT_, 9308);	
+	nodeHandle_.param("LrcParams/lrc_log_path", PATH_, std::string("/home/jetson/catkin_ws/logfiles/"));
 	nodeHandle_.param("LrcParams/epsilon", Epsilon_, 1.0f);
 	nodeHandle_.param("LrcParams/lu_ob_A", A_, 0.6817f);
 	nodeHandle_.param("LrcParams/lu_ob_B", B_, 0.3183f);
@@ -203,45 +204,73 @@ void LocalRC::ModeCheck(){
 	}
 }
 
+void LocalRC::RecordData(){
+	char file_name[] = "LRC_log00.csv";
+	static char file[128] = {0x00, };
+	char buf[256] = {0x00,};
+	static bool flag = false;
+	ifstream read_file;
+	ofstream write_file;
+	if(!flag){
+		for(int i = 0; i < 100; i++){
+			file_name[7] = i/10 + '0';	//ASCII
+			file_name[8] = i%10 + '0';
+			sprintf(file, "%s%s", PATH_.c_str(), file_name);
+			read_file.open(file);
+			if(read_file.fail()){	//Check if the file exists
+				read_file.close();
+				write_file.open(file);
+				break;
+			}
+			read_file.close();
+		}
+		write_file << "Predict,Target,Current,Saturation,Estimate,Alpha" << endl;
+		flag = true;
+	}
+	else{
+		sprintf(buf, "%.3f,%.3f,%.3f,%.3f,%.3f,%d", PredVel_, TarVel_, CurVel_, SatVel_, fabs(CurVel_ - HatVel_), Alpha_);
+		write_file.open(file, std::ios::out | std::ios::app);
+		write_file << buf << endl;
+	}
+	write_file.close();
+}
+
+void LocalRC::PrintData(){
+	static int cnt = 0;
+	if(cnt > 100 && EnableConsoleOutput_){
+		printf("\nLRC Time:\t%.3f ms", DiffTime_); 
+		printf("\nEstimated Velocity:\t%.3f", fabs(CurVel_ - HatVel_));
+		printf("\nPredict Velocity:\t%.3f", PredVel_);
+		printf("\nTarget Velocity:\t%.3f", TarVel_);
+		printf("\nCurrent Velocity:\t%.3f", CurVel_);
+		printf("\nSaturated Velocity:\t%.3f", SatVel_);
+		printf("\nEstimated Value:\t%.3f", fabs(CurVel_ - HatVel_));
+		printf("\nalpha, beta, gamma:\t%d, %d, %d", Alpha_, Beta_, Gamma_); 
+		printf("\n");
+		cnt = 0;
+	}
+	cnt++;
+}
+
 void LocalRC::spin(){
 	struct timeval startTime, endTime;
-	double diffTime;
-	static int cnt = 0;
-	string name = "log.csv";
-	string temp = PATH;
-	temp = temp + name;
-	const char* path = temp.c_str();
-	FILE *log_file = fopen(path, "a");
-	fprintf(log_file, "Predict,Target,Current,Saturated,Estimated,Alpha,Time\n");
-	fclose(log_file);
 	while(ros::ok()){
-		log_file = fopen(path, "a");
 		gettimeofday(&startTime, NULL);
+		
 		VelocitySensorCheck();
 		ModeCheck();
 		LrcPub();
 		udpsendThread_ = std::thread(&LocalRC::UDPsendInThread, this);
-
 		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 		udpsendThread_.join();
+
 		gettimeofday(&endTime, NULL);
-		diffTime = ((endTime.tv_sec - startTime.tv_sec)*1000) + ((endTime.tv_usec - startTime.tv_usec)/1000);
-		fprintf(log_file, "%.3f,%.3f,%.3f,%.3f,%.3f,%d,%.3f\n", PredVel_,TarVel_,CurVel_,SatVel_,fabs(CurVel_ - HatVel_),Alpha_,diffTime);
-		fclose(log_file);
-		if(cnt > 100 && EnableConsoleOutput_){
-			printf("\nLRC Time:\t%.3f ms", diffTime);
-			printf("\nEstimated Velocity:\t%.3f", fabs(CurVel_ - HatVel_));
-			printf("\nPredict Velocity:\t%.3f", PredVel_);
-			printf("\nTarget Velocity:\t%.3f", TarVel_);
-			printf("\nCurrent Velocity:\t%.3f", CurVel_);
-			printf("\nSaturated Velocity:\t%.3f", SatVel_);
-			printf("\nEstimated Value:\t%.3f", fabs(CurVel_ - HatVel_));
-			printf("\nalpha, beta, gamma:\t%d, %d, %d", Alpha_, Beta_, Gamma_); 
-			printf("\n");
-			cnt = 0;
-		}
-		cnt++;
+		DiffTime_ = ((endTime.tv_sec - startTime.tv_sec)*1000) + ((endTime.tv_usec - startTime.tv_usec)/1000);
+
+		RecordData();
+		PrintData();
+
 		if(!isNodeRunning()){
 			ros::requestShutdown();
 			break;

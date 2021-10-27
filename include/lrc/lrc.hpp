@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdio.h>
 #include <iostream>
 #include <pthread.h>
 #include <thread>
@@ -51,11 +52,17 @@ class LocalRC{
 		void* UDPrecvInThread();
 		void VelocitySensorCheck();
 		void ModeCheck();
+		void RecordData();
+		void PrintData();
 
+		std::string PATH_;
 		bool Alpha_ = false;
 		bool Beta_ = false;
 		bool Gamma_ = false;
 		bool EnableConsoleOutput_;
+		bool isNodeRunning_;
+		uint8_t LrcMode_ = 0;
+		uint8_t CrcMode_ = 0;
 		float A_, B_, L_;
 		float Epsilon_;
 		float AngleDegree_;
@@ -66,16 +73,13 @@ class LocalRC{
 		float PredVel_ = 0;
 		float HatVel_ = 0;
 		float SatVel_ = 0;
-		uint8_t LrcMode_ = 0;
-		uint8_t CrcMode_ = 0;
+		double DiffTime_ = 0;
 
 		std::thread spinThread_;
 		std::thread udpsendThread_;
 		std::thread udprecvThread_;
 
-		bool isNodeRunning_;
 		std::mutex mutexNodeStatus_;
-
 		std::mutex mutexXavCallback_;
 		std::mutex mutexOcrCallback_;
 };

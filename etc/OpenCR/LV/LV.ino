@@ -35,7 +35,7 @@
 #define MIN_STEER     (1200)
 #define STEER_CENTER  (1480)
 
-#define DATA_LOG      (0)
+#define DATA_LOG      (1)
 
 cIMU  IMU;
 Servo throttle_;
@@ -47,7 +47,7 @@ float tx_throttle_;
 float tx_steer_;
 float tx_dist_;
 float tx_tdist_;
-float pred_vel_;
+float pred_vel_ = 0;
 float output_;
 volatile int EN_pos_;
 volatile int CountT_;
@@ -232,6 +232,10 @@ void CheckEN() {
   logfile_.print(target_vel);
   logfile_.print(",");
   logfile_.print(cur_vel);
+  logfile_.print(",");
+  logfile_.print(pred_vel_);
+  logfile_.print(",");
+  logfile_.print(Alpha_);
   logfile_.print(",");
   logfile_.print(EN_pos_);
   logfile_.print(",");

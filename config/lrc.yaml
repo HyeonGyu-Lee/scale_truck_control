@@ -14,10 +14,10 @@ LrcSubPub:
 
 LrcParams:
   udp_group_addr: 239.255.255.250
-  udp_group_port: 9308
+  udp_group_port: 9392
   lrc_log_path: /home/avees/catkin_ws/logfiles/
-  epsilon: 1.0
+  epsilon: 0.7
   lu_ob_A: 0.6817
   lu_ob_B: 0.3183
   lu_ob_L: 0.2817
-  enable_console_output: false
+  enable_console_output: true

@@ -5,7 +5,6 @@ params:
   target_vel: 0.00
   safety_vel: 0.45
   fv_max_vel: 1.20
-  u_vel: 0.00
   lv_stop_dist: 0.5
   fv_stop_dist: 0.3
   safety_dist: 1.5

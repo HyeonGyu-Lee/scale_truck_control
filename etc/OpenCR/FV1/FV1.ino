@@ -41,11 +41,13 @@ cIMU  IMU;
 Servo throttle_;
 Servo steer_;
 int Index_;
+bool Alpha_ = false;
 float raw_throttle_;
 float tx_throttle_;
 float tx_steer_;
 float tx_dist_;
 float tx_tdist_;
+float pred_vel_;
 float output_;
 volatile int EN_pos_;
 volatile int CountT_;
@@ -62,10 +64,12 @@ HardwareTimer Timer3(TIMER_CH3); // Angle
 */
 void LrcCallback(const scale_truck_control::lrc2ocr &msg) {
   Index_ = msg.index;
-  tx_throttle_ = msg.tar_vel;
-  tx_tdist_ = msg.tar_dist;
-  tx_dist_ = msg.cur_dist;
   tx_steer_ = msg.steer_angle;  // float32
+  tx_dist_ = msg.cur_dist;
+  tx_tdist_ = msg.tar_dist;
+  tx_throttle_ = msg.tar_vel;
+  pred_vel_ = msg.pred_vel;
+  Alpha_ = msg.alpha;
 }
 /*
    SPEED to RPM
@@ -88,6 +92,9 @@ float setSPEED(float tar_vel, float cur_vel) {
   float u_dist, u_dist_k;
   float ref_vel;
   pub_msg_.cur_vel = cur_vel;
+  if(Alpha_){
+	  cur_vel = pred_vel_;
+  }
   if(tar_vel <= 0 ) {
     output = ZERO_PWM;
     I_err = 0;
@@ -108,14 +115,14 @@ float setSPEED(float tar_vel, float cur_vel) {
     } else {
       ref_vel = tar_vel;
     }
-     
+    
     err = ref_vel - cur_vel;
     P_err = Kp_ * err;
     I_err += Ki_ * err * dt_;
     A_err += Ka_ * ((prev_u_k - prev_u) / dt_);
     u = P_err + I_err + A_err + ref_vel * Kf_;
 
-    if(u > 2.0) u_k = 2.0;
+	if(u > 2.0) u_k = 2.0;
     else if(u <= 0) u_k = 0;
     else u_k = u;
 

@@ -52,7 +52,7 @@ class LocalRC{
 		void* UDPrecvInThread();
 		void VelocitySensorCheck();
 		void ModeCheck();
-		void RecordData();
+		void RecordData(struct timeval *startTime);
 		void PrintData();
 
 		std::string PATH_;
@@ -73,7 +73,7 @@ class LocalRC{
 		float PredVel_ = 0;
 		float HatVel_ = 0;
 		float SatVel_ = 0;
-		double DiffTime_ = 0;
+		double Time_ = 0;
 
 		std::thread spinThread_;
 		std::thread udpsendThread_;

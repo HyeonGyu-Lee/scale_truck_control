@@ -16,11 +16,11 @@ void CenterRC::init(){
 	Index_ = 100;
 
 	UDPsend_.GROUP_ = "239.255.255.250";
-	UDPsend_.PORT_ = 9308;
+	UDPsend_.PORT_ = 9392;
 	UDPsend_.sendInit();
 
 	UDPrecv_.GROUP_ = "239.255.255.250";
-	UDPrecv_.PORT_ = 9308;
+	UDPrecv_.PORT_ = 9392;
 	UDPrecv_.recvInit();
 }
 

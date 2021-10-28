@@ -38,7 +38,7 @@ void LocalRC::init(){
 	nodeHandle_.param("params/truck_info", Index_, 0);
 
 	nodeHandle_.param("LrcParams/udp_group_addr", ADDR_, std::string("239.255.255.250"));
-	nodeHandle_.param("LrcParams/udp_group_port", PORT_, 9308);	
+	nodeHandle_.param("LrcParams/udp_group_port", PORT_, 9392);	
 	nodeHandle_.param("LrcParams/lrc_log_path", PATH_, std::string("/home/jetson/catkin_ws/logfiles/"));
 	nodeHandle_.param("LrcParams/epsilon", Epsilon_, 1.0f);
 	nodeHandle_.param("LrcParams/lu_ob_A", A_, 0.6817f);
@@ -123,12 +123,9 @@ void LocalRC::LrcPub(){
 	ocr.steer_angle = AngleDegree_;
 	ocr.cur_dist = CurDist_;
 	ocr.tar_dist = TarDist_;
-	if (!Alpha_){
-		ocr.tar_vel = TarVel_;
-	}
-	else{
-		ocr.tar_vel = PredVel_;
-	}
+	ocr.tar_vel = TarVel_;
+	ocr.pred_vel = PredVel_;
+	ocr.alpha = Alpha_;
 
 	XavPublisher_.publish(xav);
 	OcrPublisher_.publish(ocr);
@@ -174,9 +171,11 @@ void LocalRC::VelocitySensorCheck(){
 	if(fabs(CurVel_ - HatVel_) > Epsilon_){
 		Alpha_ = true;
 	}
-	else{
+/*	
+	else{	//Recovery
 		Alpha_ = false;
 	}
+*/
 }
 
 void LocalRC::ModeCheck(){
@@ -204,7 +203,8 @@ void LocalRC::ModeCheck(){
 	}
 }
 
-void LocalRC::RecordData(){
+void LocalRC::RecordData(struct timeval *startTime){
+	struct timeval currentTime;
 	char file_name[] = "LRC_log00.csv";
 	static char file[128] = {0x00, };
 	char buf[256] = {0x00,};
@@ -224,11 +224,13 @@ void LocalRC::RecordData(){
 			}
 			read_file.close();
 		}
-		write_file << "Predict,Target,Current,Saturation,Estimate,Alpha" << endl;
+		write_file << "Time[s],Predict,Target,Current,Saturation,Estimate,Alpha" << endl;
 		flag = true;
 	}
 	else{
-		sprintf(buf, "%.3f,%.3f,%.3f,%.3f,%.3f,%d", PredVel_, TarVel_, CurVel_, SatVel_, fabs(CurVel_ - HatVel_), Alpha_);
+		gettimeofday(&currentTime, NULL);
+		Time_ = ((currentTime.tv_sec - startTime->tv_sec)) + ((currentTime.tv_usec - startTime->tv_usec)/1000000.0);
+		sprintf(buf, "%.3e,%.3f,%.3f,%.3f,%.3f,%.3f,%d", Time_, PredVel_, TarVel_, CurVel_, SatVel_, fabs(CurVel_ - HatVel_), Alpha_);
 		write_file.open(file, std::ios::out | std::ios::app);
 		write_file << buf << endl;
 	}
@@ -238,7 +240,6 @@ void LocalRC::RecordData(){
 void LocalRC::PrintData(){
 	static int cnt = 0;
 	if(cnt > 100 && EnableConsoleOutput_){
-		printf("\nLRC Time:\t%.3f ms", DiffTime_); 
 		printf("\nEstimated Velocity:\t%.3f", fabs(CurVel_ - HatVel_));
 		printf("\nPredict Velocity:\t%.3f", PredVel_);
 		printf("\nTarget Velocity:\t%.3f", TarVel_);
@@ -253,9 +254,9 @@ void LocalRC::PrintData(){
 }
 
 void LocalRC::spin(){
-	struct timeval startTime, endTime;
+	struct timeval startTime;
+	gettimeofday(&startTime, NULL);
 	while(ros::ok()){
-		gettimeofday(&startTime, NULL);
 		
 		VelocitySensorCheck();
 		ModeCheck();
@@ -265,10 +266,7 @@ void LocalRC::spin(){
 
 		udpsendThread_.join();
 
-		gettimeofday(&endTime, NULL);
-		DiffTime_ = ((endTime.tv_sec - startTime.tv_sec)*1000) + ((endTime.tv_usec - startTime.tv_usec)/1000);
-
-		RecordData();
+		RecordData(&startTime);
 		PrintData();
 
 		if(!isNodeRunning()){

@@ -346,7 +346,7 @@ void ScaleTruckController::spin() {
   
   const auto wait_image = std::chrono::milliseconds(20);
 
-  while(!controlDone_) {
+  while(!controlDone_ && ros::ok()) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
     udpsendThread_ = std::thread(&ScaleTruckController::UDPsendInThread, this);

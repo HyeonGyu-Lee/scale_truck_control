@@ -4,7 +4,7 @@
 CMakeFiles/crc.dir/crc.cpp.o
  ../includes/crc.hpp
  ../includes/sock_udp.hpp
- /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/crc.cpp
+ /home/avees/scale_truck_control/etc/Controller/crc/crc.cpp
  /usr/local/include/opencv4/opencv2/calib3d.hpp
  /usr/local/include/opencv4/opencv2/core.hpp
  /usr/local/include/opencv4/opencv2/core/affine.hpp
@@ -109,7 +109,7 @@ CMakeFiles/crc.dir/crc.cpp.o
 CMakeFiles/crc.dir/main.cpp.o
  ../includes/crc.hpp
  ../includes/sock_udp.hpp
- /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/main.cpp
+ /home/avees/scale_truck_control/etc/Controller/crc/main.cpp
  /usr/local/include/opencv4/opencv2/calib3d.hpp
  /usr/local/include/opencv4/opencv2/core.hpp
  /usr/local/include/opencv4/opencv2/core/affine.hpp
@@ -213,7 +213,7 @@ CMakeFiles/crc.dir/main.cpp.o
  /usr/local/include/opencv4/opencv2/videoio.hpp
 CMakeFiles/crc.dir/sock_udp.cpp.o
  ../includes/sock_udp.hpp
- /home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/sock_udp.cpp
+ /home/avees/scale_truck_control/etc/Controller/crc/sock_udp.cpp
  /usr/local/include/opencv4/opencv2/calib3d.hpp
  /usr/local/include/opencv4/opencv2/core.hpp
  /usr/local/include/opencv4/opencv2/core/affine.hpp

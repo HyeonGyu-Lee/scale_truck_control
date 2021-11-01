@@ -5,9 +5,9 @@ params:
   target_vel: 0.00
   safety_vel: 0.45
   fv_max_vel: 1.20
-  lv_stop_dist: 0.1
+  lv_stop_dist: 0.5
   fv_stop_dist: 0.3
-  safety_dist: 0.1
+  safety_dist: 1.5
   target_dist: 0.8
   angle_degree: 0.0
   Kp_d: 2.0

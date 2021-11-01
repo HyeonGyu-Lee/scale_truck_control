@@ -235,7 +235,7 @@ void CheckEN() {
   logfile_.print(",");
   logfile_.print(cur_vel);
   logfile_.print(",");
-  logfile_.print(pred_vel);
+  logfile_.print(pred_vel_);
   logfile_.print(",");
   logfile_.print(Alpha_);
   logfile_.print(",");

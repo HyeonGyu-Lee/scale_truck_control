@@ -205,7 +205,10 @@ void CheckEN() {
   if(cumCountT_ == 0)
     cur_vel = 0;
   else
-    cur_vel = (float)EN_pos_ / TICK2CYCLE * ( SEC_TIME / ((float)cumCountT_*T_TIME)) * circ_; // m/s	
+    cur_vel = (float)EN_pos_ / TICK2CYCLE * ( SEC_TIME / ((float)cumCountT_*T_TIME)) * circ_; // m/s
+
+  if(cur_vel < 0)
+    cur_vel = 0;
   output_vel = setSPEED(target_vel, cur_vel);
   output_angle = IMU.rpy[2];
   if(DATA_LOG)
@@ -231,6 +234,10 @@ void CheckEN() {
   logfile_.print(target_vel);
   logfile_.print(",");
   logfile_.print(cur_vel);
+  logfile_.print(",");
+  logfile_.print(pred_vel);
+  logfile_.print(",");
+  logfile_.print(Alpha_);
   logfile_.print(",");
   logfile_.print(EN_pos_);
   logfile_.print(",");

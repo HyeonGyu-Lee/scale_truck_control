@@ -35,7 +35,7 @@
 #define MIN_STEER     (1200)
 #define STEER_CENTER  (1480)
 
-#define DATA_LOG      (1)
+#define DATA_LOG      (0)
 
 cIMU  IMU;
 Servo throttle_;
@@ -204,9 +204,11 @@ void CheckEN() {
   target_ANGLE = tx_steer_; // degree
   if(cumCountT_ == 0)
     cur_vel = 0;
-  else{
+  else
     cur_vel = (float)EN_pos_ / TICK2CYCLE * ( SEC_TIME / ((float)cumCountT_*T_TIME)) * circ_; // m/s
-  }
+
+  if(cur_vel < 0)
+    cur_vel = 0;
   output_vel = setSPEED(target_vel, cur_vel);
   output_angle = IMU.rpy[2];
   if(DATA_LOG)

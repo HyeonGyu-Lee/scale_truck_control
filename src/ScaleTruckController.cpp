@@ -258,6 +258,7 @@ void* ScaleTruckController::UDPsendInThread()
       udpData.target_vel = RefVel_;
     }
     udpData.current_vel = CurVel_;
+    udpData.target_vel = TargetVel_;
     udpData.target_dist = TargetDist_;
     udpData.current_dist = distance_;
     udpData.current_angle = distAngle_;
@@ -292,18 +293,18 @@ void* ScaleTruckController::UDPrecvInThread()
                 udpData_.target_vel = udpData.target_vel;
                 udpData_.target_dist = udpData.target_dist;
                 udpData_.sync = udpData.sync;
-				udpData_.cf = udpData.cf;
-				sync_flag_ = udpData_.sync;
-				
-				{
-				boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
-				Beta_ = udpData_.cf;
-				}
-				
-				//Gamma_
+		udpData_.cf = udpData.cf;
+		sync_flag_ = udpData_.sync;
+		
+		{
+		boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
+		Beta_ = udpData_.cf;
+		}
+		
+		//Gamma_
 
-				TargetVel_ = udpData_.target_vel;
-				TargetDist_ = udpData_.target_dist;
+		TargetVel_ = udpData_.target_vel;
+		TargetDist_ = udpData_.target_dist;
             }
         }
     }
@@ -326,10 +327,14 @@ void ScaleTruckController::displayConsole() {
   if(ObjSegments_ > 0) {
     printf("\nSegs            : %d", ObjSegments_);
   }
+  printf("\nCycle Time      : %3.3f ms", CycleTime_);
   printf("\n");
 }
 
 void ScaleTruckController::spin() {
+  double diff_time=0.0;
+  int cnt = 0;
+  
   const auto wait_duration = std::chrono::milliseconds(2000);
   while(!getImageStatus()) {
     printf("Waiting for image.\n");
@@ -347,6 +352,8 @@ void ScaleTruckController::spin() {
   const auto wait_image = std::chrono::milliseconds(20);
 
   while(!controlDone_ && ros::ok()) {
+    struct timeval start_time, end_time;
+    gettimeofday(&start_time, NULL);
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
     udpsendThread_ = std::thread(&ScaleTruckController::UDPsendInThread, this);
@@ -373,6 +380,17 @@ void ScaleTruckController::spin() {
       controlDone_ = true;
       ros::requestShutdown();
     } 
+    gettimeofday(&end_time, NULL);
+    diff_time += ((end_time.tv_sec - start_time.tv_sec) * 1000.0) + ((end_time.tv_usec - start_time.tv_usec) / 1000.0);
+    cnt++;
+
+    CycleTime_ = diff_time / (double)cnt;
+
+    printf("cnt: %d\n", cnt);
+    if (cnt > 3000){
+	    diff_time = 0.0;
+	    cnt = 0;
+    }
   }
 }
 

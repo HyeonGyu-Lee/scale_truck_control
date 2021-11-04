@@ -131,7 +131,7 @@ void LocalRC::LrcPub(){
 	OcrPublisher_.publish(ocr);
 }
 
-void* LocalRC::UDPsendInThread()
+void LocalRC::UDPsendFunc()
 {
     struct UDPsock::UDP_DATA udpData;
 
@@ -151,16 +151,16 @@ void* LocalRC::UDPrecvInThread()
 {
 	struct UDPsock::UDP_DATA udpData;
 	
-    while(ros::ok()) { 
-        UDPrecv_.recvData(&udpData);
-        if(udpData.index == 100 && udpData.to == Index_) {	//CRC index	
+	while(ros::ok()) { 
+		UDPrecv_.recvData(&udpData);
+		if(udpData.index == 100 && udpData.to == Index_) {	//CRC index	
 			PredVel_ = udpData.predict_vel;
 			CrcMode_ = udpData.mode;
 			if (CrcMode_ >= LrcMode_){
 				LrcMode_ = CrcMode_;
 			}
-        }
-    }
+		}
+	}
 }
 
 void LocalRC::VelocitySensorCheck(){
@@ -178,15 +178,15 @@ void LocalRC::VelocitySensorCheck(){
 */
 }
 
-void LocalRC::ModeCheck(){
+void LocalRC::ModeCheck(uint8_t crc_mode){
 	if(!Index_){	//LV
 		if(Beta_){	//Camera sensor failure
 			LrcMode_ = 2;	//GDM
 		}
-		else if(Alpha_ || Gamma_ ){
+		else if((Alpha_ || Gamma_) && (crc_mode == 0 || crc_mode == 1)){
 			LrcMode_ = 1;	//RCM
 		}
-		else{
+		else if(crc_mode == 0){
 			LrcMode_ = 0;	//TM
 		}
 	}
@@ -194,10 +194,10 @@ void LocalRC::ModeCheck(){
 		if(Beta_ && Gamma_){
 			LrcMode_ = 2;	
 		}
-		else if(Alpha_ || Beta_ || Gamma_){
+		else if((Alpha_ || Beta_ || Gamma_) && (crc_mode == 0 || crc_mode == 1)){
 			LrcMode_ = 1;	
 		}
-		else{
+		else if(crc_mode == 0){
 			LrcMode_ = 0;
 		}
 	}
@@ -239,7 +239,7 @@ void LocalRC::RecordData(struct timeval *startTime){
 
 void LocalRC::PrintData(){
 	static int cnt = 0;
-	if(cnt > 100 && EnableConsoleOutput_){
+	if (cnt > 100 && EnableConsoleOutput_){
 		printf("\nEstimated Velocity:\t%.3f", fabs(CurVel_ - HatVel_));
 		printf("\nPredict Velocity:\t%.3f", PredVel_);
 		printf("\nTarget Velocity:\t%.3f", TarVel_);
@@ -247,6 +247,7 @@ void LocalRC::PrintData(){
 		printf("\nSaturated Velocity:\t%.3f", SatVel_);
 		printf("\nEstimated Value:\t%.3f", fabs(CurVel_ - HatVel_));
 		printf("\nalpha, beta, gamma:\t%d, %d, %d", Alpha_, Beta_, Gamma_); 
+		printf("\nMODE:\t%d", LrcMode_);
 		printf("\n");
 		cnt = 0;
 	}
@@ -257,15 +258,10 @@ void LocalRC::spin(){
 	struct timeval startTime;
 	gettimeofday(&startTime, NULL);
 	while(ros::ok()){
-		
 		VelocitySensorCheck();
-		ModeCheck();
+		ModeCheck(CrcMode_);
 		LrcPub();
-		udpsendThread_ = std::thread(&LocalRC::UDPsendInThread, this);
-		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-		udpsendThread_.join();
-
+		UDPsendFunc();
 		RecordData(&startTime);
 		PrintData();
 

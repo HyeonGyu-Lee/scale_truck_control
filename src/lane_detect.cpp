@@ -713,7 +713,7 @@ void LaneDetector::calc_curv_rad_and_center_dist() {
 float LaneDetector::display_img(Mat _frame, int _delay, bool _view) {		
 	Mat new_frame, gray_frame, edge_frame, binary_frame, sliding_frame, resized_frame;
 
-	resize(_frame, new_frame, Size(width_, height_));
+	if(!_frame.empty()) resize(_frame, new_frame, Size(width_, height_));
 	Mat trans = getPerspectiveTransform(corners_, warpCorners_);
 
 	cuda::GpuMat gpu_map1, gpu_map2;

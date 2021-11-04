@@ -30,18 +30,7 @@ void CenterRC::UDPsendData(float pred_vel, int to){
 	udpData.index = Index_;
 	udpData.to = to;
 	udpData.mode = CrcMode_;
-	if (to == 0){
-		udpData.predict_vel = lv_pred_vel_;
-	}
-	else if (to == 1){
-		udpData.predict_vel = fv1_pred_vel_;
-	}
-	else if (to == 2){
-		udpData.predict_vel = fv2_pred_vel_;
-	}
-	else{
-		printf("CRC can't send udp data!\n");
-	}
+	udpData.predict_vel = pred_vel;
 
 	UDPsend_.sendData(udpData);
 }

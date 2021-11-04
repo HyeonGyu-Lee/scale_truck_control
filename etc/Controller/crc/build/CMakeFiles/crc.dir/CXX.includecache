@@ -13,6 +13,8 @@ chrono
 -
 thread
 -
+sys/time.h
+-
 sock_udp.hpp
 ../includes/sock_udp.hpp
 
@@ -38,21 +40,21 @@ stdlib.h
 opencv2/opencv.hpp
 -
 
-/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/crc.cpp
+/home/avees/scale_truck_control/etc/Controller/crc/crc.cpp
 crc.hpp
-/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/crc.hpp
+/home/avees/scale_truck_control/etc/Controller/crc/crc.hpp
 
-/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/main.cpp
+/home/avees/scale_truck_control/etc/Controller/crc/main.cpp
 crc.hpp
-/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/crc.hpp
+/home/avees/scale_truck_control/etc/Controller/crc/crc.hpp
 stdio.h
 -
 sys/time.h
 -
 
-/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/sock_udp.cpp
+/home/avees/scale_truck_control/etc/Controller/crc/sock_udp.cpp
 sock_udp.hpp
-/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/sock_udp.hpp
+/home/avees/scale_truck_control/etc/Controller/crc/sock_udp.hpp
 
 /usr/local/include/opencv4/opencv2/calib3d.hpp
 opencv2/core.hpp

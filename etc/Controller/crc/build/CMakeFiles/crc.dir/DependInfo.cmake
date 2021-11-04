@@ -4,9 +4,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/crc.cpp" "/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/crc.dir/crc.cpp.o"
-  "/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/main.cpp" "/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/crc.dir/main.cpp.o"
-  "/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/sock_udp.cpp" "/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/build/CMakeFiles/crc.dir/sock_udp.cpp.o"
+  "/home/avees/scale_truck_control/etc/Controller/crc/crc.cpp" "/home/avees/scale_truck_control/etc/Controller/crc/build/CMakeFiles/crc.dir/crc.cpp.o"
+  "/home/avees/scale_truck_control/etc/Controller/crc/main.cpp" "/home/avees/scale_truck_control/etc/Controller/crc/build/CMakeFiles/crc.dir/main.cpp.o"
+  "/home/avees/scale_truck_control/etc/Controller/crc/sock_udp.cpp" "/home/avees/scale_truck_control/etc/Controller/crc/build/CMakeFiles/crc.dir/sock_udp.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

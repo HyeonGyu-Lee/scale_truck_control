@@ -30,7 +30,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include "lane_detect/lane_detect.hpp"
-#include "sock_udp/sock_udp.hpp"
+#include "zmq_class/zmq_class.h"
 
 //custom msgs
 #include <scale_truck_control/lrc2xav.h>
@@ -85,20 +85,13 @@ class ScaleTruckController {
     float FVstopDist_;
     float TargetDist_;
     float SafetyDist_;
-	bool Gamma_ = false;
+    bool Gamma_ = false;
 
-    //UDP
-    UDPsock::UDPsocket UDPsend_;
-    UDPsock::UDPsocket UDPrecv_;
-    std::string ADDR_;
-    int Index_;
-    int PORT_;
-    struct UDPsock::UDP_DATA udpData_;
+    //ZMQ
+    ZMQ_CLASS ZMQ_SOCKET_;
 
     //Thread
     std::thread controlThread_;
-    std::thread udpsendThread_;
-    std::thread udprecvThread_;
     std::mutex mutex_;
 
     obstacle_detector::Obstacles Obstacle_;

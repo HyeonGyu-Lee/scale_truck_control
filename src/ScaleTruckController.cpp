@@ -3,7 +3,7 @@
 namespace scale_truck_control{
 
 ScaleTruckController::ScaleTruckController(ros::NodeHandle nh)
-    : nodeHandle_(nh), laneDetector_(nodeHandle_), UDPsend_(), UDPrecv_(){
+    : nodeHandle_(nh), laneDetector_(nodeHandle_), ZMQ_SOCKET_(nh){
   if (!readParameters()) {
     ros::requestShutdown();
   }
@@ -27,7 +27,6 @@ ScaleTruckController::~ScaleTruckController() {
 
   XavPublisher_.publish(msg);
   controlThread_.join();
-  udprecvThread_.join();
 
   ROS_INFO("[ScaleTruckController] Stop.");
 }
@@ -56,15 +55,6 @@ bool ScaleTruckController::readParameters() {
   nodeHandle_.param("params/safety_dist", SafetyDist_, 1.5f); // m
   nodeHandle_.param("params/target_dist", TargetDist_, 0.8f); // m
 
-  /**************/
-  /* UDP Option */
-  /**************/
-  nodeHandle_.param("params/udp_group_addr", ADDR_, std::string("239.255.255.250"));
-  nodeHandle_.param("params/udp_group_port", PORT_, 9307);
-  nodeHandle_.param("params/truck_info", Index_, 0);
-  if(!nodeHandle_.hasParam("params/udp_group_addr")){
-	  ROS_INFO("No param named 'params/udp_group_addr");
-  }
   return true;
 }
 
@@ -115,22 +105,12 @@ void ScaleTruckController::init() {
   XavPublisher_ = nodeHandle_.advertise<scale_truck_control::xav2lrc>(XavPubTopicName, XavPubQueueSize);
   LanecoefPublisher_ = nodeHandle_.advertise<scale_truck_control::lane_coef>(LanecoefTopicName, LanecoefQueueSize);
 
-  /******************/
-  /* UDP Multicast  */
-  /******************/
-  UDPsend_.GROUP_ = ADDR_.c_str();
-  UDPsend_.PORT_ = PORT_;
-  UDPsend_.sendInit();
 
-  UDPrecv_.GROUP_ = ADDR_.c_str();
-  UDPrecv_.PORT_ = PORT_;
-  UDPrecv_.recvInit();
 
   /**********************************/
   /* Control & Communication Thread */
   /**********************************/
   controlThread_ = std::thread(&ScaleTruckController::spin, this);
-  udprecvThread_ = std::thread(&ScaleTruckController::UDPrecvInThread, this);
 
   /**********************/
   /* Safety Start Setup */
@@ -212,7 +192,7 @@ void* ScaleTruckController::objectdetectInThread() {
     laneDetector_.distance_ = 0;
   }
   
-  if(!Index_){	
+  if(ZMQ_SOCKET_.zipcode_.compare(std::string("00000"))){	
       /***************/
       /* LV velocity */
       /***************/
@@ -246,73 +226,12 @@ void* ScaleTruckController::objectdetectInThread() {
   }
 }
 
-void* ScaleTruckController::UDPsendInThread()
-{
-    struct UDPsock::UDP_DATA udpData;
-
-    udpData.index = Index_;
-    udpData.to = 307;
-    if(distance_ <= LVstopDist_ || TargetVel_ >= 2.0)
-      udpData.target_vel = 0;
-    else {
-      udpData.target_vel = RefVel_;
-    }
-    udpData.current_vel = CurVel_;
-    udpData.target_dist = TargetDist_;
-    udpData.current_dist = distance_;
-    udpData.current_angle = distAngle_;
-    udpData.roi_dist = laneDetector_.distance_;
-    udpData.coef[0].a = laneDetector_.lane_coef_.left.a;
-    udpData.coef[0].b = laneDetector_.lane_coef_.left.b;
-    udpData.coef[0].c = laneDetector_.lane_coef_.left.c;
-    udpData.coef[1].a = laneDetector_.lane_coef_.right.a;
-    udpData.coef[1].b = laneDetector_.lane_coef_.right.b;
-    udpData.coef[1].c = laneDetector_.lane_coef_.right.c;
-    udpData.coef[2].a = laneDetector_.lane_coef_.center.a;
-    udpData.coef[2].b = laneDetector_.lane_coef_.center.b;
-    udpData.coef[2].c = laneDetector_.lane_coef_.center.c;
-
-    UDPsend_.sendData(udpData);
-}
-
-void* ScaleTruckController::UDPrecvInThread()
-{
-	struct UDPsock::UDP_DATA udpData;
-	
-    while(!controlDone_) { 
-        UDPrecv_.recvData(&udpData);
-        if(udpData.index == (Index_ - 1)) {
-            udpData_.target_vel = udpData.target_vel;
-            TargetVel_ = udpData_.target_vel;
-            TargetDist_ = udpData_.target_dist;
-        }
-        if(udpData.index == 307) {
-            if(udpData.to == Index_) {
-                udpData_.index = udpData.index;
-                udpData_.target_vel = udpData.target_vel;
-                udpData_.target_dist = udpData.target_dist;
-                udpData_.sync = udpData.sync;
-				udpData_.cf = udpData.cf;
-				sync_flag_ = udpData_.sync;
-				
-				{
-				boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
-				Beta_ = udpData_.cf;
-				}
-				
-				//Gamma_
-
-				TargetVel_ = udpData_.target_vel;
-				TargetDist_ = udpData_.target_dist;
-            }
-        }
-    }
-}
-
 void ScaleTruckController::displayConsole() {
+  static std::string ipAddr = ZMQ_SOCKET_.getIPAddress();
 
   printf("\033[2J");
   printf("\033[1;1H");
+  printf("%s (%s) - %s\n","-Client", ipAddr.c_str() , ZMQ_SOCKET_.udp_ip_.c_str());
   printf("\nAngle           : %2.3f degree", AngleDegree_);
   printf("\nRefer Vel       : %3.3f m/s", RefVel_);
   printf("\nSend Vel        : %3.3f m/s", ResultVel_);
@@ -346,24 +265,35 @@ void ScaleTruckController::spin() {
   
   const auto wait_image = std::chrono::milliseconds(20);
 
+  static int zipcode, recv_sub, send_req, recv_req, send_rad, recv_dsh;
+  std::istringstream iss;
+
   while(!controlDone_ && ros::ok()) {
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
-    udpsendThread_ = std::thread(&ScaleTruckController::UDPsendInThread, this);
     
     lanedetect_thread.join();
     objectdetect_thread.join();
-    udpsendThread_.join();
+
+    ZMQ_SOCKET_.send_req_ = boost::str(boost::format("%s %f %f") % ZMQ_SOCKET_.zipcode_.c_str() % TargetVel_ % TargetDist_);
+    ZMQ_SOCKET_.send_rad_ = boost::str(boost::format("%s %f %f") % ZMQ_SOCKET_.zipcode_.c_str() % TargetVel_ % TargetDist_);
+    
+    iss = std::istringstream(ZMQ_SOCKET_.recv_sub_);
+    iss >> zipcode >> recv_sub;
+    iss = std::istringstream(ZMQ_SOCKET_.recv_req_);
+    iss >> zipcode >> recv_sub;
+    iss = std::istringstream(ZMQ_SOCKET_.recv_dsh_);
+    iss >> zipcode >> recv_sub;
 
     if(enableConsoleOutput_)
       displayConsole();
 
-	msg.steer_angle = AngleDegree_;
-	msg.cur_dist = distance_;
-	msg.tar_vel = ResultVel_;	//Xavier to LRC and LRC to OpenCR
-	msg.tar_dist = TargetDist_;
-	msg.beta = Beta_;
-	msg.gamma = Gamma_;
+    msg.steer_angle = AngleDegree_;
+    msg.cur_dist = distance_;
+    msg.tar_vel = ResultVel_;	//Xavier to LRC and LRC to OpenCR
+    msg.tar_dist = TargetDist_;
+    msg.beta = Beta_;
+    msg.gamma = Gamma_;
 
     lane = laneDetector_.lane_coef_;
     LanecoefPublisher_.publish(lane);
@@ -371,6 +301,7 @@ void ScaleTruckController::spin() {
 
     if(!isNodeRunning()) {
       controlDone_ = true;
+      ZMQ_SOCKET_.controlDone_ = true;
       ros::requestShutdown();
     } 
   }

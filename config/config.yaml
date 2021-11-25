@@ -28,6 +28,13 @@ ROI:
   dynamic_roi: true
   threshold: 128
   
+tcp_ip:
+  ip_addr: "tcp://192.168.0.18"
+  interface_name: "wlan0"
+
+udp_ip:
+  ip_addr: "udp://239.255.255.250"
+
 image_view:
   enable_opencv: false
   wait_key_delay: 1

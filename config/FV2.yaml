@@ -1,7 +1,24 @@
+tcp_ip:
+  sub_port: "5555"
+  pub_port: "5555"
+  req_port: "4444"
+  rep_port: "4444"
+  zipcode: "00002"
+
+udp_ip:
+  port: "8080"
+  send_group: "FV3"
+  recv_group: "FV2"
+
+socket:
+  rad_flag: true
+  dsh_flag: true
+  req_flag: true
+  rep_flag: false
+  sub_flag: true
+  pub_flag: false
+
 params:
-  truck_info: 2  # LV:0 FV1:1 FV2:2
-  udp_group_addr: 239.255.255.250
-  udp_group_port: 9307 
   target_vel: 0.00
   safety_vel: 0.45
   fv_max_vel: 1.20

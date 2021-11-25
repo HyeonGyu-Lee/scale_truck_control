@@ -272,6 +272,8 @@ void ScaleTruckController::spin() {
   static int zipcode, recv_sub, send_req, recv_req, send_rad, recv_dsh;
   std::istringstream iss;
 
+  float TargetVel, TargetDist;
+
   while(!controlDone_ && ros::ok()) {
     struct timeval start_time, end_time;
     gettimeofday(&start_time, NULL);
@@ -282,14 +284,23 @@ void ScaleTruckController::spin() {
     objectdetect_thread.join();
 
     ZMQ_SOCKET_.send_req_ = boost::str(boost::format("%s %f %f") % ZMQ_SOCKET_.zipcode_.c_str() % TargetVel_ % TargetDist_);
-    ZMQ_SOCKET_.send_rad_ = boost::str(boost::format("%s %f %f") % ZMQ_SOCKET_.zipcode_.c_str() % TargetVel_ % TargetDist_);
     
+    TargetDist = TargetDist_;
+    if(distance_ <= LVstopDist_ || TargetVel_ >= 2.0) {
+      TargetVel = 0;
+    }
+    else {
+      TargetVel = RefVel_;   
+    }
+    
+    ZMQ_SOCKET_.send_rad_ = boost::str(boost::format("%s %f %f") % ZMQ_SOCKET_.zipcode_.c_str() % TargetVel % TargetDist);
+     
     iss = std::istringstream(ZMQ_SOCKET_.recv_sub_);
     iss >> zipcode >> recv_sub;
     iss = std::istringstream(ZMQ_SOCKET_.recv_req_);
     iss >> zipcode >> recv_sub;
     iss = std::istringstream(ZMQ_SOCKET_.recv_dsh_);
-    iss >> zipcode >> recv_sub;
+    iss >> zipcode >> TargetVel_ >> TargetDist_;
 
     if(enableConsoleOutput_)
       displayConsole();
@@ -303,13 +314,14 @@ void ScaleTruckController::spin() {
 
     lane = laneDetector_.lane_coef_;
     LanecoefPublisher_.publish(lane);
-	XavPublisher_.publish(msg);
+    XavPublisher_.publish(msg);
 
     if(!isNodeRunning()) {
       controlDone_ = true;
       ZMQ_SOCKET_.controlDone_ = true;
       ros::requestShutdown();
-    } 
+    }
+
     gettimeofday(&end_time, NULL);
     diff_time += ((end_time.tv_sec - start_time.tv_sec) * 1000.0) + ((end_time.tv_usec - start_time.tv_usec) / 1000.0);
     cnt++;

@@ -1,0 +1,3 @@
+/home/avees/scale_truck_control/etc/Controller/crc/build/CMakeFiles/rebuild_cache.dir
+/home/avees/scale_truck_control/etc/Controller/crc/build/CMakeFiles/crc.dir
+/home/avees/scale_truck_control/etc/Controller/crc/build/CMakeFiles/edit_cache.dir

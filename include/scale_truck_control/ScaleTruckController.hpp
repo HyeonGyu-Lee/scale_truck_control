@@ -30,11 +30,11 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include "lane_detect/lane_detect.hpp"
-#include "sock_udp/sock_udp.hpp"
+#include "zmq_class/zmq_class.h"
 
 //custom msgs
-#include <scale_truck_control/ctl.h>
-#include <scale_truck_control/vel.h>
+#include <scale_truck_control/lrc2xav.h>
+#include <scale_truck_control/xav2lrc.h>
 
 namespace scale_truck_control {
 
@@ -52,22 +52,24 @@ class ScaleTruckController {
 
     void imageCallback(const sensor_msgs::ImageConstPtr &msg);
     void objectCallback(const obstacle_detector::Obstacles &msg);
-    void velCallback(const scale_truck_control::vel &msg);
-    bool publishControlMsg(const scale_truck_control::ctl msg);
+    void XavSubCallback(const scale_truck_control::lrc2xav &msg);
+    //bool publishControlMsg(const scale_truck_control::ctl msg);
 
     ros::NodeHandle nodeHandle_;
-    ros::Publisher ControlDataPublisher_;
+    ros::Publisher XavPublisher_;
     ros::Publisher LanecoefPublisher_;
     ros::Subscriber imageSubscriber_;
     ros::Subscriber objectSubscriber_;
-    ros::Subscriber velSubscriber_;
+    ros::Subscriber XavSubscriber_;
 	
+    double CycleTime_ = 0.0;
     //image
     LaneDetect::LaneDetector laneDetector_;
     bool viewImage_;
     int waitKeyDelay_;
     bool enableConsoleOutput_;
     int sync_flag_;
+    bool Beta_ = false;
 
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
     float TargetVel_; // -1 ~ 1  - Twist msg linear.x
@@ -84,19 +86,13 @@ class ScaleTruckController {
     float FVstopDist_;
     float TargetDist_;
     float SafetyDist_;
+    bool Gamma_ = false;
 
-    //UDP
-    UDPsock::UDPsocket UDPsend_;
-    UDPsock::UDPsocket UDPrecv_;
-    std::string ADDR_;
-    int Index_;
-    int PORT_;
-    struct UDPsock::UDP_DATA udpData_;
+    //ZMQ
+    ZMQ_CLASS ZMQ_SOCKET_;
 
     //Thread
     std::thread controlThread_;
-    std::thread udpsendThread_;
-    std::thread udprecvThread_;
     std::mutex mutex_;
 
     obstacle_detector::Obstacles Obstacle_;
@@ -116,7 +112,7 @@ class ScaleTruckController {
     bool isNodeRunning_ = true;
     boost::shared_mutex mutexNodeStatus_;
 	
-    bool cam_failure_ = false;
+    //bool cam_failure_ = false;
     boost::shared_mutex mutexCamStatus_;
 
     bool controlDone_ = false;

@@ -26,15 +26,15 @@ struct UDP_DATA{
     int cf;
     float target_vel;
     float current_vel;
-	float predict_vel;
+    float predict_vel;
     float target_dist;
     float current_dist;
     float current_angle;
     float roi_dist;
-	bool alpha;
-	bool beta;
-	bool gamma;
-	uint8_t mode;
+    bool alpha;
+    bool beta;
+    bool gamma;
+    uint8_t mode;
     struct lane_coef coef[3];
 };
 

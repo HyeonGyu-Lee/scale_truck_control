@@ -226,6 +226,73 @@ void* ScaleTruckController::objectdetectInThread() {
   }
 }
 
+<<<<<<< HEAD
+=======
+void* ScaleTruckController::UDPsendInThread()
+{
+    struct UDPsock::UDP_DATA udpData;
+
+    udpData.index = Index_;
+    udpData.to = 307;
+    if(distance_ <= LVstopDist_ || TargetVel_ >= 2.0)
+      udpData.target_vel = 0;
+    else {
+      udpData.target_vel = RefVel_;
+    }
+    udpData.current_vel = CurVel_;
+    udpData.target_vel = TargetVel_;
+    udpData.target_dist = TargetDist_;
+    udpData.current_dist = distance_;
+    udpData.current_angle = distAngle_;
+    udpData.roi_dist = laneDetector_.distance_;
+    udpData.coef[0].a = laneDetector_.lane_coef_.left.a;
+    udpData.coef[0].b = laneDetector_.lane_coef_.left.b;
+    udpData.coef[0].c = laneDetector_.lane_coef_.left.c;
+    udpData.coef[1].a = laneDetector_.lane_coef_.right.a;
+    udpData.coef[1].b = laneDetector_.lane_coef_.right.b;
+    udpData.coef[1].c = laneDetector_.lane_coef_.right.c;
+    udpData.coef[2].a = laneDetector_.lane_coef_.center.a;
+    udpData.coef[2].b = laneDetector_.lane_coef_.center.b;
+    udpData.coef[2].c = laneDetector_.lane_coef_.center.c;
+
+    UDPsend_.sendData(udpData);
+}
+
+void* ScaleTruckController::UDPrecvInThread()
+{
+	struct UDPsock::UDP_DATA udpData;
+	
+    while(!controlDone_) { 
+        UDPrecv_.recvData(&udpData);
+        if(udpData.index == (Index_ - 1)) {
+            udpData_.target_vel = udpData.target_vel;
+            TargetVel_ = udpData_.target_vel;
+            TargetDist_ = udpData_.target_dist;
+        }
+        if(udpData.index == 307) {
+            if(udpData.to == Index_) {
+                udpData_.index = udpData.index;
+                udpData_.target_vel = udpData.target_vel;
+                udpData_.target_dist = udpData.target_dist;
+                udpData_.sync = udpData.sync;
+		udpData_.cf = udpData.cf;
+		sync_flag_ = udpData_.sync;
+		
+		{
+		boost::shared_lock<boost::shared_mutex> lock(mutexCamStatus_);
+		Beta_ = udpData_.cf;
+		}
+		
+		//Gamma_
+
+		TargetVel_ = udpData_.target_vel;
+		TargetDist_ = udpData_.target_dist;
+            }
+        }
+    }
+}
+
+>>>>>>> 12155adb6f4c16dc2330379724912442a3b77e44
 void ScaleTruckController::displayConsole() {
   static std::string ipAddr = ZMQ_SOCKET_.getIPAddress();
 
@@ -245,10 +312,14 @@ void ScaleTruckController::displayConsole() {
   if(ObjSegments_ > 0) {
     printf("\nSegs            : %d", ObjSegments_);
   }
+  printf("\nCycle Time      : %3.3f ms", CycleTime_);
   printf("\n");
 }
 
 void ScaleTruckController::spin() {
+  double diff_time=0.0;
+  int cnt = 0;
+  
   const auto wait_duration = std::chrono::milliseconds(2000);
   while(!getImageStatus()) {
     printf("Waiting for image.\n");
@@ -269,6 +340,8 @@ void ScaleTruckController::spin() {
   std::istringstream iss;
 
   while(!controlDone_ && ros::ok()) {
+    struct timeval start_time, end_time;
+    gettimeofday(&start_time, NULL);
     lanedetect_thread = std::thread(&ScaleTruckController::lanedetectInThread, this);
     objectdetect_thread = std::thread(&ScaleTruckController::objectdetectInThread, this);
     
@@ -304,6 +377,17 @@ void ScaleTruckController::spin() {
       ZMQ_SOCKET_.controlDone_ = true;
       ros::requestShutdown();
     } 
+    gettimeofday(&end_time, NULL);
+    diff_time += ((end_time.tv_sec - start_time.tv_sec) * 1000.0) + ((end_time.tv_usec - start_time.tv_usec) / 1000.0);
+    cnt++;
+
+    CycleTime_ = diff_time / (double)cnt;
+
+    printf("cnt: %d\n", cnt);
+    if (cnt > 3000){
+	    diff_time = 0.0;
+	    cnt = 0;
+    }
   }
 }
 

@@ -48,10 +48,10 @@ class LocalRC{
 		void XavCallback(const scale_truck_control::xav2lrc &msg);
 		void OcrCallback(const scale_truck_control::ocr2lrc &msg);
 		void LrcPub();
-		void* UDPsendInThread();
+		void UDPsendFunc();
 		void* UDPrecvInThread();
 		void VelocitySensorCheck();
-		void ModeCheck();
+		void ModeCheck(uint8_t crc_mode);
 		void RecordData(struct timeval *startTime);
 		void PrintData();
 
@@ -76,7 +76,7 @@ class LocalRC{
 		double Time_ = 0;
 
 		std::thread spinThread_;
-		std::thread udpsendThread_;
+		//std::thread udpsendThread_;
 		std::thread udprecvThread_;
 
 		std::mutex mutexNodeStatus_;

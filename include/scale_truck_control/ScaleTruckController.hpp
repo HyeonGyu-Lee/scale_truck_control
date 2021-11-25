@@ -62,13 +62,14 @@ class ScaleTruckController {
     ros::Subscriber objectSubscriber_;
     ros::Subscriber XavSubscriber_;
 	
+    double CycleTime_ = 0.0;
     //image
     LaneDetect::LaneDetector laneDetector_;
     bool viewImage_;
     int waitKeyDelay_;
     bool enableConsoleOutput_;
     int sync_flag_;
-	bool Beta_ = false;
+    bool Beta_ = false;
 
     float AngleDegree_; // -1 ~ 1  - Twist msg angular.z
     float TargetVel_; // -1 ~ 1  - Twist msg linear.x

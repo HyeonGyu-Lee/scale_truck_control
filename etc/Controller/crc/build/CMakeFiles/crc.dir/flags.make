@@ -6,5 +6,5 @@ CXX_FLAGS =   -std=gnu++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/avees/catkin_ws/src/scale_truck_control/etc/Controller/crc/includes -isystem /usr/local/include/opencv4 
+CXX_INCLUDES = -I/home/avees/scale_truck_control/etc/Controller/crc/includes -isystem /usr/local/include/opencv4 
 

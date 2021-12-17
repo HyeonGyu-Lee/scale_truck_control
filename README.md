@@ -109,37 +109,62 @@
 >jeson_release
 >~~~
 
->## 0.3.1 ZeroMQ (zmqpp)
+>## 0.3.1 ZeroMQ (cppzmq)
 >-Install and Build of ZeroMQ for cpp
 >~~~
 >sudo apt update
 >sudo apt upgrade
->sudo apt install libzmq3-dev
+>sudo apt remove libzmq3-dev
+>sudo apt remove cmake
 >~~~
->http://github.com/zeromq/zmqpp
+>http://github.com/zeromq/cppzmq
 >~~~
->git clone git://github.com/jedisct1/libsodium.git
->cd libsodium
->./autogen.sh 
->./configure && make check 
+># Upgrade cmake (CMake 3.10 or higher is required)
+>wget https://github.com/Kitware/CMake/archive/master.zip
+>unzip master.zip
+>rm master.zip
+>cd CMake-master
+>./bootstrap
+>sudo make -j8
+>sudo make install
+>sudo ldconfig
+>cmake --version
+>cd ../
+>
+>wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz
+>tar -xvf libsodium-*
+>rm *libsodium-1.0.18-stable.tar.gz
+>cd libsodium-stable
+>./configure
+>sudo make clean
+>sudo make -j8
 >sudo make install 
 >sudo ldconfig
 >cd ../
+>
 ># Build, check, and install the latest version of ZeroMQ
->git clone git://github.com/zeromq/libzmq.git
->cd libzmq
+>wget https://github.com/zeromq/libzmq/archive/master.zip
+>unzip master.zip
+>rm master.zip
+>cd libzmq-master
 >./autogen.sh 
->./configure --with-libsodium && make
->sudo make install
+>./configure --with-libsodium
+>mkdir build
+>cd build && cmake .. -DENABLE_DRAFTS=ON
+>sudo make -j8 install
 >sudo ldconfig
->cd ../
-># Now install ZMQPP
->git clone git://github.com/zeromq/zmqpp.git
->cd zmqpp
->make
->make check
->sudo make install
->make installcheck
+>cd ../../
+>
+># Now install CPPZMQ
+>wget https://github.com/zeromq/cppzmq/archive/master.zip
+>unzip master.zip
+>rm master.zip
+>cd cppzmq-master
+>mkdir build
+>cd build && cmake .. -DENABLE_DRAFTS=ON
+>sudo make -j8 install
+>sudo ldconfig
+>cd ../../
 >~~~
 
 >## 0.3.2 Environment setup

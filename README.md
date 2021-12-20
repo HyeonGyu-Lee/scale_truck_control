@@ -1,10 +1,12 @@
 # Scale Truck Control
 
 # Hardware
->High-level Controller - Nvidia Jetson AGX Xavier 8GB
->Low-level Controller  - OpenCR 1.0 (ARM Cortex-M7)
->USB Camera            - ELP-USBFHD04H-BL180
->Lidar                 - RPLidar A3
+>~~~
+> High-level Controller - Nvidia Jetson AGX Xavier 8GB
+> Low-level Controller  - OpenCR 1.0 (ARM Cortex-M7)
+> USB Camera            - ELP-USBFHD04H-BL180
+> Lidar                 - RPLidar A3
+>~~~
 
 # Software
 > High-level Controller

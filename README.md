@@ -1,10 +1,24 @@
 # Scale Truck Control
 
 # Hardware
->Nvidia Jetson Xavier  
->USB Camera (Camera)   
->RPLidar A3 (Lidar)  
->OpenCR 1.0 (ARM)  
+>High-level Controller - Nvidia Jetson AGX Xavier 8GB
+>Low-level Controller  - OpenCR 1.0 (ARM Cortex-M7)
+>USB Camera            - ELP-USBFHD04H-BL180
+>Lidar                 - RPLidar A3
+
+# Software
+> High-level Controller
+>~~~
+> Jetpack   : 4.5.1 version - Ubuntu 18.04 LTS
+> OpenCV    : 4.4.0 version - include options (GPU, CUDA, CUDNN)
+> ZeroMQ    : stable version
+> ROS 1     : melodic version
+>~~~
+>
+> Low-level Controller
+>~~~
+> ros library
+>~~~
 
 # 0. Install Environment
 >## 0.1 Jetpack 4.5.1 (ubuntu 18.04 LTS)

@@ -1,6 +1,6 @@
 # Scale Truck Control
 
-# Hardware
+# I. Hardware
 >~~~
 > High-level Controller - Nvidia Jetson AGX Xavier 8GB
 > Low-level Controller  - OpenCR 1.0 (ARM Cortex-M7)
@@ -8,7 +8,7 @@
 > Lidar                 - RPLidar A3
 >~~~
 
-# Software
+# II. Software
 > High-level Controller
 >~~~
 > Jetpack   : 4.5.1 version - Ubuntu 18.04 LTS
@@ -21,6 +21,18 @@
 >~~~
 > ros library
 >~~~
+
+# III. Demonstration
+> Three Scale Truck Platooning
+> ~~~
+> https://www.youtube.com/watch?v=wKmWD8BPldw
+> 
+> Intro. 0:00
+> Scenario 1. 0:35
+> Scenario 2. 1:36
+> Case Study: Camera Failure. 2:31
+> Emergency Stop. 2:45
+> ~~~
 
 # 0. Install Environment
 >## 0.1 Jetpack 4.5.1 (ubuntu 18.04 LTS)

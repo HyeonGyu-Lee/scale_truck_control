@@ -1,7 +1,7 @@
 # Scale Truck Control
-
-{% include video id="wKmWD8BPldw" provider="youtube" %}
-
+<html>
+<iframe width="956" height="538" src="https://www.youtube.com/embed/wKmWD8BPldw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</html>
 # I. Hardware
 >~~~
 > High-level Controller - Nvidia Jetson AGX Xavier 8GB
